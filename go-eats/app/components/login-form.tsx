@@ -3,12 +3,14 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Utensils } from "lucide-react"
+import { Moon, Sun, Utensils } from "lucide-react"
+import { useTheme } from "../contexts/theme-context"
 
 export function LoginForm() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const {theme, toggleTheme} = useTheme()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -16,20 +18,32 @@ export function LoginForm() {
   }
 
   return (
- <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 to-neutral-100 px-4">
+ <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br  px-4   ${theme === 'dark' 
+        ? 'bg-gradient-to-br from-neutral-950 to-neutral-900' 
+        : 'bg-gradient-to-br from-neutral-50 to-neutral-100'
+      }`} >
   <div className="w-full max-w-md">
-    <div className="rounded-2xl bg-white p-8 shadow-xl shadow-neutral-200/50">
+    <div className={`
+          rounded-2xl p-8 shadow-xl transition-all duration-300
+          ${theme === 'dark' 
+            ? 'bg-neutral-900 shadow-black/40 border border-neutral-800' 
+            : 'bg-white shadow-neutral-200/50 border border-neutral-100'
+          }
+        `}>
       {/* Header */}
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg shadow-orange-200">
+        <div className={`${theme === 'dark'
+                ? 'bg-gradient-to-br from-orange-600 to-orange-700 shadow-orange-900/30'
+                : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-200'
+              } mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br `}>
           <Utensils className="h-9 w-9 text-white" />
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
+          <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-neutral-900'}`}>
             Go Eats
           </h1>
-          <p className="text-neutral-500 text-base">
+          <p className={` text-base ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>
             Entre e faça seu pedido
           </p>
         </div>
@@ -38,7 +52,8 @@ export function LoginForm() {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-800">
+          <label className={` text-sm font-medium transition-colors duration-300
+                ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'}`}>
             Email
           </label>
           <input
@@ -47,19 +62,27 @@ export function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="
-              h-12 w-full rounded-xl border border-neutral-200 bg-white px-4
-              text-neutral-900 placeholder-neutral-400
-              transition-all duration-200
-              focus:border-orange-500 focus:ring-3 focus:ring-orange-500/20
-              focus:outline-none focus:shadow-sm
-              hover:border-neutral-300
-            "
+            className={`
+                  h-12 w-full rounded-xl border px-4
+                  transition-all duration-300
+                  placeholder-neutral-400
+                  focus:ring-3 focus:outline-none focus:shadow-sm
+                  hover:border-neutral-300
+                  ${theme === 'dark'
+                    ? 'bg-neutral-800 border-neutral-700 text-white ' +
+                      'focus:border-orange-500 focus:ring-orange-500/20 ' +
+                      'hover:border-neutral-600'
+                    : 'bg-white border-neutral-200 text-neutral-900 ' +
+                      'focus:border-orange-500 focus:ring-orange-500/20 ' +
+                      'hover:border-neutral-300'
+                  }
+                `}
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-sm font-medium text-neutral-800">
+          <label className={` text-sm font-medium transition-colors duration-300
+                ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'}`}>
             Senha
           </label>
           <input
@@ -68,14 +91,21 @@ export function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="
-              h-12 w-full rounded-xl border border-neutral-200 bg-white px-4
-              text-neutral-900 placeholder-neutral-400
-              transition-all duration-200
-              focus:border-orange-500 focus:ring-3 focus:ring-orange-500/20
-              focus:outline-none focus:shadow-sm
-              hover:border-neutral-300
-            "
+            className={`
+                  h-12 w-full rounded-xl border px-4
+                  transition-all duration-300
+                  placeholder-neutral-400
+                  focus:ring-3 focus:outline-none focus:shadow-sm
+                  hover:border-neutral-300
+                  ${theme === 'dark'
+                    ? 'bg-neutral-800 border-neutral-700 text-white ' +
+                      'focus:border-orange-500 focus:ring-orange-500/20 ' +
+                      'hover:border-neutral-600'
+                    : 'bg-white border-neutral-200 text-neutral-900 ' +
+                      'focus:border-orange-500 focus:ring-orange-500/20 ' +
+                      'hover:border-neutral-300'
+                  }
+                `}
           />
         </div>
 
@@ -93,18 +123,10 @@ export function LoginForm() {
           "
         >
           Entrar
-        </button>
+        </button>         
       </form>
 
-      {/* Optional: Sign up link */}
-      <div className="mt-8 text-center">
-        <p className="text-neutral-500 text-sm">
-          Não tem uma conta?{" "}
-          <a href="#" className="font-semibold text-orange-600 hover:text-orange-700 hover:underline">
-            Cadastre-se
-          </a>
-        </p>
-      </div>
+
     </div>
   </div>
 </div>
