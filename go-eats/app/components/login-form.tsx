@@ -34,7 +34,7 @@ export function LoginForm() {
   })
 
 
-  const Handle = (dataLogin: any) => {
+  const Handle = (dataLogin: LoginDataType) => {
     
     console.log(dataLogin)
   }
