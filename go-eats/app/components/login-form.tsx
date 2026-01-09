@@ -8,6 +8,7 @@ import { useTheme } from "../contexts/theme-context"
 import { useForm } from "react-hook-form"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
+import toast from "react-hot-toast"
 
 
 
@@ -26,17 +27,53 @@ type LoginDataType = z.infer<typeof LoginSchema>
 
 export function LoginForm() {
   const router = useRouter()
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const {theme, toggleTheme} = useTheme()
+  const [loading, setLoading] = useState(false)
   const {register, handleSubmit, formState: {errors}} = useForm<LoginDataType>({
     resolver: zodResolver(LoginSchema)
   })
 
 
-  const Handle = (dataLogin: LoginDataType) => {
-    
-    console.log(dataLogin)
+  const handleLogin = async (dataLogin: LoginDataType) => {
+
+    setLoading(true)
+
+    try{
+        const response = await fetch('/api/Login', {
+            method: 'POST',
+            headers: {'Content-type': 'application/json'},
+            body: JSON.stringify({
+                email: dataLogin.email,
+                password: dataLogin.password
+
+            })
+        })
+
+        const data = await response.json()
+
+        if(!response.ok){
+            const errorMessage = data.message || "Erro ao realizar a requisição à API"
+            console.log("Erro ao realizar a requisição à API")
+            throw new Error(errorMessage)
+        }
+
+
+        console.log("Login feito com sucesso")
+        router.replace('/dashboard')
+
+    } catch(err) {
+
+        if(err instanceof Error){
+            console.error("Erro na requisição para Login", err.message)
+            toast.error(err.message)
+        } else {
+            console.log("Erro na requisição para Login", err)
+        }
+
+
+    } finally {
+        setLoading(false)
+    }
   }
 
 
@@ -78,7 +115,7 @@ export function LoginForm() {
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit(Handle)} className="space-y-6">
+                <form onSubmit={handleSubmit(handleLogin)} className="space-y-6">
                     <div className="space-y-1.5">
                     <label className={` text-sm font-medium transition-colors duration-300
                             ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'}`}>
@@ -150,7 +187,9 @@ export function LoginForm() {
                         focus:outline-none focus:ring-3 focus:ring-orange-500/40
                     "
                     >
-                    Entrar
+                    {loading ? (<div className="flex justify-center">
+                        <span className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent" />
+                        </div>): (<span>Entrar</span>) }
                     </button>         
             </form>
 

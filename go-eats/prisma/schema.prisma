@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+
+model User {
+  id           String   @id @default(uuid())
+  
+  
+  email        String   @unique
+  passwordHash String
+
+
+  companyId    String
+  company      Company @relation(fields: [companyId], references: [id])
+  
+
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([companyId])
+  @@map("users")
+}
+
+
+
+
+enum MealType {
+  DESJEJUM
+  ALMOCO
+  JANTAR
+  CEIA
+  LANCHE
+  CAFE_DA_TARDE
+  CAFE_NOTURNO
+  COMPLEMENTO
+}
+
+
+
+enum ItemCategory {
+  GRANEL
+  MTX8
+  MTX9
+  DIVISIONAL
+  BEBIDA
+}
+
+
+
+
+model Company {
+  id          String @id @default(uuid())
+  cnpj        String @unique
+  socialName  String
+
+  users       User[]
+  orders      Order[]
+
+
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("companies")
+}
+
+
+
+
+model Order {
+  id        String  @id @default(uuid())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  date      DateTime
+  comments  String?
+
+  items     MealItem[]
+
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, date])
+  @@index([companyId])
+  @@map("orders")
+}
+
+
+
+//Itens Pedido
+model MealItem {
+
+  id           String @id @default(uuid())
+
+  orderId      String
+  order        Order @relation(fields: [orderId], references: [id])
+
+  mealType    MealType
+  category    ItemCategory
+
+  description String?
+  quantity    Float
+
+  createdAt   DateTime @default(now())
+
+
+  @@index([orderId])
+  @@map("meal_items")
+
+}
+
+
+
+
+
+
