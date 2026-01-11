@@ -17,15 +17,50 @@ import clsx from "clsx"
 
 
 
-const ITENS = [
-     {nome: "Desjejum"},
-     {nome: "Almoço"},
-     {nome: "Ceia"},
-     {nome: "Lanche"},
-     {nome: "Café da tarde"},
-     {nome: "Café noturno"}
-]
+const ITEM_VALUES = [
+  "Desjejum",
+  "Almoço",
+  "Ceia",
+  "Lanche",
+  "Bebidas",
+  "Café da tarde",
+  "Café noturno",
+] as const
 
+type ItemType = (typeof ITEM_VALUES)[number]
+
+
+
+const SUBCATEGORIES_VALUES = [
+    "Granel",
+    "MTX8",
+    "MTX9",
+    "Divisional"
+] as const
+
+
+const SUBCATEGORIES_DRINKS = [
+    "Achocolatado",
+    "Litro de leite",
+    "Litro de café",
+    "Litro de chá"
+] as const
+
+
+const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia"]
+
+
+
+type FoodSubcategory = typeof SUBCATEGORIES_VALUES[number]
+type DrinkSubcategory = typeof SUBCATEGORIES_DRINKS[number]
+
+type Subcategory = FoodSubcategory | DrinkSubcategory
+
+
+type SelectedItem = {
+  item: ItemType
+  subcategory?: Subcategory
+}
 
 
 const TypeSchemaForm = z.object({
@@ -34,9 +69,14 @@ const TypeSchemaForm = z.object({
     cnpj: z.string().refine((cnpj) => cnpj.length === 14, {message: "CNPJ inválido"}),
     nomeSocial: z.string(),
     
-    item: z.enum(["Desjejum", "Almoço", "Jantar", "Ceia", "Lanche", "Café da tarde", "Café noturno"]),
-    subcategory: z.enum(["Granel", "MTX8", "MTX9", "Divisional"]).optional(),
-    quantity: z.number(),
+    items: z.array(z.object({
+            item: z.enum(ITEM_VALUES),
+            subcategory: z.union([
+            z.enum(SUBCATEGORIES_VALUES),
+            z.enum(SUBCATEGORIES_DRINKS),
+    ]).optional(),
+  })
+)
 })
 
 
@@ -50,10 +90,13 @@ type TypeForm = z.infer<typeof TypeSchemaForm>
 export function DashboardRegister(){
 
     const {theme} = useTheme()
-    const [itemSelected, setItemSelected] = useState<string[]>([])
+    const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
     const [isActive, setIsActive] = useState(false)
-    const {register, handleSubmit, control} = useForm({
-        resolver: zodResolver(TypeSchemaForm)
+    const {register, handleSubmit, control, setValue} = useForm({
+        resolver: zodResolver(TypeSchemaForm) ,
+        defaultValues: {
+            items: [],
+  },
     })
 
 
@@ -61,15 +104,41 @@ export function DashboardRegister(){
     
 
 
-    function itemSelect(pressed: string){
-       
-        setItemSelected(prev => 
-            prev.includes(pressed) ? prev.filter(itens => itens !== pressed) :
-            [...prev, pressed]
-        )
+  function itemSelect(item: ItemType) {
+  setSelectedItems(prev => {
+    const exists = prev.find(i => i.item === item)
 
-        
+    let updated: SelectedItem[]
+
+    if (exists) {
+     
+      updated = prev.filter(i => i.item !== item)
+    } else {
+      
+      updated = [...prev, { item }]
     }
+
+    console.log(updated)
+    setValue("items", updated)
+    return updated
+  })
+}
+
+
+
+
+function setSubcategory(item: ItemType, subcategory: Subcategory) {
+  setSelectedItems(prev => {
+    const updated = prev.map(i => i.item === item ? { ...i, subcategory } : i)
+
+    console.log("sub: ", updated)
+    setValue("items", updated)
+    return updated
+  })
+}
+
+
+
 
 
 
@@ -81,67 +150,67 @@ export function DashboardRegister(){
 
 
 
-    const isDark = theme === "dark"
+    
+     
 
-    return(
-         <div className={`
+return (
+  <div className={`
     min-h-screen transition-colors duration-300
     ${theme === 'dark' 
-        ? 'bg-gradient-to-br from-neutral-950 to-neutral-900' 
-        : 'bg-gradient-to-br from-neutral-50 to-neutral-100'
+      ? 'bg-gradient-to-br from-neutral-950 to-neutral-900' 
+      : 'bg-gradient-to-br from-neutral-50 to-neutral-100'
     }
-    `}>
+  `}>
     {/* Header */}
     <header className={`
-        border-b backdrop-blur-sm shadow-sm transition-colors duration-300
-        ${theme === 'dark'
+      border-b backdrop-blur-sm shadow-sm transition-colors duration-300
+      ${theme === 'dark'
         ? 'border-neutral-800 bg-neutral-900/90'
         : 'border-neutral-200 bg-white/90'
-        }
+      }
     `}>
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-            <div className={`
+          <div className={`
             w-12 h-12 rounded-xl flex items-center justify-center shadow-md transition-all duration-300
             ${theme === 'dark'
-                ? 'bg-gradient-to-br from-orange-600 to-orange-700 shadow-orange-900/30'
-                : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-200'
+              ? 'bg-gradient-to-br from-orange-600 to-orange-700 shadow-orange-900/30'
+              : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-200'
             }
-            `}>
+          `}>
             <Utensils className="w-7 h-7 text-white" />
-            </div>
-            <div>
+          </div>
+          <div>
             <h1 className={`
-                text-2xl font-bold tracking-tight transition-colors duration-300
-                ${theme === 'dark' ? 'text-white' : 'text-neutral-900'}
+              text-2xl font-bold tracking-tight transition-colors duration-300
+              ${theme === 'dark' ? 'text-white' : 'text-neutral-900'}
             `}>
-                Go Eats
+              Go Eats
             </h1>
             <p className={`
-                text-sm transition-colors duration-300
-                ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}
+              text-sm transition-colors duration-300
+              ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}
             `}>
-                Sistema de pedidos de comida
+              Sistema de pedidos de comida
             </p>
-            </div>
+          </div>
         </div>
         <Button
-            variant="ghost"
-            size="sm"
-            className={`
+          variant="ghost"
+          size="sm"
+          className={`
             rounded-xl px-4 py-2 transition-all duration-200
             ${theme === 'dark'
-                ? 'text-neutral-300 hover:text-orange-500 hover:bg-orange-500/10'
-                : 'text-neutral-700 hover:text-orange-600 hover:bg-orange-50'
+              ? 'text-neutral-300 hover:text-orange-500 hover:bg-orange-500/10'
+              : 'text-neutral-700 hover:text-orange-600 hover:bg-orange-50'
             }
-            `}
+          `}
         >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
+          <LogOut className="w-4 h-4 mr-2" />
+          Sair
         </Button>
-        </div>
+      </div>
     </header>
-
 
     {/* FORMULÁRIO */}
     <div className="flex flex-col mt-2">
@@ -214,45 +283,75 @@ export function DashboardRegister(){
                 </div>
 
                 {/* COLUNA 2 */}
-            <div className="space-y-6">
-                <div className="space-y-2">
+                <div className="space-y-6">
+                  <div className="space-y-2">
                     <Label className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
-                    Digite quais itens estão disponíveis ao cliente
+                      Digite quais itens estão disponíveis ao cliente
                     </Label>
 
-                    {ITENS.map((itens) => (
+                    {ITEM_VALUES.map(item => {
+                            const isDark = theme === "dark"
+                            const selected = selectedItems.find(i => i.item === item)
 
-                   <Button
-                        key={itens.nome}
-                        
-                        className={clsx(
-                            "justify-start rounded-xl h-12 transition-all duration-200 m-2 border",
-                            {
-                            "bg-orange-500 text-white border-orange-500 hover:bg-orange-600":
-                                itemSelected.includes(itens.nome) && !isDark,
+                            const isFoodWithSub = ITEMS_WITH_SUBCATEGORY.includes(item)
 
-                            
-                            "bg-orange-500 text-white border-orange-400 hover:bg-orange-600":
-                                itemSelected.includes(itens.nome) && isDark,
+                            const isDrink = item === "Bebidas"
 
-                            
-                            "bg-neutral-800 border-neutral-700 text-neutral-300 hover:border-orange-600 hover:bg-orange-600/10 hover:text-orange-400":
-                                !itemSelected.includes(itens.nome) && isDark,
+                            const subcategories = isFoodWithSub ? SUBCATEGORIES_VALUES : isDrink ? SUBCATEGORIES_DRINKS : null
 
-                            
-                            "bg-white border-neutral-200 text-neutral-700 hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700":
-                                !itemSelected.includes(itens.nome) && !isDark,
-                            }
-                        )}
-                        onClick={() => itemSelect(itens.nome)}
-                        >
-                        {itemSelected.includes(itens.nome) ? (<><Check /> {itens.nome}</>) : (<><Plus className="mr-2" />{itens.nome}</>)}
-                        
-                    </Button>
-                    ))}
-                    
+                            return (
+                                <div key={item}>
+                                <Button
+                                    type="button"
+                                    className={clsx( 
+                                         "justify-start rounded-xl h-12 m-2 border w-full transition-all duration-200",
+                                            {
+                                            
+                                            "bg-orange-500 text-white border-orange-500 cursor-default":
+                                                selected && !isDark,
+
+                                            "bg-orange-500 text-white border-orange-400 cursor-default":
+                                                selected && isDark,
+
+                                            
+                                            "bg-neutral-800 text-white hover:bg-orange-600/10 hover:text-orange-400 hover:border-orange-600":
+                                                !selected && isDark,
+
+                                            "bg-white text-black hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300":
+                                                !selected && !isDark, })}
+                                    onClick={() => itemSelect(item)}
+                                >
+                                    {selected ? (<><Check />{item}</>) : (<><Plus /> {item}</>)}
+                                    
+                                </Button>
+
+                                {selected && subcategories && (
+                                    <Select
+                                    value={selected.subcategory}
+                                    onValueChange={(value) =>
+                                        setSubcategory(item, value as Subcategory)
+                                    }
+                                    >
+                                    <SelectTrigger className="mt-2">
+                                        <SelectValue placeholder="Selecione a subcategoria" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {subcategories.map(sub => (
+                                        <SelectItem key={sub} value={sub}>
+                                            {sub}
+                                        </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                )}
+                                </div>
+                            )
+                            })}
+
+                         
+                                          
+                  </div>
                 </div>
-              </div>
               </div>
 
               {/* BOTÃO DE SUBMIT */}
@@ -270,21 +369,4 @@ export function DashboardRegister(){
       </div>
     </div>
   </div>
-);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
+)}
