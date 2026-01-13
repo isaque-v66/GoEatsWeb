@@ -92,9 +92,14 @@ export function DashboardConfirm() {
                   >
                     <span className="font-medium">{item.item}</span>
 
-                    {item.subcategory && (
+                    {item.subcategories && (
                       <span className="text-sm text-neutral-500">
-                        {item.subcategory}
+                         {item.subcategories.map((sub, idx) => (
+                        <span key={idx}>
+                            {sub.name}
+                            {sub.quantity !== undefined && ` QTD: ${sub.quantity}`}
+                        </span>
+                        ))}
                       </span>
                     )}
                   </div>
