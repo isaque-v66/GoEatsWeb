@@ -47,7 +47,7 @@ export function OrderSummary({ orders, onUpdateQuantity }: OrderSummaryProps) {
             <p className="text-sm">Nenhum item no seu pedido ainda</p>
           </div>
         ) : (
-          <ScrollArea className="h-[400px] pr-4">
+          <ScrollArea className="h-100 pr-4">
             <div className="space-y-3">
               {orders.map((order, index) => (
                 <div key={index} className="p-3 border rounded-lg bg-muted/30 space-y-2">

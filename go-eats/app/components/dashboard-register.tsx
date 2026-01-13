@@ -13,6 +13,12 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import clsx from "clsx"
+import { Router } from "next/router"
+import { useRouter } from "next/navigation"
+import { Header } from "./header"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Switch } from "@/components/ui/switch"
+import { useFormData } from "../contexts/formRegister-context"
 
 
 
@@ -60,6 +66,7 @@ type Subcategory = FoodSubcategory | DrinkSubcategory
 type SelectedItem = {
   item: ItemType
   subcategory?: Subcategory
+  quantity?: number
 }
 
 
@@ -67,28 +74,41 @@ const TypeSchemaForm = z.object({
     email: z.email("Usuário inválido"),
     password: z.string().min(5, "A senha deve conter no mínimo 5 caracteres").max(50, "A senha deve conter no máximo 50 caracteres"),
     cnpj: z.string().refine((cnpj) => cnpj.length === 14, {message: "CNPJ inválido"}),
+    company: z.string(),
     nomeSocial: z.string(),
     
-    items: z.array(z.object({
-            item: z.enum(ITEM_VALUES),
-            subcategory: z.union([
-            z.enum(SUBCATEGORIES_VALUES),
-            z.enum(SUBCATEGORIES_DRINKS),
-    ]).optional(),
+    items: z.array(
+            z.object({
+                item: z.enum(ITEM_VALUES),
+
+                subcategory: z.union([
+                z.enum(SUBCATEGORIES_VALUES),
+                z.enum(SUBCATEGORIES_DRINKS),
+                ]).optional(),
+
+                quantity: z
+                .number()
+                .int()
+                .nonnegative()
+                .optional(),
+            })
+            )
+
   })
-)
-})
 
 
 
-type TypeForm = z.infer<typeof TypeSchemaForm>
+
+export type TypeForm = z.infer<typeof TypeSchemaForm>
 
 
 
 
 
 export function DashboardRegister(){
-
+    const [ativo, setAtivo] = useState<boolean>(false)
+    const {setData} = useFormData()
+    const router = useRouter()
     const {theme} = useTheme()
     const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
     const [isActive, setIsActive] = useState(false)
@@ -98,8 +118,6 @@ export function DashboardRegister(){
             items: [],
   },
     })
-
-
 
     
 
@@ -118,7 +136,7 @@ export function DashboardRegister(){
       updated = [...prev, { item }]
     }
 
-    console.log(updated)
+
     setValue("items", updated)
     return updated
   })
@@ -131,7 +149,20 @@ function setSubcategory(item: ItemType, subcategory: Subcategory) {
   setSelectedItems(prev => {
     const updated = prev.map(i => i.item === item ? { ...i, subcategory } : i)
 
-    console.log("sub: ", updated)
+    
+    setValue("items", updated)
+    return updated
+  })
+}
+
+
+
+function setQuantity(item: ItemType, quantity: number) {
+  setSelectedItems(prev => {
+    const updated = prev.map(i =>
+      i.item === item ? { ...i, quantity } : i
+    )
+
     setValue("items", updated)
     return updated
   })
@@ -145,6 +176,10 @@ function setSubcategory(item: ItemType, subcategory: Subcategory) {
 
     function formHandle(form: TypeForm){
 
+      console.log(form)
+      setData(form)
+      router.replace('/confirm')
+      return form
     }
 
 
@@ -154,63 +189,8 @@ function setSubcategory(item: ItemType, subcategory: Subcategory) {
      
 
 return (
-  <div className={`
-    min-h-screen transition-colors duration-300
-    ${theme === 'dark' 
-      ? 'bg-gradient-to-br from-neutral-950 to-neutral-900' 
-      : 'bg-gradient-to-br from-neutral-50 to-neutral-100'
-    }
-  `}>
-    {/* Header */}
-    <header className={`
-      border-b backdrop-blur-sm shadow-sm transition-colors duration-300
-      ${theme === 'dark'
-        ? 'border-neutral-800 bg-neutral-900/90'
-        : 'border-neutral-200 bg-white/90'
-      }
-    `}>
-      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center shadow-md transition-all duration-300
-            ${theme === 'dark'
-              ? 'bg-gradient-to-br from-orange-600 to-orange-700 shadow-orange-900/30'
-              : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-200'
-            }
-          `}>
-            <Utensils className="w-7 h-7 text-white" />
-          </div>
-          <div>
-            <h1 className={`
-              text-2xl font-bold tracking-tight transition-colors duration-300
-              ${theme === 'dark' ? 'text-white' : 'text-neutral-900'}
-            `}>
-              Go Eats
-            </h1>
-            <p className={`
-              text-sm transition-colors duration-300
-              ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}
-            `}>
-              Sistema de pedidos de comida
-            </p>
-          </div>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className={`
-            rounded-xl px-4 py-2 transition-all duration-200
-            ${theme === 'dark'
-              ? 'text-neutral-300 hover:text-orange-500 hover:bg-orange-500/10'
-              : 'text-neutral-700 hover:text-orange-600 hover:bg-orange-50'
-            }
-          `}
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          Sair
-        </Button>
-      </div>
-    </header>
+  <div>
+  <Header />
 
     {/* FORMULÁRIO */}
     <div className="flex flex-col mt-2">
@@ -259,6 +239,18 @@ return (
 
                   <div className="space-y-2">
                     <Label htmlFor="nomeSocial" className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
+                      Nome da empresa
+                    </Label>
+                    <Input
+                      id="company"
+                      placeholder="ABS Company Plus"
+                      className="w-full h-11 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      {...register("company")}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="nomeSocial" className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
                       Nome Social
                     </Label>
                     <Input
@@ -280,6 +272,55 @@ return (
                       {...register("cnpj")}
                     />
                   </div>
+
+                   
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                            <Label>Este usuário terá quantidade de itens por padrão?</Label>
+                            <Switch 
+                            id="sim-nao-switch" 
+                            checked={ativo} 
+                            onCheckedChange={setAtivo} 
+                            />
+                            <Label htmlFor="sim-nao-switch">
+                            {ativo ? "Sim" : "Não"}
+                            </Label>
+                        </div>
+
+        
+                        {ativo && selectedItems.length > 0 && (
+                        <div className="space-y-4 mt-4">
+                            <Label className="font-semibold">
+                            Quantidade padrão por item (opcional)
+                            </Label>
+
+                            {selectedItems.map(({ item, quantity }) => (
+                            <div
+                                key={item}
+                                className="flex items-center gap-4"
+                            >
+                                <span className="w-40 text-sm font-medium">
+                                {item}
+                                </span>
+
+                                <Input
+                                type="number"
+                                min={0}
+                                placeholder="Quantidade"
+                                value={quantity ?? ""}
+                                onChange={(e) =>
+                                    setQuantity(item, Number(e.target.value))
+                                }
+                                className="w-32"
+                                />
+                            </div>
+                            ))}
+                        </div>
+                        )}
+
+                 </div>
+
+
                 </div>
 
                 {/* COLUNA 2 */}

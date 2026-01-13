@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { ThemeProvider } from "./contexts/theme-context"
 import { ToggleTheme } from "./components/toggleTheme"
+import { FormProvider } from "./contexts/formRegister-context"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -41,10 +42,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         <ThemeProvider>
-
-        {children}
-        <ToggleTheme />
-        <Analytics />
+          <FormProvider>
+            {children}
+            <ToggleTheme />
+            <Analytics />
+          </FormProvider>
         </ThemeProvider>
         
       </body>
