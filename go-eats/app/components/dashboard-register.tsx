@@ -65,7 +65,7 @@ type Subcategory = FoodSubcategory | DrinkSubcategory
 
 type SelectedItem = {
   item: ItemType
-  subcategory?: Subcategory
+  subcategories?: Subcategory[]
   quantity?: number
 }
 
@@ -81,10 +81,12 @@ const TypeSchemaForm = z.object({
             z.object({
                 item: z.enum(ITEM_VALUES),
 
-                subcategory: z.union([
-                z.enum(SUBCATEGORIES_VALUES),
-                z.enum(SUBCATEGORIES_DRINKS),
-                ]).optional(),
+                subcategories: z.array(
+                z.union([
+                    z.enum(SUBCATEGORIES_VALUES),
+                    z.enum(SUBCATEGORIES_DRINKS),
+                ])
+                ).optional(),
 
                 quantity: z
                 .number()
@@ -145,11 +147,23 @@ export function DashboardRegister(){
 
 
 
-function setSubcategory(item: ItemType, subcategory: Subcategory) {
+function toggleSubcategory(item: ItemType, sub: Subcategory) {
   setSelectedItems(prev => {
-    const updated = prev.map(i => i.item === item ? { ...i, subcategory } : i)
+    const updated = prev.map(i => {
+      if (i.item !== item) return i
 
-    
+      const current = i.subcategories ?? []
+
+      const exists = current.includes(sub)
+
+      return {
+        ...i,
+        subcategories: exists
+          ? current.filter(s => s !== sub)
+          : [...current, sub],
+      }
+    })
+
     setValue("items", updated)
     return updated
   })
@@ -287,7 +301,8 @@ return (
                             </Label>
                         </div>
 
-        
+
+                        {/* Opção de quantidade */}        
                         {ativo && selectedItems.length > 0 && (
                         <div className="space-y-4 mt-4">
                             <Label className="font-semibold">
@@ -366,25 +381,27 @@ return (
                                     
                                 </Button>
 
-                                {selected && subcategories && (
-                                    <Select
-                                    value={selected.subcategory}
-                                    onValueChange={(value) =>
-                                        setSubcategory(item, value as Subcategory)
-                                    }
-                                    >
-                                    <SelectTrigger className="mt-2">
-                                        <SelectValue placeholder="Selecione a subcategoria" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {subcategories.map(sub => (
-                                        <SelectItem key={sub} value={sub}>
-                                            {sub}
-                                        </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                    </Select>
+                               {selected && subcategories && (
+                                <div className="mt-3 space-y-2 pl-2">
+                                    {subcategories.map(sub => {
+                                    const checked =
+                                        selected.subcategories?.includes(sub) ?? false
+
+                                    return (
+                                        <div key={sub} className="flex items-center gap-2">
+                                        <Checkbox
+                                            checked={checked}
+                                            onCheckedChange={() =>
+                                            toggleSubcategory(item, sub)
+                                            }
+                                        />
+                                        <span className="text-sm">{sub}</span>
+                                        </div>
+                                    )
+                                    })}
+                                </div>
                                 )}
+
                                 </div>
                             )
                             })}
