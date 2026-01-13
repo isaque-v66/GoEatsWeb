@@ -62,41 +62,53 @@ type DrinkSubcategory = typeof SUBCATEGORIES_DRINKS[number]
 
 type Subcategory = FoodSubcategory | DrinkSubcategory
 
-
-type SelectedItem = {
-  item: ItemType
-  subcategories?: Subcategory[]
+type SelectedSubcategory = {
+  name: Subcategory
   quantity?: number
 }
 
 
+
+type SelectedItem = {
+  item: ItemType
+  subcategories?: SelectedSubcategory[]
+  quantity?: number
+}
+
+
+
+
+// VALIDAÇÃO ZOD
+const SubcategorySchema = z.object({
+  name: z.union([
+    z.enum(SUBCATEGORIES_VALUES),
+    z.enum(SUBCATEGORIES_DRINKS),
+  ]),
+  quantity: z.number().int().nonnegative().optional(),
+})
+
+const ItemSchema = z.object({
+  item: z.enum(ITEM_VALUES),
+  subcategories: z.array(SubcategorySchema).optional(),
+  quantity: z.number().int().nonnegative().optional(),
+}).refine(
+  data =>
+    !(data.subcategories?.length && data.quantity !== undefined),
+  {
+    message: "Itens com subcategoria não podem ter quantidade direta",
+    path: ["quantity"],
+  }
+)
+
 const TypeSchemaForm = z.object({
-    email: z.email("Usuário inválido"),
-    password: z.string().min(5, "A senha deve conter no mínimo 5 caracteres").max(50, "A senha deve conter no máximo 50 caracteres"),
-    cnpj: z.string().refine((cnpj) => cnpj.length === 14, {message: "CNPJ inválido"}),
-    company: z.string(),
-    nomeSocial: z.string(),
-    
-    items: z.array(
-            z.object({
-                item: z.enum(ITEM_VALUES),
+  email: z.email("Email inválido"),
+  password: z.string().min(5).max(50),
+  cnpj: z.string().length(14),
+  company: z.string(),
+  nomeSocial: z.string(),
+  items: z.array(ItemSchema),
+})
 
-                subcategories: z.array(
-                z.union([
-                    z.enum(SUBCATEGORIES_VALUES),
-                    z.enum(SUBCATEGORIES_DRINKS),
-                ])
-                ).optional(),
-
-                quantity: z
-                .number()
-                .int()
-                .nonnegative()
-                .optional(),
-            })
-            )
-
-  })
 
 
 
@@ -153,14 +165,14 @@ function toggleSubcategory(item: ItemType, sub: Subcategory) {
       if (i.item !== item) return i
 
       const current = i.subcategories ?? []
-
-      const exists = current.includes(sub)
+      const exists = current.find(s => s.name === sub)
 
       return {
         ...i,
         subcategories: exists
-          ? current.filter(s => s !== sub)
-          : [...current, sub],
+          ? current.filter(s => s.name !== sub)
+          : [...current, { name: sub }],
+        quantity: undefined, 
       }
     })
 
@@ -168,6 +180,32 @@ function toggleSubcategory(item: ItemType, sub: Subcategory) {
     return updated
   })
 }
+
+
+
+function setSubcategoryQuantity(
+  item: ItemType,
+  sub: Subcategory,
+  quantity: number
+) {
+  setSelectedItems(prev => {
+    const updated = prev.map(i => {
+      if (i.item !== item) return i
+
+      return {
+        ...i,
+        subcategories: i.subcategories?.map(s =>
+          s.name === sub ? { ...s, quantity } : s
+        ),
+      }
+    })
+
+    setValue("items", updated)
+    return updated
+  })
+}
+
+
 
 
 
@@ -381,26 +419,46 @@ return (
                                     
                                 </Button>
 
-                               {selected && subcategories && (
+                              {selected && subcategories && (
                                 <div className="mt-3 space-y-2 pl-2">
                                     {subcategories.map(sub => {
-                                    const checked =
-                                        selected.subcategories?.includes(sub) ?? false
+                                    const selectedSub = selected.subcategories?.find(
+                                        s => s.name === sub
+                                    )
 
                                     return (
-                                        <div key={sub} className="flex items-center gap-2">
+                                        <div key={sub} className="flex items-center gap-3">
                                         <Checkbox
-                                            checked={checked}
+                                            checked={!!selectedSub}
                                             onCheckedChange={() =>
                                             toggleSubcategory(item, sub)
                                             }
                                         />
-                                        <span className="text-sm">{sub}</span>
+
+                                        <span className="text-sm w-32">{sub}</span>
+
+                                        {ativo && selectedSub && (
+                                            <Input
+                                            type="number"
+                                            min={0}
+                                            className="w-24"
+                                            placeholder="Qtd"
+                                            value={selectedSub.quantity ?? ""}
+                                            onChange={e =>
+                                                setSubcategoryQuantity(
+                                                item,
+                                                sub,
+                                                Number(e.target.value)
+                                                )
+                                            }
+                                            />
+                                        )}
                                         </div>
                                     )
                                     })}
                                 </div>
                                 )}
+
 
                                 </div>
                             )
