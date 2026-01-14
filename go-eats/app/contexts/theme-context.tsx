@@ -29,7 +29,7 @@ export function ThemeProvider({children}: {children: React.ReactNode}) {
     }, [])
 
 
-  // Aplicar no document o tema
+ 
     useEffect(() => {
         const html = document.documentElement
 
