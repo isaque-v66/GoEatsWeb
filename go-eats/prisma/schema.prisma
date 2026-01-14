@@ -9,114 +9,167 @@ datasource db {
 }
 
 
-model User {
-  id           String   @id @default(uuid())
-  
-  
-  email        String   @unique
-  passwordHash String
 
 
-  companyId    String
-  company      Company @relation(fields: [companyId], references: [id])
-  
+model User { 
+  id            String @id @default(uuid()) 
+  email         String @unique 
+  passwordHash  String 
 
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  companyId     String 
+  company       Company @relation(fields: [companyId], references: [id]) 
+
+  itemConfigs   UserItemConfig[]
+  orders        Order[]
+
+  isActive      Boolean  @default(true) 
+  createdAt     DateTime @default(now()) 
+  updatedAt     DateTime @updatedAt 
 
   @@index([companyId])
-  @@map("users")
+  @@map("users") 
 }
 
 
 
 
-enum MealType {
-  DESJEJUM
-  ALMOCO
-  JANTAR
-  CEIA
-  LANCHE
-  CAFE_DA_TARDE
-  CAFE_NOTURNO
-  COMPLEMENTO
+
+
+model Company { 
+  id          String @id @default(uuid()) 
+  cnpj        String @unique 
+  socialName  String 
+
+  users       User[] 
+  orders      Order[] 
+  isActive    Boolean @default(true) 
+
+  createdAt   DateTime @default(now()) 
+  updatedAt   DateTime @updatedAt 
+  @@map("companies") 
+  }
+
+
+
+model Item {
+  id            String   @id @default(uuid())
+  name          String   @unique
+
+  subcategories Subcategory[]
+  configs       UserItemConfig[]
+  orderItems    OrderItem[]
+
+  createdAt     DateTime @default(now())
 }
 
 
 
-enum ItemCategory {
-  GRANEL
-  MTX8
-  MTX9
-  DIVISIONAL
-  BEBIDA
+
+
+model Subcategory {
+  id      String @id @default(uuid())
+  name    String
+
+  itemId  String
+  item    Item @relation(fields: [itemId], references: [id])
+
+  configs     UserSubcategoryConfig[]
+  orderItems OrderItem[]
+
+  @@unique([name, itemId])
 }
 
 
 
 
-model Company {
-  id          String @id @default(uuid())
-  cnpj        String @unique
-  socialName  String
 
-  users       User[]
-  orders      Order[]
+model UserItemConfig {
+  id        String @id @default(uuid())
+
+  userId    String
+  user      User   @relation(fields: [userId], references: [id])
+
+  itemId    String
+  item      Item   @relation(fields: [itemId], references: [id])
+
+  defaultQuantity Int?
+
+  subcategories UserSubcategoryConfig[]
+
+  @@unique([userId, itemId])
+  @@index([userId])
+  @@index([itemId])
+}
 
 
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 
-  @@map("companies")
+
+
+model UserSubcategoryConfig {
+  id            String @id @default(uuid())
+
+  userItemId    String
+  userItem      UserItemConfig @relation(fields: [userItemId], references: [id])
+
+  subcategoryId String
+  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
+
+  defaultQuantity Int?
+
+  @@unique([userItemId, subcategoryId])
+  @@index([userItemId])
+  @@index([subcategoryId])
 }
 
 
 
 
 model Order {
-  id        String  @id @default(uuid())
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 
   companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  company   Company  @relation(fields: [companyId], references: [id])
 
   date      DateTime
   comments  String?
 
-  items     MealItem[]
+  items     OrderItem[]
 
-  createAt  DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 
   @@unique([companyId, date])
   @@index([companyId])
-  @@map("orders")
 }
 
 
 
-//Itens Pedido
-model MealItem {
-
-  id           String @id @default(uuid())
-
-  orderId      String
-  order        Order @relation(fields: [orderId], references: [id])
-
-  mealType    MealType
-  category    ItemCategory
-
-  description String?
-  quantity    Float
-
-  createdAt   DateTime @default(now())
 
 
+
+model OrderItem {
+  id            String @id @default(uuid())
+
+  orderId       String
+  order         Order  @relation(fields: [orderId], references: [id])
+
+  itemId        String
+  item          Item   @relation(fields: [itemId], references: [id])
+
+  subcategoryId String?
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+
+  quantity      Int
+  customText    String?
+
+  createdAt     DateTime @default(now())
   @@index([orderId])
-  @@map("meal_items")
-
+  @@index([itemId])
+  @@index([subcategoryId])
 }
+
 
 
 

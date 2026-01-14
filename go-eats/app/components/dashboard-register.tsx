@@ -125,8 +125,7 @@ export function DashboardRegister(){
     const router = useRouter()
     const {theme} = useTheme()
     const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
-    const [isActive, setIsActive] = useState(false)
-    const {register, handleSubmit, control, setValue} = useForm({
+    const {register, handleSubmit, setValue} = useForm({
         resolver: zodResolver(TypeSchemaForm) ,
         defaultValues: {
             items: [],
@@ -162,17 +161,16 @@ export function DashboardRegister(){
 function toggleSubcategory(item: ItemType, sub: Subcategory) {
   setSelectedItems(prev => {
     const updated = prev.map(i => {
-      if (i.item !== item) return i
+      if (i.item !== item) {
+        return i
+      }
 
       const current = i.subcategories ?? []
       const exists = current.find(s => s.name === sub)
 
       return {
         ...i,
-        subcategories: exists
-          ? current.filter(s => s.name !== sub)
-          : [...current, { name: sub }],
-        quantity: undefined, 
+        subcategories: exists ? current.filter(s => s.name !== sub) : [...current, { name: sub }], quantity: undefined, 
       }
     })
 
@@ -183,19 +181,14 @@ function toggleSubcategory(item: ItemType, sub: Subcategory) {
 
 
 
-function setSubcategoryQuantity(
-  item: ItemType,
-  sub: Subcategory,
-  quantity: number
-) {
+function setSubcategoryQuantity(item: ItemType, sub: Subcategory, quantity: number) {
   setSelectedItems(prev => {
     const updated = prev.map(i => {
       if (i.item !== item) return i
 
       return {
         ...i,
-        subcategories: i.subcategories?.map(s =>
-          s.name === sub ? { ...s, quantity } : s
+        subcategories: i.subcategories?.map(s => s.name === sub ? { ...s, quantity } : s
         ),
       }
     })
@@ -347,27 +340,25 @@ return (
                             Quantidade padrão por item (opcional)
                             </Label>
 
-                            {selectedItems.map(({ item, quantity }) => (
-                            <div
-                                key={item}
-                                className="flex items-center gap-4"
-                            >
-                                <span className="w-40 text-sm font-medium">
-                                {item}
-                                </span>
+                           {selectedItems.filter(i => !ITEMS_WITH_SUBCATEGORY.includes(i.item))
+                            .map(({ item, quantity }) => (
+                                <div key={item} className="flex items-center gap-4">
+                                <span className="w-40 text-sm font-medium">{item}</span>
 
                                 <Input
-                                type="number"
-                                min={0}
-                                placeholder="Quantidade"
-                                value={quantity ?? ""}
-                                onChange={(e) =>
+                                    type="number"
+                                    min={0}
+                                    placeholder="Quantidade"
+                                    value={quantity ?? ""}
+                                    onChange={e =>
                                     setQuantity(item, Number(e.target.value))
-                                }
-                                className="w-32"
+                                    }
+                                    className="w-32"
                                 />
-                            </div>
+                                </div>
                             ))}
+
+                               
                         </div>
                         )}
 

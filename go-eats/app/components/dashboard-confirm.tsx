@@ -9,8 +9,11 @@ import { Header } from "./header"
 import { CheckCircle, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { TypeForm } from "./dashboard-register"
+import { useState } from "react"
 
 export function DashboardConfirm() {
+  const [loading, setLoading] = useState<Boolean>(false)
+  const [success, setSuccess] = useState<Boolean>(false)
   const { theme } = useTheme()
   const { data } = useFormData()
   const router = useRouter()
@@ -19,9 +22,80 @@ export function DashboardConfirm() {
 
 
 
-  function sendForm(data: TypeForm) {
+  async function sendForm(data: TypeForm) {
+     try {
+        setLoading(true)
+        setSuccess(false)
+
+
+        const payload = {
+            user: {
+                email: data.email,
+                password: data.password,
+            },
+            company: {
+                cnpj: data.cnpj,
+                socialName: data.nomeSocial,
+            },
+            items: data.items.map(item => ({
+                name: item.item,
+                defaultQuantity: item.quantity,
+                subcategories: item.subcategories?.map(sub => ({
+                name: sub.name,
+                defaultQuantity: sub.quantity
+                }))
+            }))
+            }
+
+
+
+
+            const req = await fetch('/api/registerUser', {
+                method: "POST",
+                headers: {'Content-type': 'application/json'},
+                body: JSON.stringify(payload)
+            })
+
+
+            if(!req.ok) {
+                throw new Error("Erro na requisição de registro à API")
+            }
+
+
+        console.log("Usuário registrado com sucesso")
+        setSuccess(true)
+
+
+
+     } catch(err) {
+        console.log(err)
+        throw new Error("Erro ao entrar em contato com a API para registro")
+
+     } finally {
+        setLoading(false)
+        setSuccess(false)
+     }
 
   }
+
+
+
+
+  if(loading) {
+    <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-center gap-2">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary" />
+            <span>Carregando...</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center text-muted-foreground">
+          Processando seu registro
+        </CardContent>
+      </Card>
+  }
+
+
 
 
 
@@ -97,7 +171,7 @@ export function DashboardConfirm() {
                          {item.subcategories.map((sub, idx) => (
                         <span key={idx}>
                             {sub.name}
-                            {sub.quantity !== undefined && ` QTD: ${sub.quantity}`}
+                            {sub.quantity !== undefined && ` QTD: ${sub.quantity} | `}
                         </span>
                         ))}
                       </span>
