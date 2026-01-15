@@ -142,10 +142,9 @@ export function DashboardRegister(){
     let updated: SelectedItem[]
 
     if (exists) {
-     
       updated = prev.filter(i => i.item !== item)
+
     } else {
-      
       updated = [...prev, { item }]
     }
 
