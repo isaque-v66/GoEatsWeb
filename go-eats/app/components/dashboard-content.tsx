@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Utensils, LogOut, Coffee, Sandwich, Pizza, Cookie, Plus, ShoppingCart } from "lucide-react"
+import { Utensils, LogOut, Coffee, Sandwich, Pizza, Cookie, Plus, ShoppingCart, Soup, Moon, Beef, GlassWater, Cake } from "lucide-react"
 import { OrderSummary } from "./order-summary"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "../contexts/theme-context"
@@ -323,10 +323,18 @@ export function DashboardContent() {
                                                 : 'bg-gradient-to-br from-orange-500/10 to-orange-600/10 border-orange-100'
                                             }
                                         `}>
-                                            {/* <category.icon className={`
-                                                w-6 h-6 transition-colors duration-300
-                                                ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}
-                                            `} /> */}
+                                            {itemName === "Desjejum" && (<Coffee className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+                                            {itemName === "Almoço" && (<Beef className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+                                            {itemName === "Jantar" && (<Moon className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+                                            {itemName === "Ceia" && (<Utensils className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+                                            {itemName === "Lanche" && (<Sandwich className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+                                            {itemName === "Bebidas" && (<GlassWater className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+                                            {itemName === "Café da tarde" && (<Cake className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+                                            {itemName === "Café noturno" && (<Coffee className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+                                            {itemName === "Outros" && (<Plus className={`w-6 h-6 transition-colors duration-300 ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}`} />)}
+
+
+
                                         </div>
                                         <div>
                                             <CardTitle className={`
@@ -380,7 +388,56 @@ export function DashboardContent() {
                                                 </Button>
                                             ))}
                                         </div>
-                                    ) : (
+                                    ) : itemName === "Outros" ? (
+                                        <div className="flex gap-3">
+                                            <Input
+                                            placeholder="Descreva seu pedido personalizado..."
+                                            value={customOtherText}
+                                            onChange={(e) => setCustomOtherText(e.target.value)}
+                                            className={`
+                                                h-12 rounded-xl border px-4 flex-1
+                                                transition-all duration-200
+                                                placeholder-neutral-400
+                                                focus:ring-3 focus:outline-none focus:shadow-sm
+                                                ${theme === 'dark'
+                                                ? 'bg-neutral-800 border-neutral-700 text-white ' +
+                                                    'focus:border-orange-500 focus:ring-orange-500/20 ' +
+                                                    'hover:border-neutral-600'
+                                                : 'bg-white border-neutral-200 text-neutral-900 ' +
+                                                    'focus:border-orange-500 focus:ring-orange-500/20 ' +
+                                                    'hover:border-neutral-300'
+                                                }
+                                            `}
+                                            />
+                                            <Button
+                                            onClick={() => {
+                                                if (customOtherText.trim()) {
+                                                addOrder("Outros", undefined, customOtherText)
+                                                setCustomOtherText("")
+                                                }
+                                            }}
+                                            disabled={!customOtherText.trim()}
+                                            className={`
+                                                h-12 px-6 rounded-xl font-medium
+                                                transition-all duration-300
+                                                hover:shadow-lg active:scale-[0.98]
+                                                focus:outline-none focus:ring-3
+                                                disabled:opacity-50 disabled:cursor-not-allowed
+                                                ${theme === 'dark'
+                                                ? 'bg-gradient-to-r from-orange-600 to-orange-700 ' +
+                                                    'text-white hover:from-orange-700 hover:to-orange-800 ' +
+                                                    'hover:shadow-orange-900/30 focus:ring-orange-600/40'
+                                                : 'bg-gradient-to-r from-orange-500 to-orange-600 ' +
+                                                    'text-white hover:from-orange-600 hover:to-orange-700 ' +
+                                                    'hover:shadow-orange-200 focus:ring-orange-500/40'
+                                                }
+                                            `}
+                                            >
+                                            <Plus className="w-4 h-4 mr-2" />
+                                            Adicione
+                                            </Button>
+                                        </div>
+                                        ) :  (
                                         <Button
                                             variant="outline"
                                             className={`
@@ -398,108 +455,9 @@ export function DashboardContent() {
                                     )}
                                 </CardContent>
                             </Card>
-                        ))}
-
-                        {/* Others */}
-                        <Card className={`
-                            overflow-hidden rounded-2xl transition-all duration-300
-                            ${theme === 'dark'
-                                ? 'border border-neutral-800 bg-neutral-900 shadow-black/40'
-                                : 'border border-neutral-200 bg-white shadow-md shadow-neutral-100/50'
-                            }
-                        `}>
-                            <CardHeader className={`
-                                pb-4 transition-colors duration-300
-                                ${theme === 'dark'
-                                    ? 'bg-gradient-to-r from-neutral-900 to-neutral-800'
-                                    : 'bg-gradient-to-r from-neutral-50 to-white'
-                                }
-                            `}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`
-                                        w-12 h-12 rounded-xl flex items-center justify-center border transition-colors duration-300
-                                        ${theme === 'dark'
-                                            ? 'bg-gradient-to-br from-orange-600/20 to-orange-700/20 border-orange-800'
-                                            : 'bg-gradient-to-br from-orange-500/10 to-orange-600/10 border-orange-100'
-                                        }
-                                    `}>
-                                        <Utensils className={`
-                                            w-6 h-6 transition-colors duration-300
-                                            ${theme === 'dark' ? 'text-orange-500' : 'text-orange-600'}
-                                        `} />
-                                    </div>
-                                    <div>
-                                        <CardTitle className={`
-                                            text-xl font-semibold transition-colors duration-300
-                                            ${theme === 'dark' ? 'text-white' : 'text-neutral-900'}
-                                        `}>
-                                            Outros
-                                        </CardTitle>
-                                        <CardDescription className={`
-                                            transition-colors duration-300
-                                            ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}
-                                        `}>
-                                            Especifique seu pedido personalizado
-                                        </CardDescription>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="pt-4 pb-6">
-                                <div className="flex gap-3">
-                                    <Input
-                                        placeholder="Enter custom order..."
-                                        value={customOtherText}
-                                        onChange={(e) => setCustomOtherText(e.target.value)}
-                                        className={`
-                                            h-12 rounded-xl border px-4
-                                            transition-all duration-200
-                                            placeholder-neutral-400
-                                            focus:ring-3 focus:outline-none focus:shadow-sm
-                                            ${theme === 'dark'
-                                                ? 'bg-neutral-800 border-neutral-700 text-white ' +
-                                                'focus:border-orange-500 focus:ring-orange-500/20 ' +
-                                                'hover:border-neutral-600'
-                                                : 'bg-white border-neutral-200 text-neutral-900 ' +
-                                                'focus:border-orange-500 focus:ring-orange-500/20 ' +
-                                                'hover:border-neutral-300'
-                                            }
-                                        `}
-                                    />
-                                    <Button
-                                        onClick={() => {
-                                            if (customOtherText.trim()) {
-                                                addOrder("Outros", undefined, customOtherText)
-                                                setCustomOtherText("")
-                                            }
-                                        }}
-                                        disabled={!customOtherText.trim()}
-                                        className={`
-                                            h-12 px-6 rounded-xl font-medium
-                                            transition-all duration-300
-                                            hover:shadow-lg active:scale-[0.98]
-                                            focus:outline-none focus:ring-3
-                                            disabled:opacity-50 disabled:cursor-not-allowed
-                                            ${theme === 'dark'
-                                                ? 'bg-gradient-to-r from-orange-600 to-orange-700 ' +
-                                                'text-white hover:from-orange-700 hover:to-orange-800 ' +
-                                                'hover:shadow-orange-900/30 focus:ring-orange-600/40'
-                                                : 'bg-gradient-to-r from-orange-500 to-orange-600 ' +
-                                                'text-white hover:from-orange-600 hover:to-orange-700 ' +
-                                                'hover:shadow-orange-200 focus:ring-orange-500/40'
-                                            }
-                                        `}
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Adicione
-                                    </Button>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        ))}                       
                     </div>
                 </div>
-
-
-
 
 
 
@@ -516,7 +474,7 @@ export function DashboardContent() {
                             <OrderSummary orders={orders} onUpdateQuantity={updateQuantity} />
                         </div>
                         
-                        {/* Action Button */}
+                        
                         <Button
                             className={`
                                 w-full mt-6 h-14 rounded-xl font-semibold text-lg
