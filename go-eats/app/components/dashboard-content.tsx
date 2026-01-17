@@ -25,9 +25,10 @@ const ITEM_VALUES = [
   "Bebidas",
   "Café da tarde",
   "Café noturno",
+  "Outros"
 ] as const
 
-type ItemType = (typeof ITEM_VALUES)[number]
+export type ItemType = (typeof ITEM_VALUES)[number]
 
 const FOOD_SUBCATEGORIES = [
   "Granel",
@@ -47,7 +48,7 @@ const DRINK_SUBCATEGORIES = [
 
 type DrinkSubcategory = (typeof DRINK_SUBCATEGORIES)[number]
 
-type SubcategoryType = FoodSubcategory | DrinkSubcategory
+export type SubcategoryType = FoodSubcategory | DrinkSubcategory
 
 
 const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar"]
@@ -64,13 +65,13 @@ const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar"]
 
 
 
-
-
-
 // SCHEMA ZOD
 
 const SubcategorySchema = z.object({
-  name: z.string(),
+   name: z.union([
+    z.enum(FOOD_SUBCATEGORIES),
+    z.enum(DRINK_SUBCATEGORIES),
+  ]),
   quantity: z.number().int().positive(),
 })
 
@@ -92,7 +93,7 @@ const OrderSchema = z.object({
 
 
 
-type Order = z.infer<typeof OrderSchema>
+export type Order = z.infer<typeof OrderSchema>
 type OrderItem = z.infer<typeof OrderItemSchema>
 
 
@@ -100,7 +101,7 @@ type OrderItem = z.infer<typeof OrderItemSchema>
 
 
 export function DashboardContent() {
-  const [orders, setOrders] = useState<OrderItem[]>([])
+  const [orders, setOrders] = useState<Order>({items: []})
   const [customOtherText, setCustomOtherText] = useState("")
   const {theme, toggleTheme} = useTheme()
   const {data, setData, clearData} = useFormData()
@@ -112,9 +113,76 @@ export function DashboardContent() {
 
 
 
-  const addOrder = (category: string, subcategory?: string | null, customText?: string | null) => {
+  const addOrder = (item: ItemType, subcategory?: SubcategoryType, customText?: string) => {
+    
+    setOrders(prev => {
+        const items = [...prev.items]
 
-   
+        const itemIndex = items.findIndex(i => i.item === item)
+
+
+        //Se o item não existe
+       if(itemIndex <= -1) {
+        items.push({
+            item,
+            subcategories: subcategory ? [{name: subcategory, quantity: 1}] : undefined,
+            quantity: subcategory ? undefined : 1
+        })
+
+        return {...prev, items}
+       }
+
+
+
+
+       //Itens sem subcategoria
+
+       const currentItem = items[itemIndex]
+
+
+       if(!subcategory) {
+         items.push({
+            ...currentItem,
+            quantity: (currentItem.quantity ?? 0) + 1
+            
+         })
+
+         return {...prev, items}
+
+       }
+     
+
+
+
+       //Item com subcategoria
+
+        const subcategories = [...(currentItem.subcategories ?? [])]
+
+        const subIndex = subcategories.findIndex(
+        s => s.name === subcategory
+        )
+
+        if (subIndex === -1) {
+        subcategories.push({
+            name: subcategory,
+            quantity: 1,
+        })
+        } else {
+        subcategories[subIndex] = {
+            ...subcategories[subIndex],
+            quantity: subcategories[subIndex].quantity + 1,
+        }
+        }
+
+        items[itemIndex] = {
+        ...currentItem,
+        subcategories,
+        }
+
+        return { ...prev, items }
+
+
+    })
 
 
 
@@ -124,18 +192,78 @@ export function DashboardContent() {
 
 
 
-  const updateQuantity = (index: number, delta: number) => {
-  
+ const updateQuantity = (item: ItemType, delta: number, subcategory?: SubcategoryType) => {
+  setOrders(prev => {
+    const items = [...prev.items]
+    const itemIndex = items.findIndex(i => i.item === item)
+
+    // ITEM NÃO EXISTE : CRIA
+    if (itemIndex === -1) {
+      if (subcategory) {
+        items.push({
+          item,
+          subcategories: [{ name: subcategory, quantity: 1 }],
+        })
+      } else {
+        items.push({
+          item,
+          quantity: 1,
+        })
+      }
+
+      return { ...prev, items }
+    }
+
+    const currentItem = items[itemIndex]
 
 
 
-  }
 
+    // ITEM SEM SUBCATEGORIA
+    if (!subcategory) {
+      const newQty = (currentItem.quantity ?? 0) + delta
 
+      if (newQty <= 0) {
+        items.splice(itemIndex, 1)
+      } else {
+        items[itemIndex] = {
+          ...currentItem,
+          quantity: newQty,
+        }
+      }
 
+      return { ...prev, items }
+    }
 
+    // ITEM COM SUBCATEGORIA
+    const subs = currentItem.subcategories ?? []
+    const subIndex = subs.findIndex(s => s.name === subcategory)
 
+    if (subIndex === -1 && delta > 0) {
+      subs.push({ name: subcategory, quantity: 1 })
+    } else if (subIndex !== -1) {
+      const newQty = subs[subIndex].quantity + delta
 
+      if (newQty <= 0) {
+        subs.splice(subIndex, 1)
+      } else {
+        subs[subIndex].quantity = newQty
+      }
+    }
+
+    // Se não sobrou nenhuma subcategoria, remove o item
+    if (subs.length === 0) {
+      items.splice(itemIndex, 1)
+    } else {
+      items[itemIndex] = {
+        ...currentItem,
+        subcategories: subs,
+      }
+    }
+
+    return { ...prev, items }
+  })
+}
 
 
 
@@ -340,7 +468,7 @@ export function DashboardContent() {
                                     <Button
                                         onClick={() => {
                                             if (customOtherText.trim()) {
-                                                addOrder("Others", undefined, customOtherText)
+                                                addOrder("Outros", undefined, customOtherText)
                                                 setCustomOtherText("")
                                             }
                                         }}
@@ -370,6 +498,11 @@ export function DashboardContent() {
                     </div>
                 </div>
 
+
+
+
+
+
                 {/* Order Summary */}
                 <div className="lg:col-span-1">
                     <div className="sticky top-6">
@@ -380,7 +513,7 @@ export function DashboardContent() {
                                 : 'border border-neutral-200 bg-white shadow-neutral-200/50'
                             }
                         `}>
-                            {/* <OrderSummary orders={orders} onUpdateQuantity={updateQuantity} /> */}
+                            <OrderSummary orders={orders} onUpdateQuantity={updateQuantity} />
                         </div>
                         
                         {/* Action Button */}
@@ -400,7 +533,7 @@ export function DashboardContent() {
                                 }
                             `}
                             onClick={() => console.log('Order placed!')}
-                            disabled={orders.length === 0}
+                            disabled={orders.items.length === 0}
                         >
                             <ShoppingCart className="w-5 h-5 mr-3" />
                             Fazer Pedido
