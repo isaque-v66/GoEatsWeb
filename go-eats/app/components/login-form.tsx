@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import toast from "react-hot-toast"
+import { useUser } from "../contexts/user-context"
 
 
 
@@ -27,9 +28,10 @@ type LoginDataType = z.infer<typeof LoginSchema>
 
 export function LoginForm() {
   const router = useRouter()
+  const {user, setUser} = useUser()
   const {theme, toggleTheme} = useTheme()
   const [loading, setLoading] = useState(false)
-  const {register, handleSubmit, formState: {errors}} = useForm<LoginDataType>({
+  const {register, handleSubmit, formState: {errors}, setError} = useForm<LoginDataType>({
     resolver: zodResolver(LoginSchema)
   })
 
@@ -39,7 +41,7 @@ export function LoginForm() {
     setLoading(true)
 
     try{
-        const response = await fetch('/api/Login', {
+        const response = await fetch('/api/login', {
             method: 'POST',
             headers: {'Content-type': 'application/json'},
             body: JSON.stringify({
@@ -52,14 +54,36 @@ export function LoginForm() {
         const data = await response.json()
 
         if(!response.ok){
+
+            if(response.status === 404){
+                setError("email", {
+                  type: "server",
+                  message: data.message
+                })
+                return
+            }
+
+            if(response.status === 401) {
+                setError("password", {
+                    type: "server",
+                    message: data.message
+                })
+            }
+
             const errorMessage = data.message || "Erro ao realizar a requisição à API"
             console.log("Erro ao realizar a requisição à API")
             throw new Error(errorMessage)
         }
 
+        
+        setUser({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email
+            })
 
-        console.log("Login feito com sucesso")
         router.replace('/dashboard')
+
 
     } catch(err) {
 

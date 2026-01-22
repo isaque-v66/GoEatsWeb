@@ -13,10 +13,59 @@ export async function POST(req: Request) {
       )
     }
 
+    if (!user.email || !user.password) {
+      return NextResponse.json(
+        { error: "Email e senha são obrigatórios" },
+        { status: 400 }
+      )
+    }
+
+
+    for (const item of items) {
+  if (!item.name || !item.mealType) {
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Todos os itens devem possuir name e mealType",
+        item,
+      },
+      { status: 400 }
+    )
+  }
+
+  if (item.subcategories?.length) {
+    for (const sub of item.subcategories) {
+      if (!sub.name) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Subcategoria inválida",
+            sub,
+          },
+          { status: 400 }
+        )
+      }
+    }
+  }
+}
+
+
     
     const passwordHash = await bcrypt.hash(user.password, 10)
 
     const result = await prisma.$transaction(async tx => {
+
+      const existingUser = await tx.user.findUnique({
+        where: { email: user.email },
+      })
+
+      if (existingUser) {
+        throw new Error("USER_ALREADY_EXISTS")
+      }
+
+
+
+
       // COMPANY
       const createdCompany = await tx.company.upsert({
         where: { cnpj: company.cnpj },
@@ -44,11 +93,20 @@ export async function POST(req: Request) {
 
       // ITENS
       for (const item of items) {
+
         const dbItem = await tx.item.upsert({
-          where: { name: item.name },
-          update: {},
-          create: { name: item.name },
-        })
+        where: {
+          name_mealType: {
+            name: item.name,
+            mealType: item.mealType,
+          },
+        },
+        update: {},
+        create: {
+          name: item.name,
+          mealType: item.mealType,
+        },
+      })
 
         const userItemConfig = await tx.userItemConfig.create({
           data: {
@@ -63,17 +121,18 @@ export async function POST(req: Request) {
           for (const sub of item.subcategories) {
             const dbSubcategory = await tx.subcategory.upsert({
               where: {
-                name_itemId: {
+                name_mealType: {
                   name: sub.name,
-                  itemId: dbItem.id,
+                  mealType: item.mealType,
                 },
               },
               update: {},
               create: {
                 name: sub.name,
-                itemId: dbItem.id,
+                mealType: item.mealType,
               },
             })
+
 
             await tx.userSubcategoryConfig.create({
               data: {
@@ -96,9 +155,26 @@ export async function POST(req: Request) {
 
   } catch (err) {
     console.error(err)
+
+    if (err instanceof Error) {
+    if (err.message === "USER_ALREADY_EXISTS") {
+      return NextResponse.json(
+        { success: false, message: "Usuário já existe" },
+        { status: 409 }
+      )
+    }
+
+    if (err.message === "ITEM_WITHOUT_MEALTYPE") {
+      return NextResponse.json(
+        { success: false, message: "Item sem mealType" },
+        { status: 400 }
+      )
+    }
+
+
     return NextResponse.json(
       { error: "Erro interno ao registrar usuário" },
       { status: 500 }
     )
   }
-}
+  }}

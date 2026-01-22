@@ -6,10 +6,24 @@ import { Label } from "@/components/ui/label"
 import { useTheme } from "../contexts/theme-context"
 import { useFormData } from "../contexts/formRegister-context"
 import { Header } from "./header"
-import { CheckCircle, ArrowLeft, ArrowRight, CheckCheck, PartyPopper, Loader2 } from "lucide-react"
+import { CheckCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { TypeForm } from "./dashboard-register"
 import { useEffect, useState } from "react"
+
+
+
+const ITEM_TO_MEAL = {
+  "Desjejum": "DESJEJUM",
+  "Almoço": "ALMOCO",
+  "Jantar": "JANTAR",
+  "Ceia": "CEIA",
+  "Lanche": "LANCHE",
+  "Bebidas": "BEBIDAS",
+  "Café da tarde": "CAFE_TARDE",
+  "Café noturno": "CAFE_NOTURNO",
+} as const
+
 
 export function DashboardConfirm() {
   const [loading, setLoading] = useState<boolean>(false)  
@@ -21,55 +35,77 @@ export function DashboardConfirm() {
   const isDark = theme === "dark"
 
 
-
-
-  async function sendForm(data: TypeForm) {
-    try {
-      setLoading(true)
-      setSuccess(false)
-
-      const payload = {
-        user: {
-          email: data.email,
-          password: data.password,
-        },
-        company: {
-          cnpj: data.cnpj,
-          socialName: data.nomeSocial,
-        },
-        items: data.items.map(item => ({
-          name: item.item,
-          defaultQuantity: item.quantity,
-          subcategories: item.subcategories?.map(sub => ({
-            name: sub.name,
-            defaultQuantity: sub.quantity
-          }))
-        }))
-      }
-
-      const req = await fetch('/api/registerUser', {
-        method: "POST",
-        headers: {'Content-type': 'application/json'},
-        body: JSON.stringify(payload)
-      })
-
-      if(!req.ok) {
-        throw new Error("Erro na requisição de registro à API")
-      }
-
-      console.log("Usuário registrado com sucesso")
-      setSuccess(true)  
-      clearData()
-
-    } catch(err) {
-      console.error(err)
-      alert("Erro ao registrar. Tente novamente.")
-     
-    } finally {
-      setLoading(false)
-      
+  useEffect(() => {
+    if (!data) {
+      router.replace("/dashboardRegister")
     }
+  }, [data, router])
+
+  if (!data) {
+    return null
   }
+
+
+
+ async function sendForm(data: TypeForm) {
+  if (loading) return
+
+  try {
+    setLoading(true)
+    setSuccess(false)
+
+    const payload = {
+      user: {
+        email: data.email,
+        password: data.password,
+      },
+      company: {
+        cnpj: data.cnpj,
+        socialName: data.nomeSocial,
+      },
+      items: data.items.map(item => ({
+      name: item.item,
+      mealType: ITEM_TO_MEAL[item.item],
+
+     
+      defaultQuantity: item.subcategories?.length
+        ? null
+        : item.quantity ?? null,
+
+      subcategories: item.subcategories?.map(sub => ({
+        name: sub.name,
+        defaultQuantity: sub.quantity ?? null,
+      })) ?? [],
+    })),
+
+    }
+
+    const req = await fetch("/api/registerUser", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+
+    const res = await req.json()
+
+    if (!req.ok) {
+      throw new Error(res?.message || "Erro ao registrar usuário")
+    }
+
+    setSuccess(true)
+    
+  } catch (err) {
+    alert(
+      err instanceof Error
+        ? err.message
+        : "Erro inesperado ao registrar"
+    )
+  } finally {
+    setLoading(false)
+  }
+}
+
+
 
   
   if(loading) {
@@ -106,7 +142,7 @@ export function DashboardConfirm() {
           </CardHeader>
 
           <CardContent className="space-y-8">
-            {/* MOSTRA CARD DE SUCESSO OU FORMULÁRIO */}
+           
             {success ? (
              
               <div className="animate-in fade-in-50 slide-in-from-top-5 duration-300">
@@ -123,7 +159,8 @@ export function DashboardConfirm() {
                         <Button
                           variant="outline"
                           className="flex-1"
-                          onClick={() => router.replace('/dashboardRegister')}
+                          onClick={() => {clearData() 
+                            router.replace('/dashboardRegister')}}
                         >
                           <ArrowLeft className="mr-2 h-4 w-4" />
                           Voltar
@@ -131,9 +168,10 @@ export function DashboardConfirm() {
                         
                         <Button 
                           className="flex-1 bg-green-600 hover:bg-green-700"
-                          onClick={() => router.push('/dashboard')}
+                          onClick={() => { clearData()
+                            router.push('/login')}}
                         >
-                          Ir para Dashboard
+                          Ir para página de Login
                           <ArrowRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>

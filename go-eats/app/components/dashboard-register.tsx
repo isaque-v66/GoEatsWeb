@@ -1,19 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Utensils, LogOut, Coffee, Sandwich, Pizza, Cookie, Plus, ShoppingCart, Check } from "lucide-react"
-import { OrderSummary } from "./order-summary"
+import { Plus, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Controller, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { useTheme } from "../contexts/theme-context"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import clsx from "clsx"
-import { Router } from "next/router"
 import { useRouter } from "next/navigation"
 import { Header } from "./header"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -26,6 +23,7 @@ import { useFormData } from "../contexts/formRegister-context"
 const ITEM_VALUES = [
   "Desjejum",
   "Almoço",
+  'Jantar',
   "Ceia",
   "Lanche",
   "Bebidas",
@@ -53,7 +51,21 @@ const SUBCATEGORIES_DRINKS = [
 ] as const
 
 
-const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia"]
+
+const MEAL_TYPE_MAP = {
+  "Desjejum": "DESJEJUM",
+  "Almoço": "ALMOCO",
+  "Jantar": "JANTAR",
+  "Ceia": "CEIA",
+  "Lanche": "LANCHE",
+  "Bebidas": "BEBIDAS",
+  "Café da tarde": "CAFE_TARDE",
+  "Café noturno": "CAFE_NOTURNO",
+} as const
+
+
+
+const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar"]
 
 
 
@@ -103,7 +115,10 @@ const ItemSchema = z.object({
 const TypeSchemaForm = z.object({
   email: z.email("Email inválido"),
   password: z.string().min(5).max(50),
-  cnpj: z.string().length(14),
+  cnpj: z.string().transform(val => val.replace(/\D/g, "")).refine(
+  val => val.length === 14,
+  "CNPJ inválido"
+),
   company: z.string(),
   nomeSocial: z.string(),
   items: z.array(ItemSchema),
@@ -125,12 +140,11 @@ export function DashboardRegister(){
     const router = useRouter()
     const {theme} = useTheme()
     const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([])
-    const {register, handleSubmit, setValue} = useForm({
-        resolver: zodResolver(TypeSchemaForm) ,
-        defaultValues: {
-            items: [],
-  },
-    })
+    const { register, handleSubmit, setValue } = useForm<TypeForm>({
+  resolver: zodResolver(TypeSchemaForm),
+  defaultValues: { items: [] },
+})
+
 
     
 
@@ -146,6 +160,7 @@ export function DashboardRegister(){
 
     } else {
       updated = [...prev, { item }]
+      
     }
 
 
@@ -218,13 +233,36 @@ function setQuantity(item: ItemType, quantity: number) {
 
 
 
-    function formHandle(form: TypeForm){
+  function formHandle(form: TypeForm) {
+  const normalizedForm = {
+    ...form,
+    cnpj: form.cnpj.replace(/\D/g, ""),
+    items: form.items.map(item => {
+      const hasSub = item.subcategories && item.subcategories.length > 0
 
-      console.log(form)
-      setData(form)
-      router.replace('/confirm')
-      return form
-    }
+      return {
+        item: item.item,
+        mealType: MEAL_TYPE_MAP[item.item],
+
+      
+        quantity: hasSub ? undefined : ativo ? item.quantity : undefined,
+
+        
+        subcategories: hasSub
+          ? item.subcategories?.map(sub => ({
+              name: sub.name,
+              quantity: ativo ? sub.quantity : undefined,
+            }))
+          : undefined,
+      }
+    }),
+  }
+
+  setData(normalizedForm)
+  router.replace("/confirm")
+}
+
+
 
 
 

@@ -21,6 +21,7 @@ model User {
 
   itemConfigs   UserItemConfig[]
   orders        Order[]
+  sessions      Session[]
 
   isActive      Boolean  @default(true) 
   createdAt     DateTime @default(now()) 
@@ -52,15 +53,19 @@ model Company {
 
 
 model Item {
-  id            String   @id @default(uuid())
-  name          String   @unique
+  id         String   @id @default(uuid())
+  name       String
 
-  subcategories Subcategory[]
-  configs       UserItemConfig[]
-  orderItems    OrderItem[]
+  mealType   MealType
 
-  createdAt     DateTime @default(now())
+  configs    UserItemConfig[]
+  orderItems OrderItem[]
+
+  createdAt  DateTime @default(now())
+
+  @@unique([name, mealType])
 }
+
 
 
 
@@ -70,13 +75,12 @@ model Subcategory {
   id      String @id @default(uuid())
   name    String
 
-  itemId  String
-  item    Item @relation(fields: [itemId], references: [id])
 
-  configs     UserSubcategoryConfig[]
+  mealType   MealType
+  configs    UserSubcategoryConfig[]
   orderItems OrderItem[]
 
-  @@unique([name, itemId])
+  @@unique([name, mealType])
 }
 
 
@@ -123,6 +127,20 @@ model UserSubcategoryConfig {
 
 
 
+enum MealType {
+  DESJEJUM
+  ALMOCO
+  CAFE_TARDE
+  JANTAR
+  CEIA
+  LANCHE
+  BEBIDAS
+  CAFE_NOTURNO
+}
+
+
+
+
 
 model Order {
   id        String   @id @default(uuid())
@@ -133,6 +151,7 @@ model Order {
   companyId String
   company   Company  @relation(fields: [companyId], references: [id])
 
+  mealType  MealType
   date      DateTime
   comments  String?
 
@@ -140,7 +159,7 @@ model Order {
 
   createdAt DateTime @default(now())
 
-  @@unique([companyId, date])
+  @@unique([companyId, date, mealType])
   @@index([companyId])
 }
 
@@ -170,6 +189,18 @@ model OrderItem {
   @@index([subcategoryId])
 }
 
+
+
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+  @@index([userId])
+}
 
 
 

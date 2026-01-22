@@ -11,12 +11,6 @@ import { ItemType, Order, SubcategoryType } from "./dashboard-content"
 
 
 
-interface QuantitySchema {
-    item: ItemType,
-    subcategory: SubcategoryType,
-    delta: number
-}
-
 interface OrderSummaryProps {
   orders: Order
   onUpdateQuantity: (
@@ -32,7 +26,19 @@ interface OrderSummaryProps {
 
 
 export function OrderSummary({ orders, onUpdateQuantity }: OrderSummaryProps) {
-  const totalItems = orders.items.reduce((sum, order) => sum + (order.quantity ?? 0), 0)
+  const totalItems = orders.items.reduce((sum, order) => {
+  if (order.subcategories?.length) {
+    return (
+      sum +
+      order.subcategories.reduce(
+        (subSum, sub) => subSum + (sub.quantity ?? 0),
+        0
+      )
+    )
+  }
+
+  return sum + (order.quantity ?? 0)
+}, 0)
 
 
 
@@ -63,9 +69,12 @@ export function OrderSummary({ orders, onUpdateQuantity }: OrderSummaryProps) {
       </CardHeader>
       <CardContent>
       {orders.items.map((order, index) => (
-  <div key={index} className="p-3 border rounded-lg bg-muted/30 space-y-2">
+  <div key={order.item} className="p-3 border rounded-lg bg-muted/30 space-y-2">
 
     <p className="font-medium text-sm">{order.item}</p>
+
+
+    
 
     {/* ITEM SEM SUBCATEGORIA */}
     {!order.subcategories && (
