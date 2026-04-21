@@ -3,7 +3,7 @@
 import { LogOut, Utensils } from "lucide-react"
 import { useTheme } from "../contexts/theme-context"
 import { Button } from "@/components/ui/button"
-import { useUser } from "../contexts/user-context"
+import { useUser } from "../../features/auth/contexts/user-context"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { useState } from "react"

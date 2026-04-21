@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { useTheme } from "../contexts/theme-context"
-import { useFormData } from "../contexts/formRegister-context"
-import { Header } from "./header"
+import { useTheme } from "../../../shared/contexts/theme-context"
+import { useFormData } from "../../register/contexts/formRegister-context"
+import { Header } from "../../../shared/components/header"
 import { CheckCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { TypeForm } from "./dashboard-register"
+import { TypeForm } from "../../register/components/dashboard-register"
 import { useEffect, useState } from "react"
 
 

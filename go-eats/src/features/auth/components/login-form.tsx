@@ -1,26 +1,26 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
+
 import { useRouter } from "next/navigation"
-import { Moon, Sun, Utensils } from "lucide-react"
-import { useTheme } from "../contexts/theme-context"
+import { Utensils } from "lucide-react"
+import { useTheme } from "../../../shared/contexts/theme-context"
 import { useForm } from "react-hook-form"
 import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import toast from "react-hot-toast"
 import { useUser } from "../contexts/user-context"
+import { useLogin } from "../hook/useLogin"
 
 
 
 
 const LoginSchema = z.object({
-    email: z.email("Email Inválido"),
+    email: z.string().email("Email Inválido"),
     password: z.string().max(50, "A senha deve conter no máximo 50 caracteres").min(5, "A senha deve conter no mínimo 5 caracteres")
 })
 
 
-type LoginDataType = z.infer<typeof LoginSchema>
+export type LoginDataType = z.infer<typeof LoginSchema>
 
 
 
@@ -30,73 +30,33 @@ export function LoginForm() {
   const router = useRouter()
   const {user, setUser} = useUser()
   const {theme, toggleTheme} = useTheme()
-  const [loading, setLoading] = useState(false)
+  const { login, loading } = useLogin()
   const {register, handleSubmit, formState: {errors}, setError} = useForm<LoginDataType>({
     resolver: zodResolver(LoginSchema)
   })
 
 
-  const handleLogin = async (dataLogin: LoginDataType) => {
+  const handleLogin = async (data: LoginDataType) => {
 
-    setLoading(true)
-
-    try{
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {'Content-type': 'application/json'},
-            body: JSON.stringify({
-                email: dataLogin.email,
-                password: dataLogin.password
-
+    
+    try {
+        await login(data, {setError, onSuccess: (res) => {
+            setUser({
+            id: res.user.id,
+            name: res.user.name,
+            email: res.user.email
             })
+
+            router.replace('/dashboard')
+        }
         })
 
-        const data = await response.json()
-
-        if(!response.ok){
-
-            if(response.status === 404){
-                setError("email", {
-                  type: "server",
-                  message: data.message
-                })
-                return
-            }
-
-            if(response.status === 401) {
-                setError("password", {
-                    type: "server",
-                    message: data.message
-                })
-            }
-
-            const errorMessage = data.message || "Erro ao realizar a requisição à API"
-            console.log("Erro ao realizar a requisição à API")
-            throw new Error(errorMessage)
-        }
-
-        
-        setUser({
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email
-            })
-
-        router.replace('/dashboard')
-
-
-    } catch(err) {
-
-        if(err instanceof Error){
-            console.error("Erro na requisição para Login", err.message)
+  } catch (err) {
+        if (err instanceof Error) {
             toast.error(err.message)
         } else {
-            console.log("Erro na requisição para Login", err)
+            toast.error("Erro inesperado")
         }
-
-
-    } finally {
-        setLoading(false)
     }
   }
 

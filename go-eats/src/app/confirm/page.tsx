@@ -1,4 +1,4 @@
-import { DashboardConfirm } from "../components/dashboard-confirm";
+import { DashboardConfirm } from "../../features/dashboard/components/dashboard-confirm";
 
 
 

@@ -3,10 +3,10 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
-import { ThemeProvider } from "./contexts/theme-context"
-import { ToggleTheme } from "./components/toggleTheme"
-import { FormProvider } from "./contexts/formRegister-context"
-import { UserProvider } from "./contexts/user-context"
+import { ThemeProvider } from "../shared/contexts/theme-context"
+import { ToggleTheme } from "../shared/components/toggleTheme"
+import { FormProvider } from "../features/register/contexts/formRegister-context"
+import { UserProvider } from "../features/auth/contexts/user-context"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })

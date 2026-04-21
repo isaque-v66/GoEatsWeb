@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,60 +16,25 @@ import {
 } from "lucide-react"
 import { OrderSummary } from "./order-summary"
 import { Input } from "@/components/ui/input"
-import { useTheme } from "../contexts/theme-context"
-import { Header } from "./header"
+import { useTheme } from "@/src/shared/contexts/theme-context"
+import { Header } from "@/src/shared/components/header"
 import z from "zod"
 import type { ReactNode } from "react"
-import { useUser } from "../contexts/user-context"
+import { useUser } from "../../auth/contexts/user-context"
+import { useOrder } from "../hooks/useOrders"
+import { ITEM_VALUES, ItemType } from "../constants/itemValues.constants"
+import { getRemainingTime } from "../utils/meal.utils"
+import { useCurrentMeal } from "../hooks/useCurrentMeal"
+import { useDashboardItems } from "../hooks/useDashboardItems"
 
 
 
 
 
 
-/* TYPES */
 
 
-const ITEM_VALUES = [
-  "Desjejum",
-  "Almoço",
-  "Jantar",
-  "Ceia",
-  "Lanche",
-  "Bebidas",
-  "Café da tarde",
-  "Café noturno",
-  "Outros",
-] as const
-
-export type ItemType = (typeof ITEM_VALUES)[number]
-
-export enum MealType {
-  DESJEJUM = "DESJEJUM",
-  ALMOCO = "ALMOCO",
-  CAFE_TARDE = "CAFE_TARDE",
-  JANTAR = "JANTAR",
-  CEIA = "CEIA",
-  LANCHE = "LANCHE",
-  BEBIDAS = "BEBIDAS",
-  CAFE_NOTURNO = "CAFE_NOTURNO",
-  FIM_SEMANA = "FIM_SEMANA",
-}
-
-export type SubcategoryType = string
-
-type AvailableItem = {
-  name: ItemType
-  mealType: MealType
-  subcategories?: {
-    name: SubcategoryType
-    defaultQuantity?: number | null
-  }[]
-}
-
-
-
-const ITEM_ICONS: Record<ItemType, ReactNode> = {
+export const ITEM_ICONS: Record<ItemType, ReactNode> = {
   Desjejum: <Coffee />,
   Almoço: <Beef />,
   Jantar: <Moon />,
@@ -83,20 +48,8 @@ const ITEM_ICONS: Record<ItemType, ReactNode> = {
 
 
 
-const MEAL_SCHEDULE: Record<MealType, { start: number; end: number }> = {
-  DESJEJUM: { start: 0, end: 0 },
-  ALMOCO: { start: 0, end: 0 },
-  CAFE_TARDE: { start: 5, end: 8 },
-  JANTAR: { start: 5, end: 9 },
-  CEIA: { start: 5, end: 23 },
-  CAFE_NOTURNO: { start: 23, end: 5 },
-  LANCHE: { start: 0, end: 23 },
-  BEBIDAS: { start: 19, end: 14 },
-  FIM_SEMANA: { start: 0, end: 23 },
-}
 
 
-/* ORDER TYPES */
 
 
 const OrderSchema = z.object({
@@ -121,160 +74,22 @@ export type Order = z.infer<typeof OrderSchema>
 
 export function DashboardContent() {
   const { theme } = useTheme()
-  const [availableItems, setAvailableItems] = useState<AvailableItem[]>([])
-  const [currentMeal, setCurrentMeal] = useState<MealType | null>(null)
-  const [orders, setOrders] = useState<Order>({ items: [] })
   const [customOtherText, setCustomOtherText] = useState("")
-  const { user, loading: isUserLoading } = useUser()
   
+  const { orders, addOrder, updateQuantity } = useOrder()
+  const { user } = useUser()
 
-  useEffect(() => {
-  // ainda carregando o usuário
-  if (isUserLoading) return
-
-  // sem usuário → limpa estado
-  if (!user?.id) {
-    setAvailableItems([])
-    return
-  }
-
-  let cancelled = false
-
-  async function loadItems() {
-    try {
-      // limpa antes de carregar (evita flash)
-      setAvailableItems([])
-
-      const res = await fetch(
-        `/api/dashboard/items?userId=${user?.id}`,
-        { cache: "no-store" }
-      )
-
-      if (!res.ok) return
-
-      const json = await res.json()
-
-      if (!cancelled) {
-        setAvailableItems(json.items || [])
-      }
-    } catch (error) {
-      console.error("Failed to load items:", error)
-      if (!cancelled) {
-        setAvailableItems([])
-      }
-    }
-  }
-
-  loadItems()
-
-  return () => {
-    cancelled = true
-  }
-}, [user?.id, isUserLoading])
-
-
-
-  /* TIMER  */
-
-  useEffect(() => {
-    const update = () => setCurrentMeal(getCurrentMeal())
-    update()
-    const interval = setInterval(update, 60_000)
-    return () => clearInterval(interval)
-  }, [])
+  const currentMeal = useCurrentMeal()
+  const { items: availableItems, loading } = useDashboardItems(user?.id)
 
 
 
 
-
-  function getCurrentMeal(): MealType | null {
-    const hour = new Date().getHours()
-    return (
-      Object.entries(MEAL_SCHEDULE).find(([_, r]) =>
-        r.start < r.end
-          ? hour >= r.start && hour < r.end
-          : hour >= r.start || hour < r.end
-      )?.[0] as MealType | null
-    )
-  }
+ 
 
 
 
-
-
-
-  function getRemainingTime(meal: MealType) {
-    const now = new Date()
-    let diff = MEAL_SCHEDULE[meal].end - now.getHours()
-    if (diff < 0) diff += 24
-    return `${diff}h ${59 - now.getMinutes()}m`
-  }
-
-
-
-
-
-
-
-  /* ORDER LOGIC  */
-
-  const addOrder = (item: ItemType, sub?: SubcategoryType) => {
-    setOrders(prev => {
-      const items = [...prev.items]
-      const index = items.findIndex(i => i.item === item)
-
-      if (index === -1) {
-        items.push(
-          sub
-            ? { item, subcategories: [{ name: sub, quantity: 1 }] }
-            : { item, quantity: 1 }
-        )
-        return { items }
-      }
-
-      const current = items[index]
-
-      if (!sub) {
-        current.quantity = (current.quantity ?? 0) + 1
-        return { items }
-      }
-
-      const subs = current.subcategories ?? []
-      const s = subs.find(x => x.name === sub)
-      s ? s.quantity++ : subs.push({ name: sub, quantity: 1 })
-      current.subcategories = subs
-
-      return { items }
-    })
-  }
-
-  const updateQuantity = (item: ItemType, delta: number, sub?: SubcategoryType) => {
-    setOrders(prev => {
-      const items = [...prev.items]
-      const index = items.findIndex(i => i.item === item)
-      if (index === -1) return prev
-
-      const current = items[index]
-
-      if (!sub) {
-        const q = (current.quantity ?? 0) + delta
-        q <= 0 ? items.splice(index, 1) : (current.quantity = q)
-        return { items }
-      }
-
-      const subs = current.subcategories ?? []
-      const i = subs.findIndex(s => s.name === sub)
-      if (i !== -1) {
-        subs[i].quantity += delta
-        if (subs[i].quantity <= 0) subs.splice(i, 1)
-      }
-
-      subs.length === 0 ? items.splice(index, 1) : (current.subcategories = subs)
-      return { items }
-    })
-  }
-
-
+  
 
 
 
