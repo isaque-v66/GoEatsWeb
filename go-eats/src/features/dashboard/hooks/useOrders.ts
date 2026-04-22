@@ -58,32 +58,50 @@ export function useOrder() {
 
 
 
-  const updateQuantity = (item: ItemType, delta: number, sub?: SubcategoryType) => {
-    setOrders(prev => {
-      const items = [...prev.items]
-      const index = items.findIndex(i => i.item === item)
-      if (index === -1) return prev
+  const updateQuantity = (
+  item: ItemType,
+  delta: number,
+  sub?: SubcategoryType
+) => {
+  setOrders(prev => {
+    const items = prev.items.map(order => {
+      if (order.item !== item) return order
 
-      const current = items[index]
-
+      // ITEM SEM SUB
       if (!sub) {
-        const q = (current.quantity ?? 0) + delta
-        q <= 0 ? items.splice(index, 1) : (current.quantity = q)
-        return { items }
+        const newQuantity = (order.quantity ?? 0) + delta
+
+        if (newQuantity <= 0) return null
+
+        return {
+          ...order,
+          quantity: newQuantity,
+        }
       }
 
-      const subs = current.subcategories ?? []
-      const i = subs.findIndex(s => s.name === sub)
-      if (i !== -1) {
-        subs[i].quantity += delta
-        if (subs[i].quantity <= 0) subs.splice(i, 1)
+      // ITEM COM SUB
+      const updatedSubs = (order.subcategories ?? [])
+        .map(s => {
+          if (s.name !== sub) return s
+
+          const newQ = s.quantity + delta
+          if (newQ <= 0) return null
+
+          return { ...s, quantity: newQ }
+        })
+        .filter(Boolean) as typeof order.subcategories
+
+      if (!updatedSubs?.length) return null
+
+      return {
+        ...order,
+        subcategories: updatedSubs,
       }
+    }).filter(Boolean) as typeof prev.items
 
-      subs.length === 0 ? items.splice(index, 1) : (current.subcategories = subs)
-      return { items }
-    })
-  }
-
+    return { items }
+  })
+}
 
   const removeItem = (item: ItemType, sub?: SubcategoryType) => {
     updateQuantity(item, -9999, sub)
