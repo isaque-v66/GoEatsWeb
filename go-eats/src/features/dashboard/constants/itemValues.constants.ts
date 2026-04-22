@@ -29,6 +29,21 @@ export enum MealType {
   FIM_SEMANA = "FIM_SEMANA",
 }
 
+
+export const ITEM_TO_MEAL_TYPE: Record<ItemType, MealType> = {
+  Desjejum: MealType.DESJEJUM,
+  Almoço: MealType.ALMOCO,
+  Jantar: MealType.JANTAR,
+  Ceia: MealType.CEIA,
+  Lanche: MealType.LANCHE,
+  Bebidas: MealType.BEBIDAS,
+  "Café da tarde": MealType.CAFE_TARDE,
+  "Café noturno": MealType.CAFE_NOTURNO,
+  Outros: MealType.LANCHE, 
+}
+
+
+
 export type SubcategoryType = string
 
 export type AvailableItem = {

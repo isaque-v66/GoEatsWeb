@@ -24,8 +24,9 @@ import { useUser } from "../../auth/contexts/user-context"
 import { useOrder } from "../hooks/useOrders"
 import { ITEM_VALUES, ItemType } from "../constants/itemValues.constants"
 import { getRemainingTime } from "../utils/meal.utils"
-import { useCurrentMeal } from "../hooks/useCurrentMeal"
 import { useDashboardItems } from "../hooks/useDashboardItems"
+import { isMealAvailable } from "../utils/meal.utils"
+import { ITEM_TO_MEAL_TYPE } from "../constants/itemValues.constants"
 
 
 
@@ -76,10 +77,9 @@ export function DashboardContent() {
   const { theme } = useTheme()
   const [customOtherText, setCustomOtherText] = useState("")
   
-  const { orders, addOrder, updateQuantity } = useOrder()
+  const { orders, addOrder, updateQuantity, removeItem } = useOrder()
   const { user } = useUser()
 
-  const currentMeal = useCurrentMeal()
   const { items: availableItems, loading } = useDashboardItems(user?.id)
 
 
@@ -117,7 +117,10 @@ export function DashboardContent() {
 
           <div className="grid gap-6">
             {availableItems.map(item => {
-              const available = item.mealType === currentMeal
+              const mealType = ITEM_TO_MEAL_TYPE[item.name]
+
+              const available = isMealAvailable(mealType)
+              const remainingTime = getRemainingTime(mealType)
 
               return (
                 <Card
@@ -155,10 +158,11 @@ export function DashboardContent() {
                           {item.name}
                         </CardTitle>
                         <p className="text-xs mt-1 text-orange-500">
-                          {available
-                            ? `Encerra em ${getRemainingTime(item.mealType)}`
-                            : "Indisponível no momento"}
-                        </p>
+                            {remainingTime === "Encerrado"
+                              ? "Indisponível no momento"
+                              : `Encerra em ${remainingTime}`
+                            }
+                          </p>
                       </div>
                     </div>
                   </CardHeader>
@@ -267,7 +271,7 @@ export function DashboardContent() {
                 : 'border border-neutral-200 bg-white shadow-neutral-200/50'
               }
             `}>
-              <OrderSummary orders={orders} onUpdateQuantity={updateQuantity} />
+              <OrderSummary orders={orders} onUpdateQuantity={updateQuantity} onRemoveItem={removeItem} />
             </div>
             
             <Button

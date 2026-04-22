@@ -24,6 +24,9 @@ const ITEM_TO_MEAL = {
   "Café noturno": "CAFE_NOTURNO",
 } as const
 
+type ItemKey = keyof typeof ITEM_TO_MEAL
+
+
 
 export function DashboardConfirm() {
   const [loading, setLoading] = useState<boolean>(false)  
@@ -65,7 +68,7 @@ export function DashboardConfirm() {
       },
       items: data.items.map(item => ({
       name: item.item,
-      mealType: ITEM_TO_MEAL[item.item],
+      mealType: ITEM_TO_MEAL[item.item as ItemKey],
 
      
       defaultQuantity: item.subcategories?.length
@@ -80,6 +83,8 @@ export function DashboardConfirm() {
 
     }
 
+    
+
     const req = await fetch("/api/registerUser", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -88,6 +93,7 @@ export function DashboardConfirm() {
 
     const res = await req.json()
 
+    
     if (!req.ok) {
       throw new Error(res?.message || "Erro ao registrar usuário")
     }
@@ -104,6 +110,8 @@ export function DashboardConfirm() {
     setLoading(false)
   }
 }
+
+
 
 
 

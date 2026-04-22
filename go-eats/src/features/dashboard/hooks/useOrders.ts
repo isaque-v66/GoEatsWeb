@@ -85,9 +85,15 @@ export function useOrder() {
   }
 
 
+  const removeItem = (item: ItemType, sub?: SubcategoryType) => {
+    updateQuantity(item, -9999, sub)
+  }
+
+
   return {
     orders,
     addOrder,
-    updateQuantity
+    updateQuantity,
+    removeItem
   }
 }

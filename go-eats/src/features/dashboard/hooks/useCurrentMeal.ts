@@ -1,24 +1,24 @@
 
 
-"use client"
+// "use client"
 
-import { useEffect, useState } from "react"
-import { getCurrentMeal } from "../utils/meal.utils"
-import { MealType } from "../constants/itemValues.constants"
+// import { useEffect, useState } from "react"
+// import { getCurrentMeal } from "../utils/meal.utils"
+// import { MealType } from "../constants/itemValues.constants"
 
-export function useCurrentMeal() {
-  const [currentMeal, setCurrentMeal] = useState<MealType | null>(null)
+// export function useCurrentMeal() {
+//   const [currentMeal, setCurrentMeal] = useState<MealType | null>(null)
 
-  useEffect(() => {
-    function update() {
-      setCurrentMeal(getCurrentMeal())
-    }
+//   useEffect(() => {
+//     function update() {
+//       setCurrentMeal(getCurrentMeal())
+//     }
 
-    update()
-    const interval = setInterval(update, 60000)
+//     update()
+//     const interval = setInterval(update, 60000)
 
-    return () => clearInterval(interval)
-  }, [])
+//     return () => clearInterval(interval)
+//   }, [])
 
-  return currentMeal
-}
+//   return currentMeal
+// }

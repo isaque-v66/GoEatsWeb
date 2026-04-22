@@ -1,4 +1,4 @@
-import { DashboardRegister } from "../components/dashboard-register";
+import { DashboardRegister } from "../../features/register/components/dashboard-register";
 
 
 

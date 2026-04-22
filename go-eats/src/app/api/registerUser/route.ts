@@ -1,10 +1,33 @@
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
+import { MealType } from "@prisma/client"
+
+
+
+type SubcategoryPayload = {
+  name: string
+  defaultQuantity?: number | null
+}
+
+type ItemPayload = {
+  name: string
+  mealType: MealType
+  defaultQuantity?: number | null
+  subcategories?: SubcategoryPayload[]
+}
+
+
+
 
 export async function POST(req: Request) {
   try {
-    const { user, company, items } = await req.json()
+
+    const body = await req.json()
+
+    const user = body.user
+    const company = body.company
+    const items: ItemPayload[] = body.items
 
     if (!user || !company || !items?.length) {
       return NextResponse.json(
@@ -53,7 +76,7 @@ export async function POST(req: Request) {
     
     const passwordHash = await bcrypt.hash(user.password, 10)
 
-    const result = await prisma.$transaction(async tx => {
+    const result = await prisma.$transaction(async (tx) => {
 
       const existingUser = await tx.user.findUnique({
         where: { email: user.email },
@@ -92,59 +115,67 @@ export async function POST(req: Request) {
       })
 
       // ITENS
-      for (const item of items) {
-
-        const dbItem = await tx.item.upsert({
-        where: {
-          name_mealType: {
-            name: item.name,
-            mealType: item.mealType,
-          },
-        },
-        update: {},
-        create: {
+      // ITENS (PARALELO)
+await Promise.all(
+  items.map(async (item) => {
+    const dbItem = await tx.item.upsert({
+      where: {
+        name_mealType: {
           name: item.name,
           mealType: item.mealType,
         },
-      })
+      },
+      update: {},
+      create: {
+        name: item.name,
+        mealType: item.mealType,
+      },
+    })
 
-        const userItemConfig = await tx.userItemConfig.create({
-          data: {
-            userId: createdUser.id,
-            itemId: dbItem.id,
-            defaultQuantity: item.defaultQuantity ?? null,
-          },
-        })
+    const userItemConfig = await tx.userItemConfig.create({
+      data: {
+        userId: createdUser.id,
+        itemId: dbItem.id,
+        defaultQuantity: item.defaultQuantity ?? null,
+      },
+    })
 
-        // SUBCATEGORIAS
-        if (item.subcategories?.length) {
-          for (const sub of item.subcategories) {
-            const dbSubcategory = await tx.subcategory.upsert({
-              where: {
-                name_mealType: {
-                  name: sub.name,
-                  mealType: item.mealType,
-                },
-              },
-              update: {},
-              create: {
+    // SUBCATEGORIAS (também em paralelo)
+    if (item.subcategories?.length) {
+      await Promise.all(
+        item.subcategories.map(async (sub) => {
+          const dbSubcategory = await tx.subcategory.upsert({
+            where: {
+              name_mealType: {
                 name: sub.name,
                 mealType: item.mealType,
               },
-            })
+            },
+            update: {},
+            create: {
+              name: sub.name,
+              mealType: item.mealType,
+            },
+          })
+
+          await tx.userSubcategoryConfig.create({
+            data: {
+              userItemId: userItemConfig.id,
+              subcategoryId: dbSubcategory.id,
+              defaultQuantity: sub.defaultQuantity ?? null,
+            },
+          })
+        })
+      )
+    }
+  })
+), 
+  {
+    timeout: 15000, 
+  }
 
 
-            await tx.userSubcategoryConfig.create({
-              data: {
-                userItemId: userItemConfig.id,
-                subcategoryId: dbSubcategory.id,
-                defaultQuantity: sub.defaultQuantity ?? null,
-              },
-            })
-          }
-        }
-      }
-
+//
       return {
         userId: createdUser.id,
         companyId: createdCompany.id,

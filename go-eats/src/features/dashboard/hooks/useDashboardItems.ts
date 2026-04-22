@@ -2,9 +2,20 @@ import { useEffect, useState } from "react"
 import { getDashboardItems } from "../services/dashboard.service"
 import { AvailableItem } from "../constants/itemValues.constants"
 
+
+
+
+
 export function useDashboardItems(userId?: string) {
+
   const [items, setItems] = useState<AvailableItem[]>([])
   const [loading, setLoading] = useState(true)
+
+
+
+
+
+
 
   useEffect(() => {
     if (!userId) {
@@ -21,7 +32,7 @@ export function useDashboardItems(userId?: string) {
         try {
             setLoading(true)
 
-            const data = await getDashboardItems(userId) // agora TS aceita
+            const data = await getDashboardItems(userId) 
 
             if (!cancelled) setItems(data)
         } finally {

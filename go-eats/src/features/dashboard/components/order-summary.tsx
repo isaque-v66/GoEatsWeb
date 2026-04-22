@@ -3,10 +3,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react"
-import { ItemType, Order, SubcategoryType } from "./dashboard-content"
-
+import { ItemType, SubcategoryType } from "../constants/itemValues.constants"
+import { OrderItem, Order } from "../types/order.types"
 
 
 
@@ -18,6 +17,7 @@ interface OrderSummaryProps {
     delta: number,
     subcategory?: SubcategoryType
   ) => void
+  onRemoveItem: (item: ItemType, sub?: SubcategoryType) => void
 }
 
 
@@ -25,7 +25,9 @@ interface OrderSummaryProps {
 
 
 
-export function OrderSummary({ orders, onUpdateQuantity }: OrderSummaryProps) {
+
+
+export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem }: OrderSummaryProps) {
   const totalItems = orders.items.reduce((sum, order) => {
   if (order.subcategories?.length) {
     return (
@@ -69,7 +71,7 @@ export function OrderSummary({ orders, onUpdateQuantity }: OrderSummaryProps) {
       </CardHeader>
       <CardContent>
       {orders.items.map((order, index) => (
-  <div key={order.item} className="p-3 border rounded-lg bg-muted/30 space-y-2">
+  <div key={`${order.item}-${index}`} className="p-3 border rounded-lg bg-muted/30 space-y-2">
 
     <p className="font-medium text-sm">{order.item}</p>
 
@@ -87,7 +89,7 @@ export function OrderSummary({ orders, onUpdateQuantity }: OrderSummaryProps) {
           <Minus className="w-3 h-3" />
         </Button>
 
-        <span className="w-8 text-center">{order.quantity}</span>
+        <span className="w-8 text-center">{order.quantity ?? 0}</span>
 
         <Button
           size="sm"
@@ -101,7 +103,7 @@ export function OrderSummary({ orders, onUpdateQuantity }: OrderSummaryProps) {
           size="sm"
           variant="ghost"
           className="text-destructive"
-          onClick={() => onUpdateQuantity(order.item, -999)}
+          onClick={() => onRemoveItem(order.item)}
         >
           <Trash2 className="w-3 h-3" />
         </Button>
@@ -145,9 +147,7 @@ export function OrderSummary({ orders, onUpdateQuantity }: OrderSummaryProps) {
             size="sm"
             variant="ghost"
             className="text-destructive"
-            onClick={() =>
-              onUpdateQuantity(order.item, -999, sub.name)
-            }
+            onClick={() => onRemoveItem(order.item, sub.name)}
           >
             <Trash2 className="w-3 h-3" />
           </Button>
