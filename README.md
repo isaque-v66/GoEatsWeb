@@ -104,6 +104,7 @@ O sistema permite que usuários:
 * Prisma ORM
 * PostgreSQL
 * Node.js
+* Supabase
 
 ---
 
