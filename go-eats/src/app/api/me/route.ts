@@ -39,6 +39,7 @@ export async function GET() {
       id: session.user.id,
       email: session.user.email,
       name: session.user.company.socialName,
+      companyId: session.user.companyId,
     },
   })
 }

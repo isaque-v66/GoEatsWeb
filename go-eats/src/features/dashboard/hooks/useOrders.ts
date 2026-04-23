@@ -25,35 +25,48 @@ export function useOrder() {
     })
 
   
-    const addOrder = (item: ItemType, sub?: SubcategoryType) => {
-      setOrders(prev => {
-        const items = [...prev.items]
-        const index = items.findIndex(i => i.item === item)
-  
-        if (index === -1) {
-          items.push(
-            sub
-              ? { item, subcategories: [{ name: sub, quantity: 1 }] }
-              : { item, quantity: 1 }
-          )
-          return { items }
-        }
-  
-        const current = items[index]
-  
+const addOrder = (item: ItemType, sub?: SubcategoryType) => {
+    setOrders(prev => {
+    const index = prev.items.findIndex(i => i.item === item)
+
+    if (index === -1) {
+      return {
+        items: [
+          ...prev.items,
+          sub
+            ? { item, subcategories: [{ name: sub, quantity: 1 }] }
+            : { item, quantity: 1 }
+        ]
+      }
+    }
+
+    return {
+      items: prev.items.map((i, idx) => {
+        if (idx !== index) return i
+
         if (!sub) {
-          current.quantity = (current.quantity ?? 0) + 1
-          return { items }
+          return {
+            ...i,
+            quantity: (i.quantity ?? 0) + 1
+          }
         }
-  
-        const subs = current.subcategories ?? []
-        const s = subs.find(x => x.name === sub)
-        s ? s.quantity++ : subs.push({ name: sub, quantity: 1 })
-        current.subcategories = subs
-  
-        return { items }
+
+        const existingSub = i.subcategories?.find(s => s.name === sub)
+
+        return {
+          ...i,
+          subcategories: existingSub
+            ? i.subcategories!.map(s =>
+                s.name === sub
+                  ? { ...s, quantity: s.quantity + 1 }
+                  : s
+              )
+            : [...(i.subcategories ?? []), { name: sub, quantity: 1 }]
+        }
       })
     }
+  })
+}
 
 
 

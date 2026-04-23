@@ -7,6 +7,13 @@ import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react"
 import { ItemType, SubcategoryType } from "../constants/itemValues.constants"
 import { OrderItem, Order } from "../types/order.types"
 import { useState } from "react"
+import { useUser } from "../../auth/contexts/user-context"
+import { ITEM_TO_MEAL_TYPE } from "../constants/itemValues.constants"
+
+
+
+
+
 
 interface OrderSummaryProps {
   orders: Order
@@ -20,12 +27,13 @@ interface OrderSummaryProps {
 
 export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem }: OrderSummaryProps) {
   const [editingValues, setEditingValues] = useState<{[key: string]: string}>({})
+  const {user} = useUser()
 
   const totalItems = orders.items.reduce((sum, order) => {
-    if (order.subcategories?.length) {
+    if (order.subcategory?.length) {
       return (
         sum +
-        order.subcategories.reduce(
+        order.subcategory.reduce(
           (subSum, sub) => subSum + (sub.quantity ?? 0),
           0
         )
@@ -34,10 +42,54 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem }: OrderSu
     return sum + (order.quantity ?? 0)
   }, 0)
 
-  const handleSubmit = () => {
-    alert("Order submitted successfully!")
-    console.log("Orders:", orders)
+
+
+
+
+
+
+const handleSubmit = async () => {
+  try {
+    const ordersWithMealType = {
+      ...orders,
+      items: orders.items.map(item => ({
+        ...item,
+        mealType: ITEM_TO_MEAL_TYPE[item.item] 
+      }))
+    }
+
+
+    const res = await fetch("/api/createOrder", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userId: user?.id,
+        companyId: user?.companyId,
+        orders: ordersWithMealType,
+      }),
+    })
+
+    const data = await res.json()
+
+    await fetch("/api/sendOrder", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        orderId: data.orderId,
+      }),
+    })
+
+    alert("Pedido enviado com sucesso!")
+  } catch {
+    alert("Erro ao enviar pedido")
   }
+}
+
+
 
   const handleQuantityChange = (
     item: ItemType,
@@ -52,6 +104,10 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem }: OrderSu
         onUpdateQuantity(item, delta, subcategory)
       }
     }
+
+
+
+
     // Limpar o estado de edição após aplicar
     const key = subcategory ? `${item}-${subcategory}` : `${item}`
     setEditingValues(prev => {
@@ -61,12 +117,17 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem }: OrderSu
     })
   }
 
+
+
+
+
+
   const getCurrentQuantity = (item: ItemType, subcategory?: SubcategoryType): number => {
     const orderItem = orders.items.find(o => o.item === item)
     if (!orderItem) return 0
     
-    if (subcategory && orderItem.subcategories) {
-      const sub = orderItem.subcategories.find(s => s.name === subcategory)
+    if (subcategory && orderItem.subcategory) {
+      const sub = orderItem.subcategory.find(s => s.name === subcategory)
       return sub?.quantity ?? 0
     }
     
@@ -119,7 +180,7 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem }: OrderSu
             <p className="font-medium text-sm">{order.item}</p>
 
             {/* ITEM SEM SUBCATEGORIA */}
-            {!order.subcategories && (
+            {!order.subcategory && (
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
@@ -189,7 +250,7 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem }: OrderSu
             )}
 
             {/* ITEM COM SUBCATEGORIAS */}
-            {order.subcategories?.map(sub => (
+            {order.subcategory?.map(sub => (
               <div
                 key={sub.name}
                 className="flex items-center justify-between gap-2 pl-3"

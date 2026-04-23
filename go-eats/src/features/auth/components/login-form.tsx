@@ -44,7 +44,8 @@ export function LoginForm() {
             setUser({
             id: res.user.id,
             name: res.user.name,
-            email: res.user.email
+            email: res.user.email,
+            companyId: res.user.companyId 
             })
 
             router.replace('/dashboard')
