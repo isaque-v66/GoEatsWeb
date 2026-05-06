@@ -1,6 +1,6 @@
 # GoEatsWeb
 
-# 🍽️ Go Eats
+# Go Eats
 
 Sistema web para gerenciamento e envio de pedidos de refeições corporativas.
 
@@ -8,7 +8,7 @@ O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa *
 
 ---
 
-## 🚀 Visão Geral
+## Visão Geral
 
 O sistema permite que usuários:
 
@@ -21,9 +21,9 @@ O sistema permite que usuários:
 
 ---
 
-## 🧠 Funcionalidades Principais
+## Funcionalidades Principais
 
-### 🛒 Criação de Pedidos
+### Criação de Pedidos
 
 * Interface intuitiva para seleção de refeições
 * Suporte a:
@@ -34,7 +34,7 @@ O sistema permite que usuários:
 
 ---
 
-### 🧾 Resumo do Pedido
+### Resumo do Pedido
 
 * Visualização em tempo real dos itens selecionados
 * Edição de quantidades
@@ -43,7 +43,7 @@ O sistema permite que usuários:
 
 ---
 
-### 📦 Persistência de Dados
+### Persistência de Dados
 
 * Pedidos são salvos no banco de dados via **Prisma ORM**
 * Estrutura relacional com:
@@ -56,7 +56,7 @@ O sistema permite que usuários:
 
 ---
 
-### 📤 Envio de Pedidos
+### Envio de Pedidos
 
 * Envio automático após criação
 * Integrações disponíveis:
@@ -66,7 +66,7 @@ O sistema permite que usuários:
 
 ---
 
-### ⏰ Automação com Cron
+### Automação com Cron
 
 * Rotina automática diária (8h)
 * Caso o usuário não faça pedido no dia:
@@ -76,7 +76,7 @@ O sistema permite que usuários:
 
 ---
 
-### 🔐 Autenticação
+### Autenticação
 
 * Sistema de login com sessão
 * Usuário vinculado a uma empresa
@@ -84,7 +84,7 @@ O sistema permite que usuários:
 
 ---
 
-## 🏗️ Tecnologias Utilizadas
+## Tecnologias Utilizadas
 
 ### Frontend
 
@@ -116,7 +116,7 @@ O sistema permite que usuários:
 
 ---
 
-## 🧩 Estrutura de Dados (Resumo)
+## Estrutura de Dados (Resumo)
 
 * **User**
 
@@ -139,9 +139,9 @@ O sistema permite que usuários:
 
 ---
 
-## ⚙️ Regras de Negócio
+## Regras de Negócio
 
-### 📌 1. Um pedido por refeição/dia
+### 1. Um pedido por refeição/dia
 
 Cada empresa só pode ter **um pedido por tipo de refeição por dia**:
 
@@ -151,22 +151,22 @@ Cada empresa só pode ter **um pedido por tipo de refeição por dia**:
 
 ---
 
-### 📌 2. Todos os itens devem ter o mesmo tipo de refeição
+### 2. Todos os itens devem ter o mesmo tipo de refeição
 
 Não é permitido misturar:
 
-* Almoço + Jantar no mesmo pedido ❌
+* Almoço + Jantar no mesmo pedido
 
 ---
 
-### 📌 3. Subcategorias são opcionais
+### 3. Subcategorias são opcionais
 
 * Item simples → quantidade direta
 * Item com subcategoria → quantidade por subitem
 
 ---
 
-### 📌 4. Pedido automático
+### 4. Pedido automático
 
 Se o usuário não fizer pedido no dia:
 
@@ -176,14 +176,14 @@ Se o usuário não fizer pedido no dia:
 
 ---
 
-### 📌 5. Controle por empresa
+### 5. Controle por empresa
 
 * Cada usuário pertence a uma empresa
 * Pedidos são organizados por empresa
 
 ---
 
-## 🔄 Fluxo do Sistema
+## Fluxo do Sistema
 
 1. Usuário faz login
 2. Seleciona itens e quantidades
@@ -194,7 +194,7 @@ Se o usuário não fizer pedido no dia:
 
 ---
 
-## 🛠️ Configuração de Ambiente
+## Configuração de Ambiente
 
 Crie um arquivo `.env` com:
 
@@ -214,7 +214,7 @@ EMAIL_PASS=
 
 ---
 
-## ▶️ Rodando o projeto
+## Rodando o projeto
 
 ```bash
 npm install
@@ -224,9 +224,9 @@ npm run dev
 
 ---
 
-## 📌 Status do Projeto
+## Status do Projeto
 
-⚠️ Este projeto é um **protótipo**, podendo conter:
+ Este projeto é um **protótipo**, podendo conter:
 
 * Melhorias de arquitetura
 * Ajustes de segurança
@@ -234,18 +234,17 @@ npm run dev
 
 ---
 
-## 💡 Evoluções Futuras
+##  Evoluções Futuras
 
 * Painel administrativo
 * Relatórios de consumo
 * Integração oficial com WhatsApp Business API
-* Multi-tenant mais robusto
 * Notificações em tempo real
 * Controle de horários por empresa
 
 ---
 
-## 👨‍💻 Autor
+## Autor
 
 Desenvolvido como projeto técnico e protótipo para ambiente corporativo.
 
