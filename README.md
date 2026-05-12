@@ -1,6 +1,7 @@
 # GoEatsWeb
 
 # 🍽️ Go Eats
+# Go Eats
 
 Sistema web para gerenciamento e envio de pedidos de refeições corporativas.
 
@@ -8,7 +9,11 @@ O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa *
 
 ---
 
+<<<<<<< HEAD
 ##  Visão Geral
+=======
+## Visão Geral
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 O sistema permite que usuários:
 
@@ -21,9 +26,15 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ##  Funcionalidades Principais
 
 ###  Criação de Pedidos
+=======
+## Funcionalidades Principais
+
+### Criação de Pedidos
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Interface intuitiva para seleção de refeições
 * Suporte a:
@@ -34,7 +45,11 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ###  Resumo do Pedido
+=======
+### Resumo do Pedido
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Visualização em tempo real dos itens selecionados
 * Edição de quantidades
@@ -43,7 +58,11 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ###  Persistência de Dados
+=======
+### Persistência de Dados
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Pedidos são salvos no banco de dados via **Prisma ORM**
 * Estrutura relacional com:
@@ -56,7 +75,11 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ###  Envio de Pedidos
+=======
+### Envio de Pedidos
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Envio automático após criação
 * Integrações disponíveis:
@@ -66,7 +89,11 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ###  Automação com Cron
+=======
+### Automação com Cron
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Rotina automática diária (8h)
 * Caso o usuário não faça pedido no dia:
@@ -76,7 +103,11 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ###  Autenticação
+=======
+### Autenticação
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Sistema de login com sessão
 * Usuário vinculado a uma empresa
@@ -84,7 +115,11 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ##  Tecnologias Utilizadas
+=======
+## Tecnologias Utilizadas
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 ### Frontend
 
@@ -116,7 +151,11 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ##  Estrutura de Dados (Resumo)
+=======
+## Estrutura de Dados (Resumo)
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * **User**
 
@@ -139,9 +178,15 @@ O sistema permite que usuários:
 
 ---
 
+<<<<<<< HEAD
 ##  Regras de Negócio
 
 ###  1. Um pedido por refeição/dia
+=======
+## Regras de Negócio
+
+### 1. Um pedido por refeição/dia
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 Cada empresa só pode ter **um pedido por tipo de refeição por dia**:
 
@@ -151,6 +196,7 @@ Cada empresa só pode ter **um pedido por tipo de refeição por dia**:
 
 ---
 
+<<<<<<< HEAD
 ###  2. Todos os itens devem ter o mesmo tipo de refeição
 
 Não é permitido misturar:
@@ -160,13 +206,28 @@ Não é permitido misturar:
 ---
 
 ###  3. Subcategorias são opcionais
+=======
+### 2. Todos os itens devem ter o mesmo tipo de refeição
+
+Não é permitido misturar:
+
+* Almoço + Jantar no mesmo pedido
+
+---
+
+### 3. Subcategorias são opcionais
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Item simples → quantidade direta
 * Item com subcategoria → quantidade por subitem
 
 ---
 
+<<<<<<< HEAD
 ###  4. Pedido automático
+=======
+### 4. Pedido automático
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 Se o usuário não fizer pedido no dia:
 
@@ -176,14 +237,22 @@ Se o usuário não fizer pedido no dia:
 
 ---
 
+<<<<<<< HEAD
 ###  5. Controle por empresa
+=======
+### 5. Controle por empresa
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Cada usuário pertence a uma empresa
 * Pedidos são organizados por empresa
 
 ---
 
+<<<<<<< HEAD
 ##  Fluxo do Sistema
+=======
+## Fluxo do Sistema
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 1. Usuário faz login
 2. Seleciona itens e quantidades
@@ -194,7 +263,11 @@ Se o usuário não fizer pedido no dia:
 
 ---
 
+<<<<<<< HEAD
 ##  Configuração de Ambiente
+=======
+## Configuração de Ambiente
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 Crie um arquivo `.env` com:
 
@@ -215,6 +288,7 @@ EMAIL_PASS=
 ---
 ---
 
+<<<<<<< HEAD
 ##  Testes Automatizados
 
 O projeto possui testes automatizados cobrindo regras de negócio, autenticação e fluxo de interface do usuário.
@@ -321,6 +395,9 @@ Atualmente o projeto possui cobertura para:
 
 
 ##  Rodando o projeto
+=======
+## Rodando o projeto
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 ```bash
 npm install
@@ -330,7 +407,11 @@ npm run dev
 
 ---
 
+<<<<<<< HEAD
 ##  Status do Projeto
+=======
+## Status do Projeto
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
  Este projeto é um **protótipo**, podendo conter:
 
@@ -340,13 +421,25 @@ npm run dev
 
 ---
 
+<<<<<<< HEAD
 ## Evoluções Futuras
+=======
+##  Evoluções Futuras
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 * Painel administrativo
 * Relatórios de consumo
 * Integração oficial com WhatsApp Business API
 * Notificações em tempo real
 
+<<<<<<< HEAD
+=======
+---
+
+## Autor
+
+Desenvolvido como projeto técnico e protótipo para ambiente corporativo.
+>>>>>>> 841b5d636bde81fc686417b06fea01cc8009baa6
 
 ---
 
