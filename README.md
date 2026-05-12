@@ -168,17 +168,7 @@ Cada empresa só pode ter **um pedido por tipo de refeição por dia**:
 
 ---
 
-<<<<<<< HEAD
-###  2. Todos os itens devem ter o mesmo tipo de refeição
 
-Não é permitido misturar:
-
-* Almoço + Jantar no mesmo pedido 
-
----
-
-###  3. Subcategorias são opcionais
-=======
 ### 2. Todos os itens devem ter o mesmo tipo de refeição
 
 Não é permitido misturar:
