@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         },
       })
 
-      // 2. Criar itens
+      // Criar itens
       for (const item of items) {
         const dbItem = await tx.item.findUnique({
           where: {

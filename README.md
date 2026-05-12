@@ -8,7 +8,7 @@ O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa *
 
 ---
 
-## 🚀 Visão Geral
+##  Visão Geral
 
 O sistema permite que usuários:
 
@@ -21,9 +21,9 @@ O sistema permite que usuários:
 
 ---
 
-## 🧠 Funcionalidades Principais
+##  Funcionalidades Principais
 
-### 🛒 Criação de Pedidos
+###  Criação de Pedidos
 
 * Interface intuitiva para seleção de refeições
 * Suporte a:
@@ -34,7 +34,7 @@ O sistema permite que usuários:
 
 ---
 
-### 🧾 Resumo do Pedido
+###  Resumo do Pedido
 
 * Visualização em tempo real dos itens selecionados
 * Edição de quantidades
@@ -43,7 +43,7 @@ O sistema permite que usuários:
 
 ---
 
-### 📦 Persistência de Dados
+###  Persistência de Dados
 
 * Pedidos são salvos no banco de dados via **Prisma ORM**
 * Estrutura relacional com:
@@ -56,7 +56,7 @@ O sistema permite que usuários:
 
 ---
 
-### 📤 Envio de Pedidos
+###  Envio de Pedidos
 
 * Envio automático após criação
 * Integrações disponíveis:
@@ -66,7 +66,7 @@ O sistema permite que usuários:
 
 ---
 
-### ⏰ Automação com Cron
+###  Automação com Cron
 
 * Rotina automática diária (8h)
 * Caso o usuário não faça pedido no dia:
@@ -76,7 +76,7 @@ O sistema permite que usuários:
 
 ---
 
-### 🔐 Autenticação
+###  Autenticação
 
 * Sistema de login com sessão
 * Usuário vinculado a uma empresa
@@ -84,7 +84,7 @@ O sistema permite que usuários:
 
 ---
 
-## 🏗️ Tecnologias Utilizadas
+##  Tecnologias Utilizadas
 
 ### Frontend
 
@@ -116,7 +116,7 @@ O sistema permite que usuários:
 
 ---
 
-## 🧩 Estrutura de Dados (Resumo)
+##  Estrutura de Dados (Resumo)
 
 * **User**
 
@@ -139,9 +139,9 @@ O sistema permite que usuários:
 
 ---
 
-## ⚙️ Regras de Negócio
+##  Regras de Negócio
 
-### 📌 1. Um pedido por refeição/dia
+###  1. Um pedido por refeição/dia
 
 Cada empresa só pode ter **um pedido por tipo de refeição por dia**:
 
@@ -151,22 +151,22 @@ Cada empresa só pode ter **um pedido por tipo de refeição por dia**:
 
 ---
 
-### 📌 2. Todos os itens devem ter o mesmo tipo de refeição
+###  2. Todos os itens devem ter o mesmo tipo de refeição
 
 Não é permitido misturar:
 
-* Almoço + Jantar no mesmo pedido ❌
+* Almoço + Jantar no mesmo pedido 
 
 ---
 
-### 📌 3. Subcategorias são opcionais
+###  3. Subcategorias são opcionais
 
 * Item simples → quantidade direta
 * Item com subcategoria → quantidade por subitem
 
 ---
 
-### 📌 4. Pedido automático
+###  4. Pedido automático
 
 Se o usuário não fizer pedido no dia:
 
@@ -176,14 +176,14 @@ Se o usuário não fizer pedido no dia:
 
 ---
 
-### 📌 5. Controle por empresa
+###  5. Controle por empresa
 
 * Cada usuário pertence a uma empresa
 * Pedidos são organizados por empresa
 
 ---
 
-## 🔄 Fluxo do Sistema
+##  Fluxo do Sistema
 
 1. Usuário faz login
 2. Seleciona itens e quantidades
@@ -194,7 +194,7 @@ Se o usuário não fizer pedido no dia:
 
 ---
 
-## 🛠️ Configuração de Ambiente
+##  Configuração de Ambiente
 
 Crie um arquivo `.env` com:
 
@@ -213,8 +213,114 @@ EMAIL_PASS=
 ```
 
 ---
+---
 
-## ▶️ Rodando o projeto
+##  Testes Automatizados
+
+O projeto possui testes automatizados cobrindo regras de negócio, autenticação e fluxo de interface do usuário.
+
+### Testes Unitários e de Integração — Vitest
+
+Utilizado para validar regras de negócio, serviços e fluxos internos da aplicação.
+
+#### Cenários testados
+
+**Autenticação**
+- Login com credenciais válidas
+- E-mail inexistente
+- Senha inválida
+
+**Pedidos**
+- Criação de pedidos
+- Validação de itens
+- Regras de negócio do pedido
+- Controle de tipos de refeição
+
+**Validações**
+- Estruturas com Zod
+- Tratamento de erros
+- Regras de consistência
+
+#### Executar testes
+
+```bash
+npm run test
+```
+
+Ou em modo watch:
+
+```bash
+npm run test:watch
+```
+
+---
+
+### Testes End-to-End (E2E) — Playwright
+
+Utilizado para simular o comportamento real do usuário dentro da aplicação.
+
+Os testes E2E verificam desde o login até a interação completa no dashboard de pedidos.
+
+#### Cenários E2E implementados
+
+**Login**
+- Login com sucesso
+- Erro de usuário inexistente
+- Erro de senha inválida
+
+**Fluxo de Pedido**
+- Botão "Fazer Pedido" inicia desabilitado
+- Usuário consegue adicionar item disponível
+- Botão é habilitado após interação válida
+
+#### Particularidades dos testes
+
+Os testes utilizam:
+
+- **Banco de dados isolado para E2E**
+- **Seed automática de usuário de teste**
+- **Mock de horário do sistema**, permitindo testar disponibilidade de refeições por período do dia
+- Limpeza automática dos dados antes da execução
+
+#### Executar testes E2E
+
+Modo headless:
+
+```bash
+npm run test:e2e
+```
+
+Modo visual:
+
+```bash
+npm run test:e2e -- --headed
+```
+
+Interface do Playwright:
+
+```bash
+npm run test:e2e -- --ui
+```
+
+---
+
+##  Cobertura dos Testes
+
+Atualmente o projeto possui cobertura para:
+
+- Autenticação  
+- Regras de login  
+- Fluxo de criação de pedido  
+- Estados da interface  
+- Regras de disponibilidade por horário  
+- Interações do dashboard
+
+---
+
+---
+
+
+##  Rodando o projeto
 
 ```bash
 npm install
@@ -224,9 +330,9 @@ npm run dev
 
 ---
 
-## 📌 Status do Projeto
+##  Status do Projeto
 
-⚠️ Este projeto é um **protótipo**, podendo conter:
+ Este projeto é um **protótipo**, podendo conter:
 
 * Melhorias de arquitetura
 * Ajustes de segurança
@@ -234,20 +340,13 @@ npm run dev
 
 ---
 
-## 💡 Evoluções Futuras
+## Evoluções Futuras
 
 * Painel administrativo
 * Relatórios de consumo
 * Integração oficial com WhatsApp Business API
-* Multi-tenant mais robusto
 * Notificações em tempo real
-* Controle de horários por empresa
 
----
-
-## 👨‍💻 Autor
-
-Desenvolvido como projeto técnico e protótipo para ambiente corporativo.
 
 ---
 
