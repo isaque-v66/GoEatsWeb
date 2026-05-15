@@ -14,7 +14,7 @@ import {
   GlassWater,
   Cake,
 } from "lucide-react"
-import { OrderSummary } from "./order-summary"
+import { OrderSummary } from "./order-summary/order-summary"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "@/src/shared/contexts/theme-context"
 import { Header } from "@/src/shared/components/header"

@@ -90,7 +90,7 @@ type SelectedItem = {
 
 
 
-// VALIDAÇÃO ZOD
+
 const SubcategorySchema = z.object({
   name: z.union([
     z.enum(SUBCATEGORIES_VALUES),
