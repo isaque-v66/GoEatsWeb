@@ -23,6 +23,8 @@ test.describe("Login E2E", () => {
     name: /entrar/i,
   }).click()
 
+  await page.pause()
+
   await expect(page).toHaveURL(/dashboard/, {
     timeout: 60000
   })
@@ -66,6 +68,8 @@ test.describe("Login E2E", () => {
     await page.getByRole("button", {
       name: /entrar/i,
     }).click()
+
+    await page.pause()
 
     await expect(
       page.locator(".text-red-600")

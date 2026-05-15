@@ -33,6 +33,8 @@ test.describe("Create Order E2E", () => {
       name: /entrar/i,
     }).click()
 
+    await page.pause()
+
     await expect(page).toHaveURL(/dashboard/, {
       timeout: 60000,
     })
