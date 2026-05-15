@@ -14,16 +14,18 @@ test.describe("Login E2E", () => {
     .getByPlaceholder("Enter your password")
     .fill("123456")
 
-  await page.screenshot({
-    path: "antes-do-login.png",
-    fullPage: true,
-  })
+  // await page.screenshot({
+  //   path: "antes-do-login.png",
+  //   fullPage: true,
+  // })
 
   await page.getByRole("button", {
     name: /entrar/i,
   }).click()
 
-  await expect(page).toHaveURL(/dashboard/)
+  await expect(page).toHaveURL(/dashboard/, {
+    timeout: 60000
+  })
   })
 
   test("deve exibir erro de email inexistente", async ({

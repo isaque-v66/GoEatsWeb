@@ -1,13 +1,25 @@
 "use client"
 
 import { useState } from "react"
+
 import {
   createOrder,
   sendOrder,
 } from "../services/order.service"
 
-import { ITEM_TO_MEAL_TYPE } from "../constants/itemValues.constants"
+import {
+  ITEM_TO_MEAL_TYPE,
+  ItemType,
+} from "../constants/itemValues.constants"
+
+import { Order } from "../types/order.types"
 import { AppError } from "@/src/shared/errors/AppError"
+
+interface SubmitOrderParams {
+  userId: string
+  companyId: string
+  orders: Order
+}
 
 export function useSubmitOrder() {
   const [loading, setLoading] =
@@ -17,17 +29,19 @@ export function useSubmitOrder() {
     userId,
     companyId,
     orders,
-  }: any) => {
+  }: SubmitOrderParams) => {
     try {
       setLoading(true)
 
       const ordersWithMealType = {
         ...orders,
         items: orders.items.map(
-          (item: any) => ({
+          (item) => ({
             ...item,
             mealType:
-              ITEM_TO_MEAL_TYPE[item.item],
+              ITEM_TO_MEAL_TYPE[
+                item.item as ItemType
+              ],
           })
         ),
       }

@@ -7,6 +7,11 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    exclude: [
+      "node_modules",
+      ".next",
+      "src/tests/e2e/**",
+    ],
   },
   resolve: {
     alias: {

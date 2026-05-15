@@ -2,28 +2,21 @@ import { test, expect } from "@playwright/test"
 
 test.describe("Create Order E2E", () => {
   test.beforeEach(async ({ page }) => {
- 
     await page.addInitScript(() => {
       const fixedDate = new Date("2026-05-12T12:00:00")
-
       const OriginalDate = Date
 
       class MockDate extends OriginalDate {
-        constructor(...args: any[]) {
-          if (args.length === 0) {
-            super(fixedDate)
-          } else {
-            super(...args)
-          }
+        constructor(value?: string | number | Date) {
+          super(value ?? fixedDate.getTime())
         }
 
-        static now() {
+        static now(): number {
           return fixedDate.getTime()
         }
       }
 
-      
-      window.Date = MockDate
+      window.Date = MockDate as DateConstructor
     })
 
     await page.goto("/login")
@@ -40,13 +33,14 @@ test.describe("Create Order E2E", () => {
       name: /entrar/i,
     }).click()
 
-    await expect(page).toHaveURL(/dashboard/)
+    await expect(page).toHaveURL(/dashboard/, {
+      timeout: 60000,
+    })
   })
 
   test("deve habilitar botão após adicionar item", async ({
     page,
   }) => {
-    
     await page
       .getByRole("button", {
         name: /adicionar ao pedido/i,

@@ -72,14 +72,19 @@ export function OrderSummary({
   )
 
   const handleSubmit = async () => {
-    const result = await submitOrder({
-      userId: user?.id,
-      companyId: user?.companyId,
-      orders,
-    })
-
-    alert(result.message)
+  if (!user?.id || !user?.companyId) {
+    alert("Usuário não autenticado")
+    return
   }
+
+  const result = await submitOrder({
+    userId: user.id,
+    companyId: user.companyId,
+    orders,
+  })
+
+  alert(result.message)
+}
 
   const getCurrentQuantity = (
     item: ItemType,
@@ -416,3 +421,6 @@ export function OrderSummary({
     </Card>
   )
 }
+
+
+
