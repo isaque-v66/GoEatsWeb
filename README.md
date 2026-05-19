@@ -1,4 +1,3 @@
-# GoEatsWeb
 
 
 # Go Eats
@@ -344,8 +343,6 @@ Atualmente o projeto possui cobertura para:
 
 ---
 
----
-
 
 ##  Rodando o projeto
 
@@ -358,6 +355,26 @@ npm run dev
 
 ---
 
+## Rodando com Docker
+
+### Pré-requisitos
+- Docker Desktop instalado
+
+### Clonar projeto
+```bash
+git clone <repo>
+cd go-eats
+```
+
+### Subir aplicação com Docker
+```bash
+docker compose up --build
+```
+
+A aplicação estará disponível em:
+
+http://localhost:3000
+---
 
 ##  Status do Projeto
 
