@@ -1,4 +1,6 @@
 node_modules
 .next
 .git
-npm-debug.log
+coverage
+playwright-report
+test-results
