@@ -1,4 +1,3 @@
-# GoEatsWeb
 
 
 # Go Eats
@@ -8,8 +7,63 @@ Sistema web para gerenciamento e envio de pedidos de refeições corporativas.
 O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa **BR Foods**, com o objetivo de automatizar o processo de solicitação, organização e envio de pedidos de refeições (como desjejum, almoço, jantar, etc.) dentro de um ambiente corporativo.
 
 ---
+## Stack
+
+**Frontend:** Next.js, React, TypeScript, TailwindCSS, Shadcn/UI
+
+**Backend:** Next.js API Routes, Prisma ORM, PostgreSQL
+
+**Testes:** Vitest, Playwright
+
+**Infraestrutura:** Docker, Docker Compose
+
+**Integrações:** Z-API (WhatsApp), Nodemailer, Cron Jobs
 
 
+---
+
+##  Rodando o projeto
+
+
+```bash
+npm install
+npx prisma migrate dev
+npm run dev
+```
+
+---
+
+## Rodando com Docker
+
+### Pré-requisitos
+- Docker Desktop instalado
+
+### Subir aplicação
+
+```bash
+docker compose up --build
+```
+
+Ou em background:
+
+```bash
+docker compose up -d
+```
+
+A aplicação ficará disponível em:
+
+```txt
+http://localhost:3000
+```
+
+### Parar containers
+
+```bash
+docker compose down
+```
+
+
+---
 ##  Visão Geral
 
 
@@ -344,19 +398,6 @@ Atualmente o projeto possui cobertura para:
 
 ---
 
----
-
-
-##  Rodando o projeto
-
-
-```bash
-npm install
-npx prisma migrate dev
-npm run dev
-```
-
----
 
 
 ##  Status do Projeto
