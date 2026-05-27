@@ -12,14 +12,14 @@ O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa *
 
 ### Login
 
-![Tela de Login](./docs/login.png)
+![Tela de Login](./go-eats/docs/login.png)
 
 ### Dashboard
 
-![Dashboard](./docs/dashboard.png)
+![Dashboard](./go-eats/docs/dashboard.png)
 
 ### Registro de usuário
-![Register](./docs/register.png)
+![Register](./go-eats/docs/register.png)
 
 
 ---
