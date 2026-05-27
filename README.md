@@ -7,6 +7,22 @@ Sistema web para gerenciamento e envio de pedidos de refeições corporativas.
 O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa **BR Foods**, com o objetivo de automatizar o processo de solicitação, organização e envio de pedidos de refeições (como desjejum, almoço, jantar, etc.) dentro de um ambiente corporativo.
 
 ---
+
+## Preview do Sistema
+
+### Login
+
+![Tela de Login](./docs/login.png)
+
+### Dashboard
+
+![Dashboard](./docs/dashboard.png)
+
+### Registro de usuário
+![Register](./docs/register.png)
+
+
+---
 ## Stack
 
 **Frontend:** Next.js, React, TypeScript, TailwindCSS, Shadcn/UI
