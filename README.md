@@ -434,6 +434,7 @@ Atualmente o projeto possui cobertura para:
 * Relatórios de consumo
 * Integração oficial com WhatsApp Business API
 * Notificações em tempo real
+* Incluir a lógica de Queue no envio de email.
 
 
 
