@@ -115,7 +115,6 @@ export async function POST(req: Request) {
       })
 
       // ITENS
-      // ITENS (PARALELO)
 await Promise.all(
   items.map(async (item) => {
     const dbItem = await tx.item.upsert({
@@ -140,7 +139,7 @@ await Promise.all(
       },
     })
 
-    // SUBCATEGORIAS (também em paralelo)
+    // SUBCATEGORIAS
     if (item.subcategories?.length) {
       await Promise.all(
         item.subcategories.map(async (sub) => {
