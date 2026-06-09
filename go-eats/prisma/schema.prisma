@@ -9,12 +9,18 @@ datasource db {
 }
 
 
+enum UserRole {
+  ADMIN
+  USER
+}
 
 
 model User { 
   id            String @id @default(uuid()) 
   email         String @unique 
   passwordHash  String 
+
+  role          UserRole @default(USER)
 
   companyId     String 
   company       Company @relation(fields: [companyId], references: [id]) 

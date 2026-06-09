@@ -15,7 +15,7 @@ import { useLogin } from "../hook/useLogin"
 
 
 const LoginSchema = z.object({
-    email: z.string().email("Email Inválido"),
+    email: z.email("Email Inválido"),
     password: z.string().max(50, "A senha deve conter no máximo 50 caracteres").min(5, "A senha deve conter no mínimo 5 caracteres")
 })
 
@@ -48,7 +48,8 @@ export function LoginForm() {
             companyId: res.user.companyId 
             })
 
-            router.replace('/dashboard')
+
+            router.replace(res.redirectTo)
         }
         })
 

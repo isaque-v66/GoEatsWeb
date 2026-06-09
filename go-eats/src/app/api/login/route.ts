@@ -16,6 +16,9 @@ export async function POST(req: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email },
+      include: {
+        company: true
+      }
     })
 
     if (!user) {
@@ -55,8 +58,11 @@ export async function POST(req: Request) {
         user: {
           id: user.id,
           email: user.email,
+          name: user.company.socialName,
           companyId: user.companyId,
+          role: user.role
         },
+        redirectTo: user.role === "ADMIN" ? "/dashboardRegister": "/dashboard",
       },
       { status: 200 }
     )
