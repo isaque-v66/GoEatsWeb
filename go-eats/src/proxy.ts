@@ -40,5 +40,6 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/dashboardRegister/:path*",
+    "/panel/:path*"
   ],
 }

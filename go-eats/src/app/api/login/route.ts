@@ -62,7 +62,7 @@ export async function POST(req: Request) {
           companyId: user.companyId,
           role: user.role
         },
-        redirectTo: user.role === "ADMIN" ? "/dashboardRegister": "/dashboard",
+        redirectTo: user.role === "ADMIN" ? "/panel": "/dashboard",
       },
       { status: 200 }
     )
