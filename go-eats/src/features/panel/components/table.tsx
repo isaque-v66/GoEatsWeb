@@ -1,14 +1,15 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { tableService } from "../services/table.service"
+import { deleteUserTable, tableService } from "../services/table.service"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { UsersTable } from "../types/table-types"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { EditUsersDialog } from "./edit-users-dialog"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import toast from "react-hot-toast"
 
 
 
@@ -24,7 +25,20 @@ export function Table({users}: TableProps) {
   const [openEditDialog, setOpenEditDialog] = useState<boolean>(false)
   const [selectedUser, setSelectedUser] = useState<UsersTable | null>(null)
  
+  const queryClient = useQueryClient()
 
+   const deleteUserMutation = useMutation({
+        mutationFn: deleteUserTable,
+
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ["users"]})
+            toast.success("Usuário deletado com sucesso")
+        },
+
+        onError: () => {
+            toast.error('Erro ao Deletar o usuário')
+        }
+    })
   
 
 
@@ -145,7 +159,7 @@ export function Table({users}: TableProps) {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            
+                            onClick={() => deleteUserMutation.mutate(user.id)}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />

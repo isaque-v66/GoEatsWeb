@@ -8,6 +8,7 @@ import { ToggleTheme } from "../shared/components/toggleTheme"
 import { FormProvider } from "../features/register/contexts/formRegister-context"
 import { UserProvider } from "../features/auth/contexts/user-context"
 import "@/src/lib/cron"
+import { QueryProvider } from "../providers/query-provider"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -46,7 +47,9 @@ export default function RootLayout({
         <ThemeProvider>
           <FormProvider>
             <UserProvider>
-            {children}
+              <QueryProvider>
+                {children}
+              </QueryProvider>
             </UserProvider>
             <ToggleTheme />
             <Analytics />

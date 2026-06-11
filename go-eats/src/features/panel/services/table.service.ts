@@ -48,3 +48,24 @@ export async function updateUserTable(data: UserUpdateType) {
 
 
 }
+
+
+
+
+export async function deleteUserTable(id: string) {
+
+    const response = await fetch(`/api/usersDelete/${id}`, {
+        method: "DELETE"
+    })
+
+    const data = await response.json()
+
+    if(!response.ok) {
+         throw new ApiError(
+                data.message || "Erro ao atualizar usuários", data.status
+            )
+    }
+
+    return data
+
+}

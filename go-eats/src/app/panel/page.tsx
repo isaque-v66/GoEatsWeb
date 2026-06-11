@@ -3,25 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { Table } from "@/src/features/panel/components/table";
 import { UserCards } from "@/src/features/panel/components/user-cards";
-import { tableService } from "@/src/features/panel/services/table.service";
-import { UsersTable } from "@/src/features/panel/types/table-types";
+import { useUsers } from "@/src/features/panel/hooks/useUsers";
 import { Header } from "@/src/shared/components/header";
 import { useTheme } from "@/src/shared/contexts/theme-context";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+
 
 
 
 export default function Panel() {
-
-    const [users, setUsers] = useState<UsersTable[]>([])
     const {theme} = useTheme()
     const router = useRouter()
+    const {data: users = [], isLoading} = useUsers()
   
-  useEffect(() => {
-    tableService().then((allUsers: UsersTable[]) => setUsers(allUsers))
-  }, [])
+  
 
     return (
         <div>

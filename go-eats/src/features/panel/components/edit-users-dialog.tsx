@@ -5,11 +5,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { UsersTable } from "../types/table-types"
 import { Dispatch, SetStateAction, useEffect } from "react"
 import { useTheme } from "@/src/shared/contexts/theme-context"
-import { updateUserTable } from "../services/table.service"
+import { deleteUserTable, updateUserTable } from "../services/table.service"
 import toast from "react-hot-toast"
 import z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 
 type EditUsersDialogProps = {
@@ -30,36 +31,42 @@ type EditUserData = z.infer<typeof EditUserSchema>
 
 export function EditUsersDialog({openEditDialog, setOpenEditDialog, selectedUser}: EditUsersDialogProps) {
     const {theme} = useTheme()
-    const {register, handleSubmit, reset, formState: { errors, isSubmitting },} = useForm<EditUserData>({
+    const queryClient = useQueryClient()
+    const {register, handleSubmit, formState: { errors},} = useForm<EditUserData>({
         resolver: zodResolver(EditUserSchema),
     })
 
-    useEffect(() => {
-    if (selectedUser) {
-        reset({
-        email: selectedUser.email,
-        role: selectedUser.role as "ADMIN" | "USER",
-        })
-    }
-    }, [selectedUser, reset])
+
+
+    const updateUserMutation = useMutation({
+        mutationFn: updateUserTable,
+
+        onSuccess: () => {
+            queryClient.invalidateQueries({queryKey: ["users"]})
+            toast.success("Usuário atualizado")
+            setOpenEditDialog(false)
+        },
+
+        onError: () => {
+            toast.error('Erro ao atualizar o usuário')
+        }
+
+    })
+
+
+
+
 
 
     async function handleUpdate(data: EditUserData) {
         if (!selectedUser) return
 
-        try {
-            await updateUserTable({
+        updateUserMutation.mutate({
             id: selectedUser.id,
             email: data.email,
-            role: data.role,
-            })
-
-            toast.success("Usuário atualizado")
-
-            setOpenEditDialog(false)
-        } catch {
-            toast.error("Erro ao atualizar usuário")
-        }
+            role: data.role
+        })
+      
     }
 
 
@@ -142,8 +149,10 @@ export function EditUsersDialog({openEditDialog, setOpenEditDialog, selectedUser
                         Cancelar
                         </Button>
 
-                        <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? "Salvando..." : "Salvar"}
+                        <Button type="submit" disabled={updateUserMutation.isPending}>
+                         {updateUserMutation.isPending
+                            ? "Salvando..."
+                            : "Salvar"}
                         </Button>
 
                     </DialogFooter>
