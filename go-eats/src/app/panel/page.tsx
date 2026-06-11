@@ -8,6 +8,7 @@ import { UsersTable } from "@/src/features/panel/types/table-types";
 import { Header } from "@/src/shared/components/header";
 import { useTheme } from "@/src/shared/contexts/theme-context";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 
@@ -15,8 +16,8 @@ import { useEffect, useState } from "react";
 export default function Panel() {
 
     const [users, setUsers] = useState<UsersTable[]>([])
-     const {theme} = useTheme()
-  
+    const {theme} = useTheme()
+    const router = useRouter()
   
   useEffect(() => {
     tableService().then((allUsers: UsersTable[]) => setUsers(allUsers))
@@ -34,6 +35,7 @@ export default function Panel() {
                                 ? "bg-orange-600 hover:bg-orange-700 text-white"
                                 : "bg-orange-500 hover:bg-orange-600 text-white"
                         }`}
+                        onClick={() => router.replace("/dashboardRegister")}
                     >
                         <Plus /> Adicionar usuário
                     </Button>

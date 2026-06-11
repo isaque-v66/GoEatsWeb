@@ -7,6 +7,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { UsersTable } from "../types/table-types"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { EditUsersDialog } from "./edit-users-dialog"
 
 
 
@@ -19,9 +21,11 @@ type TableProps = {
 
 
 export function Table({users}: TableProps) {
+  const [openEditDialog, setOpenEditDialog] = useState<boolean>(false)
+  const [selectedUser, setSelectedUser] = useState<UsersTable | null>(null)
  
 
-
+  
 
 
     return (
@@ -132,7 +136,10 @@ export function Table({users}: TableProps) {
                             <Eye className="mr-2 h-4 w-4" />
                             Ver detalhes
                           </DropdownMenuItem>
-                          <DropdownMenuItem >
+                          <DropdownMenuItem onClick={() => {
+                            setOpenEditDialog(true),
+                            setSelectedUser(user)
+                          }}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar usuário
                           </DropdownMenuItem>
@@ -157,6 +164,12 @@ export function Table({users}: TableProps) {
         
             </table>
           </div>
+          <EditUsersDialog 
+          openEditDialog = {openEditDialog}
+          setOpenEditDialog = {setOpenEditDialog}
+          selectedUser = {selectedUser}
+          
+          />
      
     </div>
     )

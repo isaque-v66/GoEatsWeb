@@ -7,7 +7,6 @@ import { Plus, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import { useTheme } from "@/src/shared/contexts/theme-context"
-import z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Label } from "@/components/ui/label"
 import clsx from "clsx"
@@ -16,119 +15,15 @@ import { Header } from "@/src/shared/components/header"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { useFormData } from "../contexts/formRegister-context"
-
-
-
-
-const ITEM_VALUES = [
-  "Desjejum",
-  "Almoço",
-  'Jantar',
-  "Ceia",
-  "Lanche",
-  "Bebidas",
-  "Café da tarde",
-  "Café noturno",
-] as const
-
-type ItemType = (typeof ITEM_VALUES)[number]
-
-
-
-const SUBCATEGORIES_VALUES = [
-    "Granel",
-    "MTX8",
-    "MTX9",
-    "Divisional"
-] as const
-
-
-const SUBCATEGORIES_DRINKS = [
-    "Achocolatado",
-    "Litro de leite",
-    "Litro de café",
-    "Litro de chá"
-] as const
-
-
-
-const MEAL_TYPE_MAP = {
-  "Desjejum": "DESJEJUM",
-  "Almoço": "ALMOCO",
-  "Jantar": "JANTAR",
-  "Ceia": "CEIA",
-  "Lanche": "LANCHE",
-  "Bebidas": "BEBIDAS",
-  "Café da tarde": "CAFE_TARDE",
-  "Café noturno": "CAFE_NOTURNO",
-} as const
-
-
-
-const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar"]
-
-
-
-type FoodSubcategory = typeof SUBCATEGORIES_VALUES[number]
-type DrinkSubcategory = typeof SUBCATEGORIES_DRINKS[number]
-
-type Subcategory = FoodSubcategory | DrinkSubcategory
-
-type SelectedSubcategory = {
-  name: Subcategory
-  quantity?: number
-}
-
-
-
-type SelectedItem = {
-  item: ItemType
-  subcategories?: SelectedSubcategory[]
-  quantity?: number
-}
+import { ITEM_VALUES, ITEMS_WITH_SUBCATEGORY, ItemType, MEAL_TYPE_MAP, SelectedItem, SUBCATEGORIES_DRINKS, SUBCATEGORIES_VALUES, Subcategory, TypeForm, TypeSchemaForm } from "../types/register-types"
 
 
 
 
 
-const SubcategorySchema = z.object({
-  name: z.union([
-    z.enum(SUBCATEGORIES_VALUES),
-    z.enum(SUBCATEGORIES_DRINKS),
-  ]),
-  quantity: z.number().int().nonnegative().optional(),
-})
-
-const ItemSchema = z.object({
-  item: z.enum(ITEM_VALUES),
-  subcategories: z.array(SubcategorySchema).optional(),
-  quantity: z.number().int().nonnegative().optional(),
-}).refine(
-  data =>
-    !(data.subcategories?.length && data.quantity !== undefined),
-  {
-    message: "Itens com subcategoria não podem ter quantidade direta",
-    path: ["quantity"],
-  }
-)
-
-const TypeSchemaForm = z.object({
-  email: z.email("Email inválido"),
-  password: z.string().min(5).max(50),
-  cnpj: z.string().transform(val => val.replace(/\D/g, "")).refine(
-  val => val.length === 14,
-  "CNPJ inválido"
-),
-  company: z.string(),
-  nomeSocial: z.string(),
-  items: z.array(ItemSchema),
-})
 
 
 
-
-
-export type TypeForm = z.infer<typeof TypeSchemaForm>
 
 
 
@@ -505,6 +400,15 @@ return (
                   className="w-full h-11 text-base font-medium"
                 >
                   Cadastrar
+                </Button>
+              </div>
+
+              <div>
+                <Button 
+                  className="w-full h-11 text-base font-medium"
+                  onClick={() => router.replace("/panel")}
+                >
+                  Voltar
                 </Button>
               </div>
             </form>
