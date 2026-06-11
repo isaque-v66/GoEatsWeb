@@ -10,6 +10,7 @@ import { UsersTable } from "../types/table-types"
 import { EditUsersDialog } from "./edit-users-dialog"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
+import { DeleteUsersDialog } from "./delete-users-dialog"
 
 
 
@@ -23,25 +24,15 @@ type TableProps = {
 
 export function Table({users}: TableProps) {
   const [openEditDialog, setOpenEditDialog] = useState<boolean>(false)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false)
   const [selectedUser, setSelectedUser] = useState<UsersTable | null>(null)
  
-  const queryClient = useQueryClient()
-
-   const deleteUserMutation = useMutation({
-        mutationFn: deleteUserTable,
-
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["users"]})
-            toast.success("Usuário deletado com sucesso")
-        },
-
-        onError: () => {
-            toast.error('Erro ao Deletar o usuário')
-        }
-    })
   
 
 
+
+  
     return (
         <div className="overflow-hidden rounded-lg border border-border mt-5">
           <div className="overflow-x-auto">
@@ -159,7 +150,10 @@ export function Table({users}: TableProps) {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            onClick={() => deleteUserMutation.mutate(user.id)}
+                            onClick={() => {
+                              setSelectedUserId(user.id)
+                              setOpenDeleteDialog(true)
+                            }}
                             className="text-destructive focus:text-destructive"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
@@ -179,10 +173,15 @@ export function Table({users}: TableProps) {
             </table>
           </div>
           <EditUsersDialog 
-          openEditDialog = {openEditDialog}
-          setOpenEditDialog = {setOpenEditDialog}
-          selectedUser = {selectedUser}
-          
+            openEditDialog = {openEditDialog}
+            setOpenEditDialog = {setOpenEditDialog}
+            selectedUser = {selectedUser}
+            />
+
+          <DeleteUsersDialog
+            userId={selectedUserId ?? ""}
+            openDeleteDialog={openDeleteDialog}
+            setOpenDeleteDialog={setOpenDeleteDialog}
           />
      
     </div>

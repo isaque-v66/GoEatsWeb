@@ -97,7 +97,7 @@ model UserItemConfig {
   id        String @id @default(uuid())
 
   userId    String
-  user      User   @relation(fields: [userId], references: [id])
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   itemId    String
   item      Item   @relation(fields: [itemId], references: [id])
@@ -119,7 +119,7 @@ model UserSubcategoryConfig {
   id            String @id @default(uuid())
 
   userItemId    String
-  userItem      UserItemConfig @relation(fields: [userItemId], references: [id])
+  userItem      UserItemConfig @relation(fields: [userItemId], references: [id], onDelete: Cascade)
 
   subcategoryId String
   subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
@@ -152,7 +152,7 @@ model Order {
   id        String   @id @default(uuid())
 
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   companyId String
   company   Company  @relation(fields: [companyId], references: [id])
@@ -178,7 +178,7 @@ model OrderItem {
   id            String @id @default(uuid())
 
   orderId       String
-  order         Order  @relation(fields: [orderId], references: [id])
+  order         Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   itemId        String
   item          Item   @relation(fields: [itemId], references: [id])

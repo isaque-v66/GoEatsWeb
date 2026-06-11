@@ -22,22 +22,13 @@ export async function DELETE(req: Request, { params }: Params) {
       )
     }
 
-    await prisma.session.deleteMany({
-      where: { userId: id }
-    })
-
-    await prisma.userItemConfig.deleteMany({
-      where: { userId: id }
-    })
-
-    await prisma.order.deleteMany({
-      where: { userId: id }
-    })
-
     await prisma.user.delete({
       where: { id }
     })
 
+
+
+    
     return NextResponse.json({
       message: "Usuário deletado com sucesso"
     })
