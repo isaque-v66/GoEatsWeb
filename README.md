@@ -28,7 +28,7 @@ O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa *
 ---
 
 ### Painel Administrativo
-![Panel](go-eats/docs/Panel.png)
+![Panel](./go-eats/docs/Panel.png)
 
 
 ---
