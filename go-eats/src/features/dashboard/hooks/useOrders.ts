@@ -1,17 +1,27 @@
 "use client"
 
 import { useState } from "react"
-import { ItemType, SubcategoryType } from "../constants/itemValues.constants"
+import {
+  ItemType,
+  SubcategoryType
+} from "../constants/itemValues.constants"
+
+import {ScheduleType, OrderItem, Order} from "../types/order.types"
 
 
 
-type OrderItem = {
+type AddOrderPayload = {
   item: ItemType
+
+  subcategory?: SubcategoryType
+
   quantity?: number
-  subcategories?: {
-    name: SubcategoryType
-    quantity: number
-  }[]
+
+  scheduleType?: ScheduleType
+
+  specificDate?: string
+
+  updateDefault?: boolean
 }
 
 type OrderState = {
@@ -25,45 +35,104 @@ export function useOrder() {
     })
 
   
-const addOrder = (item: ItemType, sub?: SubcategoryType) => {
-    setOrders(prev => {
-    const index = prev.items.findIndex(i => i.item === item)
+  const addOrder = ({item, subcategory, quantity = 1, scheduleType, specificDate, updateDefault = false}: AddOrderPayload) => {
 
-    if (index === -1) {
+  setOrders(prev => {
+
+    const existingItem = prev.items.find(
+      i =>
+        i.item === item &&
+        i.scheduleType === scheduleType &&
+        i.specificDate === specificDate
+    )
+
+    if (!existingItem) {
       return {
         items: [
           ...prev.items,
-          sub
-            ? { item, subcategories: [{ name: sub, quantity: 1 }] }
-            : { item, quantity: 1 }
-        ]
+          subcategory
+            ? {
+                id: crypto.randomUUID(),
+                item,
+                scheduleType,
+                specificDate,
+                updateDefault,
+
+                subcategories: [
+                  {
+                    id: crypto.randomUUID(),
+                    name: subcategory,
+                    quantity,
+                    scheduleType:
+                      scheduleType ?? "WEEKDAY",
+                    specificDate,
+                    updateDefault,
+                  },
+                ],
+              }
+            : {
+                id: crypto.randomUUID(),
+                item,
+                quantity,
+                scheduleType,
+                specificDate,
+                updateDefault,
+              },
+        ],
       }
     }
 
     return {
-      items: prev.items.map((i, idx) => {
-        if (idx !== index) return i
+      items: prev.items.map(order => {
 
-        if (!sub) {
+        if (
+          order.item !== item ||
+          order.scheduleType !== scheduleType ||
+          order.specificDate !== specificDate
+        ) {
+          return order
+        }
+
+        if (!subcategory) {
           return {
-            ...i,
-            quantity: (i.quantity ?? 0) + 1
+            ...order,
+            quantity:
+              (order.quantity ?? 0) + quantity,
           }
         }
 
-        const existingSub = i.subcategories?.find(s => s.name === sub)
+        const subExists =
+          order.subcategories?.find(
+            s => s.name === subcategory
+          )
 
         return {
-          ...i,
-          subcategories: existingSub
-            ? i.subcategories!.map(s =>
-                s.name === sub
-                  ? { ...s, quantity: s.quantity + 1 }
+          ...order,
+
+          subcategories: subExists
+            ? order.subcategories!.map(s =>
+                s.name === subcategory
+                  ? {
+                      ...s,
+                      quantity:
+                        s.quantity + quantity,
+                    }
                   : s
               )
-            : [...(i.subcategories ?? []), { name: sub, quantity: 1 }]
+            : [
+                ...(order.subcategories ?? []),
+                {
+                  id: crypto.randomUUID(),
+                  name: subcategory,
+                  quantity,
+                  scheduleType:
+                    scheduleType ?? "WEEKDAY",
+                  specificDate,
+                  updateDefault,
+                },
+              ],
         }
-      })
+      }),
     }
   })
 }
@@ -71,17 +140,13 @@ const addOrder = (item: ItemType, sub?: SubcategoryType) => {
 
 
 
-  const updateQuantity = (
-  item: ItemType,
-  delta: number,
-  sub?: SubcategoryType
-) => {
+  const updateQuantity = (orderId: string, delta: number, subId?: string) => {
   setOrders(prev => {
     const items = prev.items.map(order => {
-      if (order.item !== item) return order
+      if (order.id !== orderId) return order
 
       // ITEM SEM SUB
-      if (!sub) {
+      if (!subId) {
         const newQuantity = (order.quantity ?? 0) + delta
 
         if (newQuantity <= 0) return null
@@ -95,7 +160,7 @@ const addOrder = (item: ItemType, sub?: SubcategoryType) => {
       // ITEM COM SUB
       const updatedSubs = (order.subcategories ?? [])
         .map(s => {
-          if (s.name !== sub) return s
+          if (s.id !== subId) return s
 
           const newQ = s.quantity + delta
           if (newQ <= 0) return null
@@ -116,15 +181,167 @@ const addOrder = (item: ItemType, sub?: SubcategoryType) => {
   })
 }
 
-  const removeItem = (item: ItemType, sub?: SubcategoryType) => {
-    updateQuantity(item, -9999, sub)
+
+
+
+
+
+
+  const removeItem = (orderId: string, subId?: string) => {
+    updateQuantity(orderId, -9999, subId)
   }
+
+
+
+
+
+
+
+  const updateScheduleType = (orderId: string, scheduleType: ScheduleType) => {
+    setOrders(prev => ({
+      items: prev.items.map(order =>
+        order.id === orderId
+          ? { ...order, scheduleType }
+          : order
+      )
+    }))
+  }
+  
+
+
+  
+  const updateDefaultFlag = (orderId: string,value: boolean) => {
+    setOrders(prev => ({
+      items: prev.items.map(order =>
+        order.id === orderId
+          ? { ...order, updateDefault: value }
+          : order
+      )
+    }))
+  }
+  
+
+
+  
+  const updateSpecificDate = (
+    orderId: string,
+    date?: string
+  ) => {
+    setOrders(prev => ({
+      items: prev.items.map(order =>
+        order.id === orderId
+          ? {
+              ...order,
+              specificDate: date,
+            }
+          : order
+      )
+    }))
+  }
+
+
+
+
+
+  const updateSubScheduleType = (
+  orderId: string,
+  subId: string,
+  scheduleType: ScheduleType
+) => {
+  setOrders(prev => ({
+    items: prev.items.map(order => {
+      if (order.id !== orderId) {
+        return order
+      }
+
+      return {
+        ...order,
+        subcategories: order.subcategories?.map(sub =>
+          sub.id === subId
+            ? {
+                ...sub,
+                scheduleType,
+              }
+            : sub
+        ),
+      }
+    }),
+  }))
+}
+
+
+
+const updateSubDefaultFlag = (
+  orderId: string,
+  subId: string,
+  value: boolean
+) => {
+  setOrders(prev => ({
+    items: prev.items.map(order => {
+      if (order.id !== orderId) {
+        return order
+      }
+
+      return {
+        ...order,
+        subcategories: order.subcategories?.map(sub =>
+          sub.id === subId
+            ? {
+                ...sub,
+                updateDefault: value,
+              }
+            : sub
+        ),
+      }
+    }),
+  }))
+}
+
+
+
+
+const updateDateRange = (
+  orderId: string,
+  startDate?: string,
+  endDate?: string,
+  subId?: string
+) => {
+  setOrders(prev => ({
+    items: prev.items.map(order => {
+      if (order.id !== orderId) return order
+
+      if (!subId) {
+        return { ...order, startDate, endDate, specificDate: undefined }
+      }
+
+      return {
+        ...order,
+        subcategories: order.subcategories?.map(sub =>
+          sub.id === subId
+            ? { ...sub, startDate, endDate, specificDate: undefined }
+            : sub
+        ),
+      }
+    }),
+  }))
+}
+
+
+
+
 
 
   return {
     orders,
     addOrder,
     updateQuantity,
-    removeItem
+    removeItem,
+    updateScheduleType,
+    updateDefaultFlag,
+    updateSpecificDate,
+    updateSubScheduleType,
+    updateSubDefaultFlag,
+    updateDateRange
   }
 }
+

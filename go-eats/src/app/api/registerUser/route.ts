@@ -7,13 +7,17 @@ import { MealType } from "@prisma/client"
 
 type SubcategoryPayload = {
   name: string
-  defaultQuantity?: number | null
+  weekdayQuantity?: number | null
+  saturdayQuantity?: number | null
+  sundayQuantity?: number | null
 }
 
 type ItemPayload = {
   name: string
   mealType: MealType
-  defaultQuantity?: number | null
+  weekdayQuantity?: number | null
+  saturdayQuantity?: number | null
+  sundayQuantity?: number | null
   subcategories?: SubcategoryPayload[]
 }
 
@@ -135,8 +139,15 @@ await Promise.all(
       data: {
         userId: createdUser.id,
         itemId: dbItem.id,
-        defaultQuantity: item.defaultQuantity ?? null,
-      },
+        weekdayQuantity:
+        item.weekdayQuantity ?? null,
+
+      saturdayQuantity:
+        item.saturdayQuantity ?? null,
+
+      sundayQuantity:
+        item.sundayQuantity ?? null,
+        },
     })
 
     // SUBCATEGORIAS
@@ -161,7 +172,14 @@ await Promise.all(
             data: {
               userItemId: userItemConfig.id,
               subcategoryId: dbSubcategory.id,
-              defaultQuantity: sub.defaultQuantity ?? null,
+              weekdayQuantity:
+              sub.weekdayQuantity ?? null,
+
+              saturdayQuantity:
+              sub.saturdayQuantity ?? null,
+
+              sundayQuantity:
+              sub.sundayQuantity ?? null,
             },
           })
         })

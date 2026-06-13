@@ -1,6 +1,5 @@
 "use client"
 
-
 import { useRouter } from "next/navigation"
 import { Utensils } from "lucide-react"
 import { useTheme } from "../../../shared/contexts/theme-context"
@@ -11,177 +10,149 @@ import toast from "react-hot-toast"
 import { useUser } from "../contexts/user-context"
 import { useLogin } from "../hook/useLogin"
 
-
-
-
 const LoginSchema = z.object({
-    email: z.email("Email Inválido"),
-    password: z.string().max(50, "A senha deve conter no máximo 50 caracteres").min(5, "A senha deve conter no mínimo 5 caracteres")
+  email: z.email("Email inválido"),
+  password: z.string()
+    .max(50, "Máximo 50 caracteres")
+    .min(5, "Mínimo 5 caracteres"),
 })
-
 
 export type LoginDataType = z.infer<typeof LoginSchema>
 
-
-
-
-
 export function LoginForm() {
   const router = useRouter()
-  const {user, setUser} = useUser()
-  const {theme, toggleTheme} = useTheme()
+  const { user, setUser } = useUser()
+  const { theme } = useTheme()
   const { login, loading } = useLogin()
-  const {register, handleSubmit, formState: {errors}, setError} = useForm<LoginDataType>({
-    resolver: zodResolver(LoginSchema)
+  const { register, handleSubmit, formState: { errors }, setError } = useForm<LoginDataType>({
+    resolver: zodResolver(LoginSchema),
   })
 
+  const isDark = theme === "dark"
 
   const handleLogin = async (data: LoginDataType) => {
-
-    
     try {
-        await login(data, {setError, onSuccess: (res) => {
-            setUser({
+      await login(data, {
+        setError,
+        onSuccess: (res) => {
+          setUser({
             id: res.user.id,
             name: res.user.name,
             email: res.user.email,
-            companyId: res.user.companyId 
-            })
-
-
-            router.replace(res.redirectTo)
-        }
-        })
-
-  } catch (err) {
-        if (err instanceof Error) {
-            toast.error(err.message)
-        } else {
-            toast.error("Erro inesperado")
-        }
+            companyId: res.user.companyId,
+          })
+          router.replace(res.redirectTo)
+        },
+      })
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro inesperado")
     }
   }
 
-
-
-
-
-
+  const inputClass = `
+    h-11 w-full rounded-lg border px-3.5 text-sm
+    transition-colors duration-200 placeholder:text-muted-foreground
+    focus:outline-none focus:ring-2 focus:ring-orange-500/25 focus:border-orange-500
+    ${isDark
+      ? "bg-neutral-800 border-neutral-700 text-white hover:border-neutral-600"
+      : "bg-white border-neutral-200 text-neutral-900 hover:border-neutral-300"
+    }
+  `
 
   return (
-        <div className={`min-h-screen flex items-center justify-center  px-4   ${theme === 'dark' 
-            ? 'bg-gradient-to-br from-neutral-950 to-neutral-900' 
-            : 'bg-gradient-to-br from-neutral-50 to-neutral-100'
-        }`} >
-             <div className="w-full max-w-md">
-                 <div className={`
-                    rounded-2xl p-8 shadow-xl transition-all duration-300
-                    ${theme === 'dark' 
-                        ? 'bg-neutral-900 shadow-black/40 border border-neutral-800' 
-                        : 'bg-white shadow-neutral-200/50 border border-neutral-100'
-                    }
-                    `}>
-                {/* Header */}
-                <div className="mb-8 text-center">
-                    <div className={`${theme === 'dark'
-                            ? 'bg-gradient-to-br from-orange-600 to-orange-700 shadow-orange-900/30'
-                            : 'bg-gradient-to-br from-orange-500 to-orange-600 shadow-orange-200'
-                        } mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-2xl `}>
-                    <Utensils className="h-9 w-9 text-white" />
-                    </div>
+    <div className={`min-h-screen flex items-center justify-center px-4 ${
+      isDark
+        ? "bg-neutral-950"
+        : "bg-neutral-50"
+    }`}>
+      <div className="w-full max-w-sm">
 
-                    <div className="space-y-2">
-                    <h1 className={`text-3xl font-bold tracking-tight ${theme === 'dark' ? 'text-white' : 'text-neutral-900'}`}>
-                        Go Eats
-                    </h1>
-                    <p className={` text-base ${theme === 'dark' ? 'text-neutral-400' : 'text-neutral-500'}`}>
-                        Entre e faça seu pedido
-                    </p>
-                    </div>
-                </div>
+        {/* Card */}
+        <div className={`rounded-xl border p-8 shadow-sm ${
+          isDark
+            ? "bg-neutral-900 border-neutral-800"
+            : "bg-white border-neutral-200"
+        }`}>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit(handleLogin)} className="space-y-6">
-                    <div className="space-y-1.5">
-                    <label className={` text-sm font-medium transition-colors duration-300
-                            ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'}`}>
-                        Email
-                    </label>
-                    {errors.email && (<p className="text-red-600">{errors.email.message}</p>)}
-                    <input
-                        type="email"
-                        placeholder="you@company.com"
-                        required
-                        {...register("email")}
-                        className={`
-                            h-12 w-full rounded-xl border px-4
-                            transition-all duration-300
-                            placeholder-neutral-400
-                            focus:ring-3 focus:outline-none focus:shadow-sm
-                            hover:border-neutral-300
-                            ${theme === 'dark'
-                                ? 'bg-neutral-800 border-neutral-700 text-white ' +
-                                'focus:border-orange-500 focus:ring-orange-500/20 ' +
-                                'hover:border-neutral-600'
-                                : 'bg-white border-neutral-200 text-neutral-900 ' +
-                                'focus:border-orange-500 focus:ring-orange-500/20 ' +
-                                'hover:border-neutral-300'
-                            }
-                            `}
-                    />
-                    </div>
+          {/* Logo + título */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center mb-4">
+              <Utensils className="w-6 h-6 text-white" />
+            </div>
+            <h1 className={`text-xl font-semibold tracking-tight ${isDark ? "text-white" : "text-neutral-900"}`}>
+              Go Eats
+            </h1>
+            <p className={`text-sm mt-1 ${isDark ? "text-neutral-400" : "text-neutral-500"}`}>
+              Entre para fazer seu pedido
+            </p>
+          </div>
 
-                    <div className="space-y-1.5">
-                    <label className={` text-sm font-medium transition-colors duration-300
-                            ${theme === 'dark' ? 'text-neutral-300' : 'text-neutral-800'}`}>
-                        Senha
-                    </label>
-                    {errors.password && (<p className="text-red-600">{errors.password.message}</p>)}
-                    <input
-                        type="password"
-                        placeholder="Enter your password"
-                        required
-                        {...register("password")}
-                        className={`
-                            h-12 w-full rounded-xl border px-4
-                            transition-all duration-300
-                            placeholder-neutral-400
-                            focus:ring-3 focus:outline-none focus:shadow-sm
-                            hover:border-neutral-300
-                            ${theme === 'dark'
-                                ? 'bg-neutral-800 border-neutral-700 text-white ' +
-                                'focus:border-orange-500 focus:ring-orange-500/20 ' +
-                                'hover:border-neutral-600'
-                                : 'bg-white border-neutral-200 text-neutral-900 ' +
-                                'focus:border-orange-500 focus:ring-orange-500/20 ' +
-                                'hover:border-neutral-300'
-                            }
-                            `}
-                    />
-                    </div>
+          {/* Formulário */}
+          <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
 
-                    <button
-                    type="submit"
-                    className="
-                        h-12 w-full rounded-xl
-                        bg-gradient-to-r from-orange-500 to-orange-600
-                        text-white font-semibold text-base
-                        transition-all duration-300
-                        hover:from-orange-600 hover:to-orange-700
-                        hover:shadow-lg hover:shadow-orange-200
-                        active:scale-[0.99] active:shadow-md
-                        focus:outline-none focus:ring-3 focus:ring-orange-500/40
-                    "
-                    >
-                    {loading ? (<div className="flex justify-center">
-                        <span className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent" />
-                        </div>): (<span>Entrar</span>) }
-                    </button>         
-            </form>
+            <div className="space-y-1.5">
+              <label className={`text-xs font-medium uppercase tracking-wide ${
+                isDark ? "text-neutral-400" : "text-neutral-500"
+              }`}>
+                Email
+              </label>
+              <input
+                type="email"
+                placeholder="voce@empresa.com"
+                {...register("email")}
+                className={inputClass}
+              />
+              {errors.email && (
+                <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+              )}
+            </div>
 
+            <div className="space-y-1.5">
+              <label className={`text-xs font-medium uppercase tracking-wide ${
+                isDark ? "text-neutral-400" : "text-neutral-500"
+              }`}>
+                Senha
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                {...register("password")}
+                className={inputClass}
+              />
+              {errors.password && (
+                <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+              )}
+            </div>
 
+            <button
+              type="submit"
+              disabled={loading}
+              className="
+                mt-2 h-11 w-full rounded-lg
+                bg-orange-500 hover:bg-orange-600
+                text-white text-sm font-semibold
+                transition-colors duration-200
+                focus:outline-none focus:ring-2 focus:ring-orange-500/40 focus:ring-offset-2
+                active:scale-[0.99]
+                disabled:opacity-60 disabled:cursor-not-allowed
+              "
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  Entrando...
+                </span>
+              ) : "Entrar"}
+            </button>
+          </form>
         </div>
-    </div>
+
+        {/* Rodapé discreto */}
+        <p className={`text-center text-xs mt-6 ${isDark ? "text-neutral-600" : "text-neutral-400"}`}>
+          Go Eats © {new Date().getFullYear()}
+        </p>
+
+      </div>
     </div>
   )
 }

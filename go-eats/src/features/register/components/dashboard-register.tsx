@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { useFormData } from "../contexts/formRegister-context"
 import { ITEM_VALUES, ITEMS_WITH_SUBCATEGORY, ItemType, MEAL_TYPE_MAP, SelectedItem, SUBCATEGORIES_DRINKS, SUBCATEGORIES_VALUES, Subcategory, TypeForm, TypeSchemaForm } from "../types/register-types"
+import { Badge } from "@/components/ui/badge"
 
 
 
@@ -79,7 +80,9 @@ function toggleSubcategory(item: ItemType, sub: Subcategory) {
 
       return {
         ...i,
-        subcategories: exists ? current.filter(s => s.name !== sub) : [...current, { name: sub }], quantity: undefined, 
+        subcategories: exists
+          ? current.filter(s => s.name !== sub)
+          : [...current, { name: sub }],
       }
     })
 
@@ -90,19 +93,31 @@ function toggleSubcategory(item: ItemType, sub: Subcategory) {
 
 
 
-function setSubcategoryQuantity(item: ItemType, sub: Subcategory, quantity: number) {
+function setSubcategoryQuantity(
+  item: ItemType,
+  sub: Subcategory,
+  field:
+    | "weekQuantity"
+    | "saturdayQuantity"
+    | "sundayQuantity",
+  quantity: number
+) {
   setSelectedItems(prev => {
     const updated = prev.map(i => {
       if (i.item !== item) return i
 
       return {
         ...i,
-        subcategories: i.subcategories?.map(s => s.name === sub ? { ...s, quantity } : s
+        subcategories: i.subcategories?.map(s =>
+          s.name === sub
+            ? { ...s, [field]: quantity }
+            : s
         ),
       }
     })
 
     setValue("items", updated)
+
     return updated
   })
 }
@@ -111,16 +126,15 @@ function setSubcategoryQuantity(item: ItemType, sub: Subcategory, quantity: numb
 
 
 
-function setQuantity(item: ItemType, quantity: number) {
-  setSelectedItems(prev => {
-    const updated = prev.map(i =>
-      i.item === item ? { ...i, quantity } : i
-    )
+ function setQuantity(item: ItemType, field: | 'weekQuantity' | 'saturdayQuantity' | 'sundayQuantity', quantity: number) {
+    setSelectedItems(prev => {
+      const updated = prev.map(i => i.item === item ? {...i, [field]: quantity}: i)
 
-    setValue("items", updated)
-    return updated
-  })
-}
+      setValue("items", updated)
+
+      return updated
+    })
+ } 
 
 
 
@@ -129,6 +143,8 @@ function setQuantity(item: ItemType, quantity: number) {
 
 
   function formHandle(form: TypeForm) {
+
+
   const normalizedForm = {
     ...form,
     cnpj: form.cnpj.replace(/\D/g, ""),
@@ -140,13 +156,45 @@ function setQuantity(item: ItemType, quantity: number) {
         mealType: MEAL_TYPE_MAP[item.item],
 
       
-        quantity: hasSub ? undefined : ativo ? item.quantity : undefined,
+        weekQuantity: hasSub
+          ? undefined
+          : ativo
+          ? item.weekQuantity
+          : undefined,
+
+        saturdayQuantity: hasSub
+          ? undefined
+          : ativo
+          ? item.saturdayQuantity
+          : undefined,
+
+        sundayQuantity: hasSub
+          ? undefined
+          : ativo
+          ? item.sundayQuantity
+          : undefined,
 
         
         subcategories: hasSub
           ? item.subcategories?.map(sub => ({
               name: sub.name,
-              quantity: ativo ? sub.quantity : undefined,
+              weekQuantity: hasSub
+              ? undefined
+              : ativo
+              ? sub.weekQuantity
+              : undefined,
+
+            saturdayQuantity: hasSub
+              ? undefined
+              : ativo
+              ? sub.saturdayQuantity
+              : undefined,
+
+            sundayQuantity: hasSub
+              ? undefined
+              : ativo
+              ? sub.sundayQuantity
+              : undefined,
             }))
           : undefined,
       }
@@ -166,255 +214,327 @@ function setQuantity(item: ItemType, quantity: number) {
      
 
 return (
-  <div>
-  <Header />
+  <div className="min-h-screen bg-muted/40">
+    <Header />
 
-    {/* FORMULÁRIO */}
-    <div className="flex flex-col mt-2">
-      <div className="text-3xl font-bold text-center tracking-tight transition-colors duration-300 mt-6 mb-6">
-        <h2>Registre novos usuários</h2>
+    <div className="max-w-7xl mx-auto px-4 py-10">
+
+      {/* Título */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Registrar novo usuário
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Preencha os dados abaixo para criar um acesso
+        </p>
       </div>
 
-      <div className="flex justify-center items-start p-4">
-        <Card className="w-full max-w-4xl shadow-lg">
-          <CardContent className="p-8">
-            <h2 className={`text-2xl font-bold text-center mb-8 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
-              Cadastro
-            </h2>
+      <form onSubmit={handleSubmit(formHandle)}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-            <form onSubmit={handleSubmit(formHandle)} className="space-y-6">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                
-                {/* COLUNA 1 */}
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
-                      Email
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="exemplo@gmail.com"
-                      className="w-full h-11 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      {...register("email")}
+          {/* ── COLUNA 1: Dados do usuário ── */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3 border-b">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Dados da empresa
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="pt-5 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="exemplo@empresa.com"
+                  className="h-9 text-sm"
+                  {...register("email")}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Senha
+                </Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  className="h-9 text-sm"
+                  {...register("password")}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="company" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Nome da empresa
+                </Label>
+                <Input
+                  id="company"
+                  placeholder="ABS Company Plus"
+                  className="h-9 text-sm"
+                  {...register("company")}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="nomeSocial" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Nome social
+                </Label>
+                <Input
+                  id="nomeSocial"
+                  placeholder="Exemple LTDA"
+                  className="h-9 text-sm"
+                  {...register("nomeSocial")}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="cnpj" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  CNPJ
+                </Label>
+                <Input
+                  id="cnpj"
+                  placeholder="00.000.000/0000-00"
+                  className="h-9 text-sm"
+                  {...register("cnpj")}
+                />
+              </div>
+
+              {/* Toggle padrão */}
+              <div className="pt-2 border-t">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="sim-nao-switch" className="text-sm cursor-pointer">
+                    Quantidades padrão?
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {ativo ? "Sim" : "Não"}
+                    </span>
+                    <Switch
+                      id="sim-nao-switch"
+                      checked={ativo}
+                      onCheckedChange={setAtivo}
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
-                      Senha
-                    </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      className="w-full h-11 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      {...register("password")}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="nomeSocial" className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
-                      Nome da empresa
-                    </Label>
-                    <Input
-                      id="company"
-                      placeholder="ABS Company Plus"
-                      className="w-full h-11 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      {...register("company")}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="nomeSocial" className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
-                      Nome Social
-                    </Label>
-                    <Input
-                      id="NomeSocial"
-                      placeholder="Exemple LTDA"
-                      className="w-full h-11 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      {...register("nomeSocial")}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="cnpj" className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
-                      CNPJ
-                    </Label>
-                    <Input
-                      id="cnpj"
-                      placeholder="00.000.000/0000-00"
-                      className="w-full h-11 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      {...register("cnpj")}
-                    />
-                  </div>
-
-                   
-                      <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                            <Label>Este usuário terá quantidade de itens por padrão?</Label>
-                            <Switch 
-                            id="sim-nao-switch" 
-                            checked={ativo} 
-                            onCheckedChange={setAtivo} 
-                            />
-                            <Label htmlFor="sim-nao-switch">
-                            {ativo ? "Sim" : "Não"}
-                            </Label>
-                        </div>
-
-
-                        {/* Opção de quantidade */}        
-                        {ativo && selectedItems.length > 0 && (
-                        <div className="space-y-4 mt-4">
-                            <Label className="font-semibold">
-                            Quantidade padrão por item (opcional)
-                            </Label>
-
-                           {selectedItems.filter(i => !ITEMS_WITH_SUBCATEGORY.includes(i.item))
-                            .map(({ item, quantity }) => (
-                                <div key={item} className="flex items-center gap-4">
-                                <span className="w-40 text-sm font-medium">{item}</span>
-
-                                <Input
-                                    type="number"
-                                    min={0}
-                                    placeholder="Quantidade"
-                                    value={quantity ?? ""}
-                                    onChange={e =>
-                                    setQuantity(item, Number(e.target.value))
-                                    }
-                                    className="w-32"
-                                />
-                                </div>
-                            ))}
-
-                               
-                        </div>
-                        )}
-
-                 </div>
-
-
                 </div>
+                {ativo && (
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    Defina as quantidades na coluna à direita
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-                {/* COLUNA 2 */}
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className={`text-sm font-medium ${theme === "dark" ? "text-white" : "text-gray-700"}`}>
-                      Digite quais itens estão disponíveis ao cliente
-                    </Label>
+          {/* ── COLUNA 2: Seleção de itens ── */}
+          <Card className="shadow-sm">
+            <CardHeader className="pb-3 border-b">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                Itens disponíveis
+              </CardTitle>
+            </CardHeader>
 
-                    {ITEM_VALUES.map(item => {
-                            const isDark = theme === "dark"
-                            const selected = selectedItems.find(i => i.item === item)
+            <CardContent className="pt-5 space-y-2">
+              {ITEM_VALUES.map(item => {
+                const selected = selectedItems.find(i => i.item === item)
+                const isFoodWithSub = ITEMS_WITH_SUBCATEGORY.includes(item)
+                const isDrink = item === "Bebidas"
+                const subcategories = isFoodWithSub
+                  ? SUBCATEGORIES_VALUES
+                  : isDrink
+                  ? SUBCATEGORIES_DRINKS
+                  : null
 
-                            const isFoodWithSub = ITEMS_WITH_SUBCATEGORY.includes(item)
+                return (
+                  <div key={item}>
+                    {/* Botão do item */}
+                    <button
+                      type="button"
+                      onClick={() => itemSelect(item)}
+                      className={clsx(
+                        "w-full flex items-center gap-2 px-3 py-2.5 rounded-lg border text-sm font-medium transition-all",
+                        selected
+                          ? "bg-orange-500 text-white border-orange-500"
+                          : "bg-background text-foreground border-border hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 dark:hover:bg-orange-600/10 dark:hover:text-orange-400 dark:hover:border-orange-600"
+                      )}
+                    >
+                      {selected
+                        ? <Check className="w-3.5 h-3.5 shrink-0" />
+                        : <Plus className="w-3.5 h-3.5 shrink-0" />
+                      }
+                      {item}
+                    </button>
 
-                            const isDrink = item === "Bebidas"
-
-                            const subcategories = isFoodWithSub ? SUBCATEGORIES_VALUES : isDrink ? SUBCATEGORIES_DRINKS : null
-
-                            return (
-                                <div key={item}>
-                                <Button
-                                    type="button"
-                                    className={clsx( 
-                                         "justify-start rounded-xl h-12 m-2 border w-full transition-all duration-200",
-                                            {
-                                            
-                                            "bg-orange-500 text-white border-orange-500 cursor-default":
-                                                selected && !isDark,
-
-                                            "bg-orange-500 text-white border-orange-400 cursor-default":
-                                                selected && isDark,
-
-                                            
-                                            "bg-neutral-800 text-white hover:bg-orange-600/10 hover:text-orange-400 hover:border-orange-600":
-                                                !selected && isDark,
-
-                                            "bg-white text-black hover:bg-orange-50 hover:text-orange-700 hover:border-orange-300":
-                                                !selected && !isDark, })}
-                                    onClick={() => itemSelect(item)}
+                    {/* Subcategorias */}
+                    {selected && subcategories && (
+                      <div className="mt-2 mb-1 pl-3 space-y-1.5 border-l-2 border-orange-200 ml-2">
+                        {subcategories.map(sub => {
+                          const selectedSub = selected.subcategories?.find(
+                            s => s.name === sub
+                          )
+                          return (
+                            <label
+                              key={sub}
+                              className="flex items-center gap-2.5 cursor-pointer group py-0.5"
+                            >
+                              <Checkbox
+                                checked={!!selectedSub}
+                                onCheckedChange={() => toggleSubcategory(item, sub)}
+                                className="shrink-0"
+                              />
+                              <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                                {sub}
+                              </span>
+                              {selectedSub && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] px-1.5 py-0 h-4 font-normal ml-auto"
                                 >
-                                    {selected ? (<><Check />{item}</>) : (<><Plus /> {item}</>)}
-                                    
-                                </Button>
-
-                              {selected && subcategories && (
-                                <div className="mt-3 space-y-2 pl-2">
-                                    {subcategories.map(sub => {
-                                    const selectedSub = selected.subcategories?.find(
-                                        s => s.name === sub
-                                    )
-
-                                    return (
-                                        <div key={sub} className="flex items-center gap-3">
-                                        <Checkbox
-                                            checked={!!selectedSub}
-                                            onCheckedChange={() =>
-                                            toggleSubcategory(item, sub)
-                                            }
-                                        />
-
-                                        <span className="text-sm w-32">{sub}</span>
-
-                                        {ativo && selectedSub && (
-                                            <Input
-                                            type="number"
-                                            min={0}
-                                            className="w-24"
-                                            placeholder="Qtd"
-                                            value={selectedSub.quantity ?? ""}
-                                            onChange={e =>
-                                                setSubcategoryQuantity(
-                                                item,
-                                                sub,
-                                                Number(e.target.value)
-                                                )
-                                            }
-                                            />
-                                        )}
-                                        </div>
-                                    )
-                                    })}
-                                </div>
-                                )}
-
-
-                                </div>
-                            )
-                            })}
-
-                         
-                                          
+                                  configurado
+                                </Badge>
+                              )}
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
-                </div>
-              </div>
+                )
+              })}
+            </CardContent>
+          </Card>
 
-              {/* BOTÃO DE SUBMIT */}
-              <div className="pt-4">
-                <Button 
-                  type="submit" 
-                  className="w-full h-11 text-base font-medium"
-                >
-                  Cadastrar
-                </Button>
-              </div>
+          {/* ── COLUNA 3: Quantidades padrão ── */}
+          <div className="space-y-4">
+            {ativo ? (
+              <>
+                {/* Itens sem subcategoria */}
+                {selectedItems.filter(i => !ITEMS_WITH_SUBCATEGORY.includes(i.item)).map(item => (
+                  <Card key={item.item} className="shadow-sm">
+                    <CardHeader className="pb-3 border-b py-3 px-4">
+                      <CardTitle className="text-sm font-medium">
+                        {item.item}
+                      </CardTitle>
+                    </CardHeader>
 
-              <div>
-                <Button 
-                  className="w-full h-11 text-base font-medium"
-                  onClick={() => router.replace("/panel")}
-                >
-                  Voltar
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+                    <CardContent className="pt-4 px-4 pb-4 space-y-3">
+                     {[
+                    { label: "Segunda à Sexta", field: "weekQuantity" },
+                    { label: "Sábado", field: "saturdayQuantity" },
+                    { label: "Domingo", field: "sundayQuantity" },
+                  ].map(({ label, field }) => {
+                    const quantityField = field as "weekQuantity" | "saturdayQuantity" | "sundayQuantity"
+                    return (
+                      <div key={field} className="flex items-center justify-between gap-3">
+                        <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                          {label}
+                        </Label>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={item[quantityField] ?? ""}
+                          onChange={e =>
+                            setQuantity(item.item, quantityField, Number(e.target.value))
+                          }
+                          className="h-8 w-20 text-sm text-right"
+                        />
+                      </div>
+                    )
+                  })}
+                    </CardContent>
+                  </Card>
+                ))}
+
+                {/* Subcategorias selecionadas */}
+                {selectedItems
+                  .filter(i => ITEMS_WITH_SUBCATEGORY.includes(i.item) || i.item === "Bebidas")
+                  .map(item =>
+                    item.subcategories?.map(sub => (
+                      <Card key={`${item.item}-${sub.name}`} className="shadow-sm">
+                        <CardHeader className="pb-3 border-b py-3 px-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground">{item.item}</p>
+                            <CardTitle className="text-sm font-medium mt-0.5">
+                              {sub.name}
+                            </CardTitle>
+                          </div>
+                        </CardHeader>
+
+                        <CardContent className="pt-4 px-4 pb-4 space-y-3">
+                          {[
+                            { label: "Segunda à Sexta", field: "weekQuantity" },
+                            { label: "Sábado", field: "saturdayQuantity" },
+                            { label: "Domingo", field: "sundayQuantity" },
+                          ].map(({ label, field }) => (
+                            <div key={field} className="flex items-center justify-between gap-3">
+                              <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                                {label}
+                              </Label>
+                              <Input
+                                type="number"
+                                min={0}
+                                value={sub[field as keyof typeof sub] ?? ""}
+                                onChange={e =>
+                                  setSubcategoryQuantity(
+                                    item.item,
+                                    sub.name,
+                                    field as any,
+                                    Number(e.target.value)
+                                  )
+                                }
+                                className="h-8 w-20 text-sm text-right"
+                              />
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    ))
+                  )}
+
+                {/* Placeholder quando nada foi selecionado */}
+                {selectedItems.length === 0 && (
+                  <Card className="shadow-sm border-dashed">
+                    <CardContent className="py-8 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        Selecione itens na coluna ao lado para configurar quantidades
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            ) : (
+              <Card className="shadow-sm border-dashed">
+                <CardContent className="py-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Ative "Quantidades padrão" para configurar
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Botões de ação fixos no fim da coluna 3 */}
+            <div className="space-y-2 pt-2">
+              <Button type="submit" className="w-full h-10 text-sm font-medium">
+                Cadastrar usuário
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-10 text-sm font-medium"
+                onClick={() => router.replace("/panel")}
+              >
+                Voltar
+              </Button>
+            </div>
+          </div>
+
+        </div>
+      </form>
     </div>
   </div>
-)}
+)
+
+}

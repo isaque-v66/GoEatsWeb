@@ -8,8 +8,7 @@ export const ITEM_VALUES = [
   "Lanche",
   "Bebidas",
   "Café da tarde",
-  "Café noturno",
-  "Outros",
+  "Café noturno"
 ] as const
 
 export type ItemType = (typeof ITEM_VALUES)[number]
@@ -38,8 +37,7 @@ export const ITEM_TO_MEAL_TYPE: Record<ItemType, MealType> = {
   Lanche: MealType.LANCHE,
   Bebidas: MealType.BEBIDAS,
   "Café da tarde": MealType.CAFE_TARDE,
-  "Café noturno": MealType.CAFE_NOTURNO,
-  Outros: MealType.LANCHE, 
+  "Café noturno": MealType.CAFE_NOTURNO
 }
 
 

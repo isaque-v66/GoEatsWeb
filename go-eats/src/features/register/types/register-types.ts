@@ -56,7 +56,9 @@ export type Subcategory = FoodSubcategory | DrinkSubcategory
 
 export type SelectedSubcategory = {
   name: Subcategory
-  quantity?: number
+  weekQuantity?: number
+  saturdayQuantity?: number
+  sundayQuantity?: number
 }
 
 
@@ -64,7 +66,9 @@ export type SelectedSubcategory = {
 export type SelectedItem = {
   item: ItemType
   subcategories?: SelectedSubcategory[]
-  quantity?: number
+  weekQuantity?: number
+  saturdayQuantity?: number
+  sundayQuantity?: number
 }
 
 
@@ -73,19 +77,30 @@ export const SubcategorySchema = z.object({
     z.enum(SUBCATEGORIES_VALUES),
     z.enum(SUBCATEGORIES_DRINKS),
   ]),
-  quantity: z.number().int().nonnegative().optional(),
+  weekQuantity: z.number().int().nonnegative().optional(),
+  saturdayQuantity: z.number().int().nonnegative().optional(),
+  sundayQuantity: z.number().int().nonnegative().optional(),
 })
 
 export const ItemSchema = z.object({
   item: z.enum(ITEM_VALUES),
   subcategories: z.array(SubcategorySchema).optional(),
-  quantity: z.number().int().nonnegative().optional(),
+  weekQuantity: z.number().int().nonnegative().optional(),
+  saturdayQuantity: z.number().int().nonnegative().optional(),
+  sundayQuantity: z.number().int().nonnegative().optional(),
 }).refine(
   data =>
-    !(data.subcategories?.length && data.quantity !== undefined),
+    !(
+      data.subcategories?.length &&
+      (
+        data.weekQuantity !== undefined ||
+        data.saturdayQuantity !== undefined ||
+        data.sundayQuantity !== undefined
+      )
+    ),
   {
-    message: "Itens com subcategoria não podem ter quantidade direta",
-    path: ["quantity"],
+    message:
+      "Itens com subcategoria não podem ter quantidade direta",
   }
 )
 

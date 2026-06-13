@@ -1,4 +1,4 @@
-"use client"
+
 
 import { MealType } from "../constants/itemValues.constants"
 
@@ -46,65 +46,67 @@ const MEAL_LIMITS: Record<MealType, { hour: number; minute: number } | null> = {
 
 
 export function isMealAvailable(meal: MealType): boolean {
-  const now = getNow()
+  // const now = getNow()
 
-  if (isWeekend(now)) return false
+  // if (isWeekend(now)) return false
 
-  if (isFriday(now)) {
-    return now <= setTime(now, 14, 30)
-  }
+  // if (isFriday(now)) {
+  //   return now <= setTime(now, 14, 30)
+  // }
 
-  // DESJEJUM (regra especial)
-  if (meal === MealType.DESJEJUM) {
-    const yesterday = new Date(now)
-    yesterday.setDate(now.getDate() - 1)
+  // // DESJEJUM (regra especial)
+  // if (meal === MealType.DESJEJUM) {
+  //   const yesterday = new Date(now)
+  //   yesterday.setDate(now.getDate() - 1)
 
-    const limit = setTime(yesterday, 14, 30)
-    return now <= limit
-  }
+  //   const limit = setTime(yesterday, 14, 30)
+  //   return now <= limit
+  // }
 
-  const config = MEAL_LIMITS[meal]
+  // const config = MEAL_LIMITS[meal]
 
-  if (!config) return false
+  // if (!config) return false
 
-  const limit = setTime(now, config.hour, config.minute)
+  // const limit = setTime(now, config.hour, config.minute)
 
-  return now <= limit
+  return true
 }
 
 
 
 export function getRemainingTime(meal: MealType): string {
-  const now = getNow()
-  let limit: Date
+  // const now = getNow()
+  // let limit: Date
 
-  if (isWeekend(now)) {
-    return "Indisponível no fim de semana"
-  }
+  // if (isWeekend(now)) {
+  //   return "Indisponível no fim de semana"
+  // }
 
-  if (isFriday(now)) {
-    limit = setTime(now, 14, 30)
-  } else if (meal === MealType.DESJEJUM) {
-    const yesterday = new Date(now)
-    yesterday.setDate(now.getDate() - 1)
+  // if (isFriday(now)) {
+  //   limit = setTime(now, 14, 30)
+  // } else if (meal === MealType.DESJEJUM) {
+  //   const yesterday = new Date(now)
+  //   yesterday.setDate(now.getDate() - 1)
 
-    limit = setTime(yesterday, 14, 30)
-  } else {
-    const config = MEAL_LIMITS[meal]
+  //   limit = setTime(yesterday, 14, 30)
+  // } else {
+  //   const config = MEAL_LIMITS[meal]
 
-    if (!config) return "Indisponível"
+  //   if (!config) return "Indisponível"
 
-    limit = setTime(now, config.hour, config.minute)
-  }
+  //   limit = setTime(now, config.hour, config.minute)
+  // }
 
-  const diff = limit.getTime() - now.getTime()
+  // const diff = limit.getTime() - now.getTime()
 
-  if (diff <= 0) return "Encerrado"
+  // if (diff <= 0) return "Encerrado"
 
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(minutes / 60)
+  // const minutes = Math.floor(diff / 60000)
+  // const hours = Math.floor(minutes / 60)
 
-  return hours > 0
-    ? `${hours}h ${minutes % 60}min`
-    : `${minutes}min`
+  // return hours > 0
+  //   ? `${hours}h ${minutes % 60}min`
+  //   : `${minutes}min`
+
+  return "Disponível para testes"
 }

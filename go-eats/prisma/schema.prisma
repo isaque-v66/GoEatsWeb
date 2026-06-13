@@ -25,6 +25,8 @@ model User {
   companyId     String 
   company       Company @relation(fields: [companyId], references: [id]) 
 
+  scheduledOrders ScheduledOrder[]
+
   itemConfigs   UserItemConfig[]
   orders        Order[]
   sessions      Session[]
@@ -66,6 +68,7 @@ model Item {
 
   configs    UserItemConfig[]
   orderItems OrderItem[]
+  scheduledOrderItems ScheduledOrderItem[]
 
   createdAt  DateTime @default(now())
 
@@ -85,9 +88,11 @@ model Subcategory {
   mealType   MealType
   configs    UserSubcategoryConfig[]
   orderItems OrderItem[]
+  scheduledOrderItems ScheduledOrderItem[]
 
   @@unique([name, mealType])
 }
+
 
 
 
@@ -102,7 +107,10 @@ model UserItemConfig {
   itemId    String
   item      Item   @relation(fields: [itemId], references: [id])
 
-  defaultQuantity Int?
+
+  weekdayQuantity Int?
+  saturdayQuantity Int?
+  sundayQuantity Int?
 
   subcategories UserSubcategoryConfig[]
 
@@ -124,7 +132,9 @@ model UserSubcategoryConfig {
   subcategoryId String
   subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
 
-  defaultQuantity Int?
+  weekdayQuantity Int?
+  saturdayQuantity Int?
+  sundayQuantity Int?
 
   @@unique([userItemId, subcategoryId])
   @@index([userItemId])
@@ -209,7 +219,46 @@ model Session {
 }
 
 
+model ScheduledOrderItem {
+  id                  String @id @default(uuid())
 
+  scheduledOrderId    String
+  scheduledOrder      ScheduledOrder @relation(fields: [scheduledOrderId], references: [id], onDelete: Cascade)
+
+  itemId              String
+  item                Item @relation(fields: [itemId],references: [id])
+
+  subcategoryId       String?
+  subcategory         Subcategory? @relation(fields: [subcategoryId], references: [id])
+
+  quantity            Int
+
+  @@index([scheduledOrderId])
+}
+
+
+
+
+model ScheduledOrder {
+  id               String @id @default(uuid())
+
+  userId           String
+  user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date             DateTime
+
+  startDate      DateTime?   
+  endDate        DateTime?
+
+  applyAsDefault   Boolean @default(false)
+
+  items            ScheduledOrderItem[]
+
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([date])
+}
 
 
 
