@@ -1,14 +1,11 @@
 import nodemailer from "nodemailer"
 
 type SendEmailParams = {
-  subject: string
   message: string
+  subject?: string
 }
 
-export async function sendEmail({
-  subject,
-  message,
-}: SendEmailParams) {
+export async function sendEmail({ message, subject = "Novo Pedido" }: SendEmailParams) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
