@@ -8,7 +8,7 @@ import { useFormData } from "../../register/contexts/formRegister-context"
 import { Header } from "../../../shared/components/header"
 import { CheckCircle, ArrowLeft, ArrowRight, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { TypeForm } from "../../register/components/dashboard-register"
+import { TypeForm } from "../../register/types/register-types"
 import { useEffect, useState } from "react"
 
 
@@ -70,17 +70,17 @@ export function DashboardConfirm() {
       name: item.item,
       mealType: ITEM_TO_MEAL[item.item as ItemKey],
 
-     
-      defaultQuantity: item.subcategories?.length
-        ? null
-        : item.quantity ?? null,
+      weekdayQuantity: item.subcategories?.length ? null : item.weekQuantity ?? null,
+      saturdayQuantity: item.subcategories?.length ? null : item.saturdayQuantity ?? null,
+      sundayQuantity: item.subcategories?.length ? null : item.sundayQuantity ?? null,
 
       subcategories: item.subcategories?.map(sub => ({
         name: sub.name,
-        defaultQuantity: sub.quantity ?? null,
+        weekdayQuantity: sub.weekQuantity ?? null,
+        saturdayQuantity: sub.saturdayQuantity ?? null,
+        sundayQuantity: sub.sundayQuantity ?? null,
       })) ?? [],
     })),
-
     }
 
     
@@ -220,30 +220,47 @@ export function DashboardConfirm() {
                   </div>
                 </section>
 
-                {/* ITENS */}
+               {/* ITENS */}
                 <section>
                   <h3 className="text-lg font-semibold mb-4">Itens Disponíveis</h3>
                   <div className="space-y-2">
-                    {data?.items?.map((item, index) => (
+                    {data?.items?.map((item: TypeForm["items"][number], index: number) => (
                       <div
                         key={index}
                         className={`
-                          flex justify-between items-center p-3 rounded-lg border
+                          rounded-lg border p-3
                           ${isDark
                             ? "border-neutral-700 bg-neutral-800"
                             : "border-neutral-200 bg-white"}
                         `}
                       >
-                        <span className="font-medium">{item.item}</span>
-                        {item.subcategories && (
-                          <span className="text-sm text-neutral-500">
-                            {item.subcategories.map((sub, idx) => (
-                              <span key={idx} className={isDark ? "text-white" : "text-neutral-700"}>
-                                {sub.name}
-                                {sub.quantity !== undefined && ` QTD: ${sub.quantity}  `}
-                              </span>
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">{item.item}</span>
+
+                          {!item.subcategories?.length && (
+                            <div className="text-xs text-muted-foreground space-x-2">
+                              {item.weekQuantity != null && <span>Seg-Sex: {item.weekQuantity}</span>}
+                              {item.saturdayQuantity != null && <span>Sáb: {item.saturdayQuantity}</span>}
+                              {item.sundayQuantity != null && <span>Dom: {item.sundayQuantity}</span>}
+                            </div>
+                          )}
+                        </div>
+
+                        {item.subcategories && item.subcategories.length > 0 && (
+                          <div className="mt-2 space-y-1 pl-2 border-l-2 border-orange-200">
+                            {item.subcategories.map((sub, idx: number) => (
+                              <div key={idx} className="flex justify-between items-center text-sm">
+                                <span className={isDark ? "text-neutral-300" : "text-neutral-700"}>
+                                  {sub.name}
+                                </span>
+                                <div className="text-xs text-muted-foreground space-x-2">
+                                  {sub.weekQuantity != null && <span>Seg-Sex: {sub.weekQuantity}</span>}
+                                  {sub.saturdayQuantity != null && <span>Sáb: {sub.saturdayQuantity}</span>}
+                                  {sub.sundayQuantity != null && <span>Dom: {sub.sundayQuantity}</span>}
+                                </div>
+                              </div>
                             ))}
-                          </span>
+                          </div>
                         )}
                       </div>
                     ))}

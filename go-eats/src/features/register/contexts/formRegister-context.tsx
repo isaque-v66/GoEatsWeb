@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { TypeForm } from "../components/dashboard-register"
+import { TypeForm } from "../types/register-types"
 
 type FormContextType = {
   data: TypeForm | null

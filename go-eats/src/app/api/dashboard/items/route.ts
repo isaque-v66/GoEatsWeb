@@ -32,7 +32,9 @@ export async function GET(req: Request) {
       mealType: string
       subcategories?: {
         name: string
-        defaultQuantity: number | null
+        weekdayQuantity: number | null
+        saturdayQuantity: number | null
+        sundayQuantity: number | null
       }[]
     }>()
 
@@ -48,19 +50,21 @@ export async function GET(req: Request) {
       }
 
       for (const sc of config.subcategories) {
-        itemsMap.get(key)!.subcategories!.push({
+         itemsMap.get(key)!.subcategories!.push({
           name: sc.subcategory.name,
-          defaultQuantity: sc.defaultQuantity,
+          weekdayQuantity: sc.weekdayQuantity,
+          saturdayQuantity: sc.saturdayQuantity,
+          sundayQuantity: sc.sundayQuantity,
         })
-      }
     }
 
     const items = Array.from(itemsMap.values()).map(item => {
       if (!item.subcategories?.length) delete item.subcategories
       return item
     })
-
+  
     return NextResponse.json({ items })
+  }
   } catch (error) {
     console.error(error)
     return NextResponse.json(
