@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(req: Request) {
   try {
-    
     const { searchParams } = new URL(req.url)
     const userId = searchParams.get("userId")
 
@@ -20,9 +19,7 @@ export async function GET(req: Request) {
       include: {
         item: true,
         subcategories: {
-          include: {
-            subcategory: true,
-          },
+          include: { subcategory: true },
         },
       },
     })
@@ -50,21 +47,23 @@ export async function GET(req: Request) {
       }
 
       for (const sc of config.subcategories) {
-         itemsMap.get(key)!.subcategories!.push({
+        itemsMap.get(key)!.subcategories!.push({
           name: sc.subcategory.name,
           weekdayQuantity: sc.weekdayQuantity,
           saturdayQuantity: sc.saturdayQuantity,
           sundayQuantity: sc.sundayQuantity,
         })
-    }
+      }
+    } // ← fecha loop externo
 
+    // Fora dos loops — processa todos os configs antes de retornar
     const items = Array.from(itemsMap.values()).map(item => {
       if (!item.subcategories?.length) delete item.subcategories
       return item
     })
-  
+
     return NextResponse.json({ items })
-  }
+
   } catch (error) {
     console.error(error)
     return NextResponse.json(
