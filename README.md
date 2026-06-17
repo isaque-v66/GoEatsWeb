@@ -458,11 +458,12 @@ Atualmente o projeto possui cobertura para:
 ## Evoluções Futuras
 
 
-* Painel administrativo
 * Relatórios de consumo
+* Dashboard analítico com métricas de pedidos
 * Integração oficial com WhatsApp Business API
 * Notificações em tempo real
 * Incluir a lógica de Queue no envio de email.
+* Exportação de relatórios em PDF e Excel
 
 
 
