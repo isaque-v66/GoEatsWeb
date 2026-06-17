@@ -12,23 +12,23 @@ O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa *
 
 ### Login
 
-![Tela de Login](/go-eats/docs/Login.png)
+![Tela de Login](go-eats/docs/Login.png)
 
 ---
 
 ### Dashboard
 
-![Dashboard](/go-eats/docs/Dashboard.png)
+![Dashboard](go-eats/docs/Dashboard.png)
 
 ---
 
 ### Registro de usuário
-![Register](/go-eats/docs/Register.png)
+![Register](go-eats/docs/Register.png)
 
 ---
 
 ### Painel Administrativo
-![Panel](/go-eats/docs/Panel.png)
+![Panel](go-eats/docs/Panel.png)
 
 
 ---
@@ -100,6 +100,7 @@ O sistema permite que usuários:
 * Enviem pedidos automaticamente
 * Disparem pedidos via integração (WhatsApp ou e-mail)
 * Automatizem pedidos recorrentes com base no dia anterior
+* Sejam gerenciados por meio de um painel admistrativo
 
 ---
 
@@ -163,6 +164,24 @@ O sistema permite que usuários:
 
   * Sistema replica o pedido do dia anterior
   * Envia automaticamente
+
+---
+
+
+## Painel administrativo
+
+  ### Funcionalidades:
+   * Listagem de usuários cadastrados
+   * Busca por e-mail, empresa e CNPJ
+   * Filtro por perfil de acesso (Administrador ou Usuário)
+   * Atualização de informações dos usuários
+   * Exclusão de usuários
+   * Indicadores resumidos em cards
+   * Paginação no frontend para navegação entre páginas
+   * Paginação no backend utilizando Prisma (`skip` e `take`)
+   * Busca e filtros integrados à paginação
+   * Atualização dinâmica dos dados utilizando React Query
+
 
 ---
 
