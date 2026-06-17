@@ -60,30 +60,20 @@ export function DashboardContent() {
     return sum + (order.quantity ?? 0)
   }, 0)
 
-  const orderSummaryProps = {
-    orders,
-    onUpdateQuantity: updateQuantity,
-    onRemoveItem: removeItem,
-    onUpdateScheduleType: updateScheduleType,
-    onUpdateDefaultFlag: updateDefaultFlag,
-    onUpdateSubScheduleType: updateSubScheduleType,
-    onUpdateSubDefaultFlag: updateSubDefaultFlag,
-    updateDateRange: updateDateRange
-    
-  }
-
-
-
-
-
-
-
-
-
-
-
-
   
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div className={`min-h-screen ${isDark ? "bg-neutral-950" : "bg-neutral-50"}`}>
       <Header />
