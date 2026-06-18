@@ -56,27 +56,27 @@ export function Header() {
             : "border-neutral-200 bg-white/90"
         }`}
       >
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md sm:h-12 sm:w-12 ${
                 theme === "dark"
                   ? "bg-gradient-to-br from-orange-600 to-orange-700"
                   : "bg-gradient-to-br from-orange-500 to-orange-600"
               }`}
             >
-              <Utensils className="w-7 h-7 text-white" />
+              <Utensils className="h-5 w-5 text-white sm:h-7 sm:w-7" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h1
-                className={`text-2xl font-bold ${
+                className={`truncate text-lg font-bold leading-tight sm:text-2xl ${
                   theme === "dark" ? "text-white" : "text-neutral-900"
                 }`}
               >
                 Go Eats
               </h1>
               <p
-                className={`text-sm ${
+                className={`truncate text-xs leading-tight sm:text-sm ${
                   theme === "dark" ? "text-neutral-400" : "text-neutral-500"
                 }`}
               >
@@ -85,10 +85,10 @@ export function Header() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
             {!loading && user && (
               <span
-                className={`text-sm font-medium ${
+                className={`hidden text-sm font-medium sm:inline ${
                   theme === "dark" ? "text-neutral-300" : "text-neutral-700"
                 }`}
               >
@@ -97,44 +97,44 @@ export function Header() {
             )}
 
             <Button
-            variant="ghost"
-            size="sm"
-            onClick={()=> setOpenLogoutDialog(true)}
-            className={`
-              relative overflow-hidden group
-              transition-colors duration-300
-              ${theme === "dark"
-                ? "text-neutral-300 hover:text-orange-400"
-                : "text-neutral-700 hover:text-orange-600"
-              }
-            `}
-          >
-            {/* Glow */}
-            <span
+              variant="ghost"
+              size="sm"
+              onClick={() => setOpenLogoutDialog(true)}
               className={`
-                absolute inset-0 opacity-0 group-hover:opacity-100
-                transition-opacity duration-500
+                relative shrink-0 overflow-hidden group
+                px-2 sm:px-3
+                transition-colors duration-300
                 ${theme === "dark"
-                  ? "bg-orange-500/10"
-                  : "bg-orange-400/15"
+                  ? "text-neutral-300 hover:text-orange-400"
+                  : "text-neutral-700 hover:text-orange-600"
                 }
               `}
-            />
+            >
+             
+              <span
+                className={`
+                  absolute inset-0 opacity-0 group-hover:opacity-100
+                  transition-opacity duration-500
+                  ${theme === "dark"
+                    ? "bg-orange-500/10"
+                    : "bg-orange-400/15"
+                  }
+                `}
+              />
 
-            <LogOut
-              className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:translate-x-1"
-            />
+              <LogOut
+                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:mr-2"
+              />
 
-            <span className="relative z-10 font-medium">
-              Sair
-            </span>
-          </Button>
-
+              <span className="relative z-10 hidden font-medium sm:inline">
+                Sair
+              </span>
+            </Button>
           </div>
         </div>
       </header>
 
-      {/* MODAL DE CONFIRMAÇÃO */}
+      
       <Dialog open={openLogoutDialog} onOpenChange={setOpenLogoutDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

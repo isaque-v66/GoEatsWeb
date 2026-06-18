@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
       // Busca subcategorias uma vez fora do loop de dias
       type SubPayload = { name: string; quantity: number }
-      const subcategoryMap = new Map<string, string>() // name → id
+      const subcategoryMap = new Map<string, string>() 
 
       if (orderItem.subcategories?.length) {
         for (const sub of orderItem.subcategories as SubPayload[]) {
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
     })
     
     await sendEmail({
-        subject: `📅 Pedido Especial - ${user?.company?.socialName}`,
+        subject: `Pedido Especial - ${user?.company?.socialName}`,
         message,
     })
     }

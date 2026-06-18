@@ -232,7 +232,7 @@ return (
       <form onSubmit={handleSubmit(formHandle)}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-          {/* ── COLUNA 1: Dados do usuário ── */}
+          
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b">
               <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -303,7 +303,7 @@ return (
                 />
               </div>
 
-              {/* Toggle padrão */}
+              
               <div className="pt-2 border-t">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="sim-nao-switch" className="text-sm cursor-pointer">
@@ -329,7 +329,7 @@ return (
             </CardContent>
           </Card>
 
-          {/* ── COLUNA 2: Seleção de itens ── */}
+          {/* ─COLUNA 2*/}
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b">
               <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -350,7 +350,7 @@ return (
 
                 return (
                   <div key={item}>
-                    {/* Botão do item */}
+                    
                     <button
                       type="button"
                       onClick={() => itemSelect(item)}
@@ -368,7 +368,7 @@ return (
                       {item}
                     </button>
 
-                    {/* Subcategorias */}
+                    
                     {selected && subcategories && (
                       <div className="mt-2 mb-1 pl-3 space-y-1.5 border-l-2 border-orange-200 ml-2">
                         {subcategories.map(sub => {
@@ -407,11 +407,11 @@ return (
             </CardContent>
           </Card>
 
-          {/* ── COLUNA 3: Quantidades padrão ── */}
+          {/* COLUNA 3*/}
           <div className="space-y-4">
             {ativo ? (
               <>
-                {/* Itens sem subcategoria */}
+               
                 {selectedItems.filter(i => !ITEMS_WITH_SUBCATEGORY.includes(i.item)).map(item => (
                   <Card key={item.item} className="shadow-sm">
                     <CardHeader className="pb-3 border-b py-3 px-4">
@@ -448,7 +448,7 @@ return (
                   </Card>
                 ))}
 
-                {/* Subcategorias selecionadas */}
+               
                 {selectedItems
                   .filter(i => ITEMS_WITH_SUBCATEGORY.includes(i.item) || i.item === "Bebidas")
                   .map(item =>
@@ -494,7 +494,7 @@ return (
                     ))
                   )}
 
-                {/* Placeholder quando nada foi selecionado */}
+                
                 {selectedItems.length === 0 && (
                   <Card className="shadow-sm border-dashed">
                     <CardContent className="py-8 text-center">
@@ -515,7 +515,7 @@ return (
               </Card>
             )}
 
-            {/* Botões de ação fixos no fim da coluna 3 */}
+            
             <div className="space-y-2 pt-2">
               <Button type="submit" className="w-full h-10 text-sm font-medium">
                 Cadastrar usuário

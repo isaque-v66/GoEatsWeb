@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       })
 
     await sendEmail({
-      subject: `🍽️ Novo Pedido - ${order.company.socialName}`,
+      subject: `Novo Pedido - ${order.company.socialName}`,
       message,
     })
 

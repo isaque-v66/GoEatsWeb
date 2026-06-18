@@ -19,6 +19,12 @@ const LoginSchema = z.object({
 
 export type LoginDataType = z.infer<typeof LoginSchema>
 
+
+
+
+
+
+
 export function LoginForm() {
   const router = useRouter()
   const { user, setUser } = useUser()
@@ -44,6 +50,8 @@ export function LoginForm() {
           router.replace(res.redirectTo)
         },
       })
+
+      
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro inesperado")
     }
@@ -59,6 +67,13 @@ export function LoginForm() {
     }
   `
 
+
+
+
+
+
+
+
   return (
     <div className={`min-h-screen flex items-center justify-center px-4 ${
       isDark
@@ -67,14 +82,14 @@ export function LoginForm() {
     }`}>
       <div className="w-full max-w-sm">
 
-        {/* Card */}
+        
         <div className={`rounded-xl border p-8 shadow-sm ${
           isDark
             ? "bg-neutral-900 border-neutral-800"
             : "bg-white border-neutral-200"
         }`}>
 
-          {/* Logo + título */}
+          
           <div className="flex flex-col items-center mb-8">
             <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center mb-4">
               <Utensils className="w-6 h-6 text-white" />
@@ -87,7 +102,7 @@ export function LoginForm() {
             </p>
           </div>
 
-          {/* Formulário */}
+          
           <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
 
             <div className="space-y-1.5">
@@ -147,7 +162,7 @@ export function LoginForm() {
           </form>
         </div>
 
-        {/* Rodapé discreto */}
+        
         <p className={`text-center text-xs mt-6 ${isDark ? "text-neutral-600" : "text-neutral-400"}`}>
           Go Eats © {new Date().getFullYear()}
         </p>

@@ -19,12 +19,20 @@ type MealType =
   | "BEBIDAS"
   | "CAFE_NOTURNO"
 
+
+
+
+  
 // Quais refeições cada cron cobre
 const MEALS_BY_CRON: Record<"1430" | "0800" | "0900", MealType[]> = {
   "1430": ["DESJEJUM", "BEBIDAS", "CAFE_TARDE", "CAFE_NOTURNO"],
   "0800": ["ALMOCO", "LANCHE"],
   "0900": ["JANTAR", "CEIA"],
 }
+
+
+
+
 
 // Tipo do dia para buscar UserItemConfig
 function getDayType(date: Date): "weekday" | "saturday" | "sunday" {
@@ -33,6 +41,9 @@ function getDayType(date: Date): "weekday" | "saturday" | "sunday" {
   if (day === 6) return "saturday"
   return "weekday"
 }
+
+
+
 
 // Quantidade padrão conforme o tipo do dia
 function getDefaultQuantity(
@@ -44,8 +55,11 @@ function getDefaultQuantity(
   return config.weekdayQuantity ?? 0
 }
 
+
+
+
 // Cálculo de qual data-alvo conforme o dia atual e horário de corte
-// Sexta + 14:30 → alvo = próximo sábado E domingo
+// Sexta + 14:30 -> alvo = próximo sábado E domingo
 function getTargetDates(cronKey: "1430" | "0800" | "0900"): Date[] {
   const now = new Date()
   const todayDay = getDay(now) 

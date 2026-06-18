@@ -54,9 +54,9 @@ export async function GET(req: Request) {
           sundayQuantity: sc.sundayQuantity,
         })
       }
-    } // ← fecha loop externo
+    } 
 
-    // Fora dos loops — processa todos os configs antes de retornar
+    
     const items = Array.from(itemsMap.values()).map(item => {
       if (!item.subcategories?.length) delete item.subcategories
       return item

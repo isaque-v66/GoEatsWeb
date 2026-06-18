@@ -23,7 +23,7 @@ export async function GET() {
     },
   })
 
-  // sessão inválida ou expirada
+  
   if (!session || session.expiresAt < new Date()) {
     cookieStore.delete("session_id")
 
