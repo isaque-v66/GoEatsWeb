@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
   Utensils, Coffee, Sandwich, Plus, ShoppingCart,
@@ -47,9 +47,9 @@ export function DashboardContent() {
   const [mobileCartOpen, setMobileCartOpen] = useState(false)
 
   const { orders, addOrder, updateQuantity, removeItem, updateScheduleType,
-    updateDefaultFlag, updateSubScheduleType, updateSubDefaultFlag, updateDateRange } = useOrder()
+    updateDefaultFlag, updateSubScheduleType, updateSubDefaultFlag, updateDateRange, clearOrders } = useOrder()
   const { user } = useUser()
-  const { items: availableItems, loading } = useDashboardItems(user?.id)
+  const { items: availableItems } = useDashboardItems(user?.id)
 
   const isDark = theme === "dark"
 
@@ -202,6 +202,7 @@ export function DashboardContent() {
                 onUpdateSubScheduleType={updateSubScheduleType}
                 onUpdateSubDefaultFlag={updateSubDefaultFlag}
                 onUpdateDateRange={updateDateRange}  
+                onOrderSubmitted={clearOrders}
               />
             </div>
           </div>
@@ -271,6 +272,7 @@ export function DashboardContent() {
                 onUpdateSubScheduleType={updateSubScheduleType}
                 onUpdateSubDefaultFlag={updateSubDefaultFlag}
                 onUpdateDateRange={updateDateRange}  
+                onOrderSubmitted={clearOrders}
               />
             </div>
           </div>

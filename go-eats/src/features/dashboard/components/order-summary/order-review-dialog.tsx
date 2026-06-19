@@ -7,29 +7,14 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover, PopoverContent, PopoverTrigger,
-} from "@/components/ui/popover"
-import { CalendarIcon, X } from "lucide-react"
-import { format, eachDayOfInterval, parseISO } from "date-fns"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { CalendarIcon, X, AlertTriangle } from "lucide-react"
+import { format, eachDayOfInterval, parseISO, isSameDay } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { DateRange } from "react-day-picker"
 import { Order, ScheduleType } from "../../types/order.types"
-
-
-
-
-
-
-
-
-
-
 
 type Props = {
   open: boolean
@@ -41,17 +26,12 @@ type Props = {
   onUpdateSubScheduleType: (orderId: string, subId: string, scheduleType: ScheduleType) => void
   onUpdateSubDefaultFlag: (orderId: string, subId: string, value: boolean) => void
   onUpdateDateRange: (orderId: string, startDate?: string, endDate?: string, subId?: string) => void
+  submitting: boolean
 }
 
 
 
 
-
-
-
-
-
-// Formata o intervalo de datas para exibição
 function formatDateRange(startDate?: string, endDate?: string) {
   if (!startDate) return null
   const start = format(parseISO(startDate), "dd MMM", { locale: ptBR })
@@ -63,38 +43,84 @@ function formatDateRange(startDate?: string, endDate?: string) {
 
 
 
-// Quantos dias um intervalo cobre
+
 function countDays(startDate?: string, endDate?: string) {
   if (!startDate) return 0
   if (!endDate || endDate === startDate) return 1
+  return eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) }).length
+}
+
+// Detecta conflitos: mesmo item (+sub) em datas que se sobrepõem
+type ConflictEntry = { key: string; date: string }
+
+
+
+function getAllDatesForEntry(startDate?: string, endDate?: string): string[] {
+  if (!startDate) return []
+  if (!endDate || endDate === startDate) return [startDate]
   return eachDayOfInterval({
     start: parseISO(startDate),
     end: parseISO(endDate),
-  }).length
+  }).map(d => format(d, "yyyy-MM-dd"))
 }
 
 
 
 
-// Seletor de data/intervalo reutilizável
-function DateRangePicker({
-  startDate,
-  endDate,
-  onChange,
-  onClear,
-}: {
+
+function findConflicts(orders: Order): Set<string> {
+  
+  const seen = new Map<string, Set<string>>() // key -> set de datas já usadas
+  const conflictingOrderIds = new Set<string>()
+
+  for (const order of orders.items) {
+    if (!order.subcategories?.length) {
+      const key = order.item
+      const dates = getAllDatesForEntry(order.startDate, order.endDate)
+
+      if (!seen.has(key)) seen.set(key, new Set())
+      const usedDates = seen.get(key)!
+
+      for (const date of dates) {
+        if (usedDates.has(date)) {
+          conflictingOrderIds.add(order.id)
+        }
+        usedDates.add(date)
+      }
+    } else {
+      for (const sub of order.subcategories) {
+        const key = `${order.item}::${sub.name}`
+        const dates = getAllDatesForEntry(sub.startDate, sub.endDate)
+
+        if (!seen.has(key)) seen.set(key, new Set())
+        const usedDates = seen.get(key)!
+
+        for (const date of dates) {
+          if (usedDates.has(date)) {
+            conflictingOrderIds.add(sub.id)
+          }
+          usedDates.add(date)
+        }
+      }
+    }
+  }
+
+  return conflictingOrderIds
+}
+
+function DateRangePicker({startDate, endDate, onChange, onClear, hasConflict}: {
   startDate?: string
   endDate?: string
   onChange: (start?: string, end?: string) => void
   onClear: () => void
+  hasConflict?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<"single" | "range">("single")
 
-  const selected: DateRange | undefined =
-    startDate
-      ? { from: parseISO(startDate), to: endDate ? parseISO(endDate) : undefined }
-      : undefined
+  const selected: DateRange | undefined = startDate
+    ? { from: parseISO(startDate), to: endDate ? parseISO(endDate) : undefined }
+    : undefined
 
   const label = formatDateRange(startDate, endDate)
   const days = countDays(startDate, endDate)
@@ -103,7 +129,7 @@ function DateRangePicker({
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Data especial
+          Defina a data do pedido
         </Label>
         {startDate && (
           <button
@@ -116,7 +142,6 @@ function DateRangePicker({
         )}
       </div>
 
-      {/* Modo: dia único ou intervalo */}
       <div className="flex gap-1">
         {(["single", "range"] as const).map(m => (
           <button
@@ -136,8 +161,14 @@ function DateRangePicker({
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button className="w-full flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-background text-sm hover:border-foreground transition-colors text-left">
-            <CalendarIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+          <button
+            className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
+              hasConflict
+                ? "border-destructive bg-destructive/5 text-destructive"
+                : "border-border bg-background hover:border-foreground"
+            }`}
+          >
+            <CalendarIcon className="w-3.5 h-3.5 shrink-0" />
             {label ? (
               <span className="flex items-center gap-2">
                 {label}
@@ -193,8 +224,14 @@ function DateRangePicker({
         </PopoverContent>
       </Popover>
 
-      {/* Preview dos dias gerados */}
-      {days > 1 && (
+      {hasConflict && (
+        <p className="text-xs text-destructive flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3" />
+          Já existe um pedido deste item nesta data
+        </p>
+      )}
+
+      {days > 1 && !hasConflict && (
         <p className="text-xs text-muted-foreground">
           Serão criados {days} pedidos — um por dia no intervalo
         </p>
@@ -208,12 +245,14 @@ export function OrderReviewDialog({
   onOpenChange,
   orders,
   onSubmit,
-  onUpdateScheduleType,
   onUpdateDefaultFlag,
-  onUpdateSubScheduleType,
   onUpdateSubDefaultFlag,
   onUpdateDateRange,
+  submitting,
 }: Props) {
+  const conflicts = useMemo(() => findConflicts(orders), [orders])
+  const hasAnyConflict = conflicts.size > 0
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl gap-0 p-0 overflow-hidden rounded-xl">
@@ -226,7 +265,6 @@ export function OrderReviewDialog({
         <div className="max-h-[65vh] overflow-y-auto px-6 py-4 space-y-3">
           {orders.items.map(order => (
             <div key={order.id} className="rounded-lg border bg-muted/30 p-4 space-y-4">
-
               {!order.subcategories?.length ? (
                 <>
                   <div>
@@ -237,52 +275,19 @@ export function OrderReviewDialog({
                   </div>
 
                   <div className="grid gap-3">
-                    
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        Tipo do Pedido
-                      </Label>
-                      <Select
-                        value={order.scheduleType ?? "WEEKDAY"}
-                        disabled={!!order.startDate}
-                        onValueChange={value =>
-                          onUpdateScheduleType(order.id, value as ScheduleType)
-                        }
-                      >
-                        <SelectTrigger className="h-9 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="WEEKDAY">Segunda à Sexta</SelectItem>
-                          <SelectItem value="SATURDAY">Sábado</SelectItem>
-                          <SelectItem value="SUNDAY">Domingo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {order.startDate && (
-                        <p className="text-xs text-muted-foreground">
-                          O tipo é definido automaticamente pela data selecionada
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Calendário */}
                     <DateRangePicker
                       startDate={order.startDate}
                       endDate={order.endDate}
-                      onChange={(start, end) =>
-                        onUpdateDateRange(order.id, start, end)
-                      }
+                      hasConflict={conflicts.has(order.id)}
+                      onChange={(start, end) => onUpdateDateRange(order.id, start, end)}
                       onClear={() => onUpdateDateRange(order.id, undefined, undefined)}
                     />
 
-                    
                     {order.startDate && (
                       <label className="flex items-center gap-2.5 cursor-pointer group w-fit">
                         <Checkbox
                           checked={order.updateDefault ?? false}
-                          onCheckedChange={checked =>
-                            onUpdateDefaultFlag(order.id, !!checked)
-                          }
+                          onCheckedChange={checked => onUpdateDefaultFlag(order.id, !!checked)}
                           className="rounded"
                         />
                         <div>
@@ -311,46 +316,19 @@ export function OrderReviewDialog({
                           </p>
                         </div>
 
-                        <div className="space-y-1.5">
-                          <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                            Tipo do Pedido
-                          </Label>
-                          <Select
-                            value={sub.scheduleType}
-                            disabled={!!sub.startDate}
-                            onValueChange={value =>
-                              onUpdateSubScheduleType(order.id, sub.id, value as ScheduleType)
-                            }
-                          >
-                            <SelectTrigger className="h-9 text-sm">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="WEEKDAY">Segunda à Sexta</SelectItem>
-                              <SelectItem value="SATURDAY">Sábado</SelectItem>
-                              <SelectItem value="SUNDAY">Domingo</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-
                         <DateRangePicker
                           startDate={sub.startDate}
                           endDate={sub.endDate}
-                          onChange={(start, end) =>
-                            onUpdateDateRange(order.id, start, end, sub.id)
-                          }
-                          onClear={() =>
-                            onUpdateDateRange(order.id, undefined, undefined, sub.id)
-                          }
+                          hasConflict={conflicts.has(sub.id)}
+                          onChange={(start, end) => onUpdateDateRange(order.id, start, end, sub.id)}
+                          onClear={() => onUpdateDateRange(order.id, undefined, undefined, sub.id)}
                         />
 
                         {sub.startDate && (
                           <label className="flex items-center gap-2.5 cursor-pointer group w-fit">
                             <Checkbox
                               checked={sub.updateDefault ?? false}
-                              onCheckedChange={checked =>
-                                onUpdateSubDefaultFlag(order.id, sub.id, !!checked)
-                              }
+                              onCheckedChange={checked => onUpdateSubDefaultFlag(order.id, sub.id, !!checked)}
                               className="rounded"
                             />
                             <div>
@@ -372,13 +350,21 @@ export function OrderReviewDialog({
           ))}
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t bg-muted/20 gap-2">
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button size="sm" onClick={onSubmit}>
-            Confirmar Pedido
-          </Button>
+        <DialogFooter className="px-6 py-4 border-t bg-muted/20 gap-2 flex-col sm:flex-row items-stretch sm:items-center">
+          {hasAnyConflict && (
+            <p className="text-xs text-destructive flex items-center gap-1.5 mr-auto">
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              Resolva as datas conflitantes antes de confirmar
+            </p>
+          )}
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={submitting}>
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={onSubmit} disabled={submitting || hasAnyConflict}>
+              {submitting ? "Enviando..." : "Confirmar Pedido"}
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

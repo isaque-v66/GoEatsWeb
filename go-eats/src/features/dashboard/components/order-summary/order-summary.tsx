@@ -69,6 +69,8 @@ interface OrderSummaryProps {
     subId?: string
   ) => void 
   
+
+  onOrderSubmitted: () => void
 }
 
 
@@ -81,80 +83,75 @@ interface OrderSummaryProps {
 
 export function OrderSummary({orders, onUpdateQuantity, onRemoveItem, 
   onUpdateScheduleType, onUpdateDefaultFlag, onUpdateSubScheduleType,
-  onUpdateSubDefaultFlag, onUpdateDateRange }: OrderSummaryProps) {
-
+  onUpdateSubDefaultFlag, onUpdateDateRange, onOrderSubmitted }: OrderSummaryProps) {
 
 
   const { user } = useUser()
-
   const { submitOrder, loading } = useSubmitOrder()
-
   const [editingValues, setEditingValues] = useState<Record<string, string>>({})
-
   const [reviewOpen, setReviewOpen] = useState(false)
+  const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
+  const isSubmitting = loading || isSubmittingLocal
 
 
-
-  const totalItems = orders.items.reduce(
-    (sum, order) => {
-      if (order.subcategories?.length) {
-        return (
-          sum +
-          order.subcategories.reduce(
-            (subSum, sub) =>
-              subSum + sub.quantity,
-            0
-          )
-        )
-      }
-
-      return sum + (order.quantity ?? 0)
-    },
-    0
-  )
+  const totalItems = orders.items.reduce((sum, order) => {
+    if (order.subcategories?.length) {
+      return sum + order.subcategories.reduce((s, sub) => s + sub.quantity, 0)
+    }
+    return sum + (order.quantity ?? 0)
+  }, 0)
 
 
 
 
   const handleSubmit = async () => {
-  if (!user?.id || !user?.companyId) {
-    alert("Usuário não autenticado")
-    return
+    if (isSubmitting) return 
+
+    if (!user?.id || !user?.companyId) {
+      alert("Usuário não autenticado")
+      return
+    }
+
+    setIsSubmittingLocal(true)
+
+    try {
+      const result = await submitOrder({
+        userId: user.id,
+        companyId: user.companyId,
+        orders,
+      })
+
+      alert(result.message)
+
+      if (result.success) {
+        setReviewOpen(false)
+        onOrderSubmitted() 
+      }
+    } finally {
+      setIsSubmittingLocal(false)
+    }
   }
 
 
 
 
-  const result = await submitOrder({
-    userId: user.id,
-    companyId: user.companyId,
-    orders,
-  })
+//   const result = await submitOrder({
+//     userId: user.id,
+//     companyId: user.companyId,
+//     orders,
+//   })
 
-  alert(result.message)
-}
+//   alert(result.message)
+// }
 
 
 
   const getCurrentQuantity = (orderId: string, subId?: string): number => {
-    const orderItem = orders.items.find(
-      o => o.id === orderId
-    )
-
+    const orderItem = orders.items.find(o => o.id === orderId)
     if (!orderItem) return 0
-
-    if (
-      subId &&
-      orderItem.subcategories
-    ) {
-      const sub =
-        orderItem.subcategories.find(
-          s => s.id === subId
-        )
-
-      return sub?.quantity ?? 0
+    if (subId && orderItem.subcategories) {
+      return orderItem.subcategories.find(s => s.id === subId)?.quantity ?? 0
     }
-
     return orderItem.quantity ?? 0
   }
 
@@ -163,159 +160,85 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
 
 
   const clearEditingState = (orderId: string, subId?: string) => {
-    const key = subId
-      ? `${orderId}-${subId}`
-      : orderId
-
+    const key = subId ? `${orderId}-${subId}` : orderId
     setEditingValues(prev => {
       const newState = { ...prev }
-
       delete newState[key]
-
       return newState
     })
   }
 
 
 
-
-  const handleQuantityChange = (orderId: string, value: string, subId?: string) => {
+   const handleQuantityChange = (orderId: string, value: string, subId?: string) => {
     const numValue = parseInt(value)
-
-    if (
-      !isNaN(numValue) &&
-      numValue >= 0
-    ) {
-      const currentQuantity =
-        getCurrentQuantity(
-          orderId,
-          subId
-        )
-
-      const delta =
-        numValue - currentQuantity
-
-      if (delta !== 0) {
-        onUpdateQuantity(
-          orderId,
-          delta,
-          subId
-        )
-      }
+    if (!isNaN(numValue) && numValue >= 0) {
+      const delta = numValue - getCurrentQuantity(orderId, subId)
+      if (delta !== 0) onUpdateQuantity(orderId, delta, subId)
     }
-
-    clearEditingState(
-      orderId,
-      subId
-    )
+    clearEditingState(orderId, subId)
   }
-
 
 
 
 
 
   const getEditingValue = (orderId: string, subId?: string) => {
-    const key = subId
-      ? `${orderId}-${subId}`
-      : orderId
-
+    const key = subId ? `${orderId}-${subId}` : orderId
     return editingValues[key]
   }
 
 
 
-
-  const renderQuantityInput = ( orderId: string, quantity: number, subId?: string) => {
-    return (
-      <QuantityInput
-        value={
-          getEditingValue(
-            orderId,
-            subId
-          ) ?? quantity
+  const renderQuantityInput = (orderId: string, quantity: number, subId?: string) => (
+    <QuantityInput
+      value={getEditingValue(orderId, subId) ?? quantity}
+      onChange={e => {
+        const value = e.target.value
+        if (value === "" || /^\d+$/.test(value)) {
+          const key = subId ? `${orderId}-${subId}` : orderId
+          setEditingValues(prev => ({ ...prev, [key]: value }))
         }
-        onChange={e => {
-          const value =
-            e.target.value
-
-          if (
-            value === "" ||
-            /^\d+$/.test(value)
-          ) {
-            const key =
-              subId
-                ? `${orderId}-${subId}`
-                : orderId
-
-            setEditingValues(prev => ({
-              ...prev,
-              [key]: value,
-            }))
-          }
-        }}
-        onBlur={e => {
-          const value =
-            e.target.value
-
-          if (value !== "") {
-            handleQuantityChange(
-              orderId,
-              value,
-              subId
-            )
-          } else {
-            clearEditingState(
-              orderId,
-              subId
-            )
-          }
-        }}
-        onKeyDown={e => {
-          if (e.key === "Enter") {
-            const input =
-              e.target as HTMLInputElement
-
-            if (input.value !== "") {
-              handleQuantityChange(
-                orderId,
-                input.value,
-                subId
-              )
-            }
-
-            input.blur()
-          }
-        }}
-      />
-    )
-  }
+      }}
+      onBlur={e => {
+        const value = e.target.value
+        if (value !== "") handleQuantityChange(orderId, value, subId)
+        else clearEditingState(orderId, subId)
+      }}
+      onKeyDown={e => {
+        if (e.key === "Enter") {
+          const input = e.target as HTMLInputElement
+          if (input.value !== "") handleQuantityChange(orderId, input.value, subId)
+          input.blur()
+        }
+      }}
+    />
+  )
 
 
 
 
 
+//   function getScheduleLabel(order: Order["items"][number]) {
+//   if (order.specificDate) {
+//     return new Date(order.specificDate)
+//       .toLocaleDateString("pt-BR")
+//   }
 
-  function getScheduleLabel(order: Order["items"][number]) {
-  if (order.specificDate) {
-    return new Date(order.specificDate)
-      .toLocaleDateString("pt-BR")
-  }
+//   switch (order.scheduleType) {
+//     case "WEEKDAY":
+//       return "Segunda à Sexta"
 
-  switch (order.scheduleType) {
-    case "WEEKDAY":
-      return "Segunda à Sexta"
+//     case "SATURDAY":
+//       return "Sábado"
 
-    case "SATURDAY":
-      return "Sábado"
+//     case "SUNDAY":
+//       return "Domingo"
 
-    case "SUNDAY":
-      return "Domingo"
-
-    default:
-      return "-"
-  }
-}
+//     default:
+//       return "-"
+//   }
+// }
 
 
 
@@ -358,34 +281,40 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
             Nenhum item adicionado
           </p>
         ) : (
-          orders.items.map(order => (
-            <div
-              key={order.id}
-              className="rounded-lg border bg-muted/30 overflow-hidden"
-            >
-              {!order.subcategories?.length ? (
-                /* Item simples */
-                <div className="p-3 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">
-                        {order.item}
-                      </p>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-xs text-muted-foreground">
-                          {getScheduleLabel(order)}
-                        </span>
-                        {order.updateDefault && (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] px-1.5 py-0 h-4 font-normal"
-                          >
-                            Padrão
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
+           orders.items.map((order, index) => {
+      
+      const sameItemOrders = orders.items.filter(
+        o => o.item === order.item && !o.subcategories?.length
+      )
+      const orderIndex = sameItemOrders.findIndex(o => o.id === order.id)
+      const showIndex = sameItemOrders.length > 1 && !order.subcategories?.length
+
+      return (
+        <div key={order.id} className="rounded-lg border bg-muted/30 overflow-hidden">
+          {!order.subcategories?.length ? (
+            <div className="p-3 space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-medium text-sm truncate">
+                    {order.item}
+                    {showIndex && (
+                      <span className="text-muted-foreground font-normal"> #{orderIndex + 1}</span>
+                    )}
+                  </p>
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    <span className="text-xs text-muted-foreground">
+                      {order.startDate
+                        ? new Date(order.startDate).toLocaleDateString("pt-BR")
+                        : "Sem data definida"}
+                    </span>
+                    {order.updateDefault && (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">
+                        Padrão
+                      </Badge>
+                    )}
                   </div>
+                </div>
+              </div>
 
                   <div className="flex items-center gap-2">
                     <Button
@@ -479,7 +408,8 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
                 </div>
               )}
             </div>
-          ))
+            )
+           })
         )}
       </CardContent>
 
@@ -506,6 +436,7 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
         onUpdateSubScheduleType={onUpdateSubScheduleType}
         onUpdateSubDefaultFlag={onUpdateSubDefaultFlag}
         onUpdateDateRange={onUpdateDateRange}
+        submitting={isSubmitting}
       />
     </Card>
   )

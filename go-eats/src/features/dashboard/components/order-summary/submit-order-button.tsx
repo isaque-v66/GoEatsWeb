@@ -8,10 +8,7 @@ interface Props {
 }
 
 
-export function SubmitOrderButton({
-  onClick,
-  loading,
-}: Props) {
+export function SubmitOrderButton({onClick,loading}: Props) {
   return (
     <Button
       onClick={onClick}

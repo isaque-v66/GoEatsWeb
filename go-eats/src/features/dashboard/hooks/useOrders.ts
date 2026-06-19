@@ -6,7 +6,7 @@ import {
   SubcategoryType
 } from "../constants/itemValues.constants"
 
-import {ScheduleType, OrderItem, Order} from "../types/order.types"
+import {ScheduleType, OrderItem} from "../types/order.types"
 
 
 
@@ -35,107 +35,46 @@ export function useOrder() {
     })
 
   
-  const addOrder = ({item, subcategory, quantity = 1, scheduleType, specificDate, updateDefault = false}: AddOrderPayload) => {
-
-  setOrders(prev => {
-
-    const existingItem = prev.items.find(
-      i =>
-        i.item === item &&
-        i.scheduleType === scheduleType &&
-        i.specificDate === specificDate
-    )
-
-    if (!existingItem) {
-      return {
-        items: [
-          ...prev.items,
-          subcategory
-            ? {
-                id: crypto.randomUUID(),
-                item,
-                scheduleType,
-                specificDate,
-                updateDefault,
-
-                subcategories: [
-                  {
-                    id: crypto.randomUUID(),
-                    name: subcategory,
-                    quantity,
-                    scheduleType:
-                      scheduleType ?? "WEEKDAY",
-                    specificDate,
-                    updateDefault,
-                  },
-                ],
-              }
-            : {
-                id: crypto.randomUUID(),
-                item,
-                quantity,
-                scheduleType,
-                specificDate,
-                updateDefault,
-              },
-        ],
-      }
-    }
-
-    return {
-      items: prev.items.map(order => {
-
-        if (
-          order.item !== item ||
-          order.scheduleType !== scheduleType ||
-          order.specificDate !== specificDate
-        ) {
-          return order
-        }
-
-        if (!subcategory) {
-          return {
-            ...order,
-            quantity:
-              (order.quantity ?? 0) + quantity,
-          }
-        }
-
-        const subExists =
-          order.subcategories?.find(
-            s => s.name === subcategory
-          )
-
-        return {
-          ...order,
-
-          subcategories: subExists
-            ? order.subcategories!.map(s =>
-                s.name === subcategory
-                  ? {
-                      ...s,
-                      quantity:
-                        s.quantity + quantity,
-                    }
-                  : s
-              )
-            : [
-                ...(order.subcategories ?? []),
+  const addOrder = ({
+    item,
+    subcategory,
+    quantity = 1,
+    scheduleType,
+    specificDate,
+    updateDefault = false,
+  }: AddOrderPayload) => {
+    setOrders(prev => ({
+      items: [
+        ...prev.items,
+        subcategory
+          ? {
+              id: crypto.randomUUID(),
+              item,
+              scheduleType,
+              specificDate,
+              updateDefault,
+              subcategories: [
                 {
                   id: crypto.randomUUID(),
                   name: subcategory,
                   quantity,
-                  scheduleType:
-                    scheduleType ?? "WEEKDAY",
+                  scheduleType: scheduleType ?? "WEEKDAY",
                   specificDate,
                   updateDefault,
                 },
               ],
-        }
-      }),
-    }
-  })
-}
+            }
+          : {
+              id: crypto.randomUUID(),
+              item,
+              quantity,
+              scheduleType,
+              specificDate,
+              updateDefault,
+            },
+      ],
+    }))
+  }
 
 
 
@@ -188,7 +127,22 @@ export function useOrder() {
 
 
   const removeItem = (orderId: string, subId?: string) => {
-    updateQuantity(orderId, -9999, subId)
+    setOrders(prev => {
+      if (!subId) {
+        return { items: prev.items.filter(o => o.id !== orderId) }
+      }
+
+      const items = prev.items
+        .map(order => {
+          if (order.id !== orderId) return order
+          const filteredSubs = order.subcategories?.filter(s => s.id !== subId)
+          if (!filteredSubs?.length) return null
+          return { ...order, subcategories: filteredSubs }
+        })
+        .filter(Boolean) as typeof prev.items
+
+      return { items }
+    })
   }
 
 
@@ -328,6 +282,10 @@ const updateDateRange = (
 
 
 
+ const clearOrders = () => {
+    setOrders({ items: [] })
+  }
+
 
 
 
@@ -341,7 +299,8 @@ const updateDateRange = (
     updateSpecificDate,
     updateSubScheduleType,
     updateSubDefaultFlag,
-    updateDateRange
+    updateDateRange,
+    clearOrders
   }
 }
 
