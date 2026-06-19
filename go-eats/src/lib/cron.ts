@@ -22,7 +22,7 @@ type MealType =
 
 
 
-  
+
 // Quais refeições cada cron cobre
 const MEALS_BY_CRON: Record<"1430" | "0800" | "0900", MealType[]> = {
   "1430": ["DESJEJUM", "BEBIDAS", "CAFE_TARDE", "CAFE_NOTURNO"],

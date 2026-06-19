@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Utensils } from "lucide-react"
+import { Eye, EyeOff, Utensils } from "lucide-react"
 import { useTheme } from "../../../shared/contexts/theme-context"
 import { useForm } from "react-hook-form"
 import z from "zod"
@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import toast from "react-hot-toast"
 import { useUser } from "../contexts/user-context"
 import { useLogin } from "../hook/useLogin"
+import { useState } from "react"
 
 const LoginSchema = z.object({
   email: z.email("Email inválido"),
@@ -27,6 +28,7 @@ export type LoginDataType = z.infer<typeof LoginSchema>
 
 export function LoginForm() {
   const router = useRouter()
+  const [showPassword,setShowPassword] = useState<boolean>(false)
   const { user, setUser } = useUser()
   const { theme } = useTheme()
   const { login, loading } = useLogin()
@@ -128,16 +130,33 @@ export function LoginForm() {
               }`}>
                 Senha
               </label>
-              <input
-                type="password"
-                placeholder="••••••••"
-                {...register("password")}
-                className={inputClass}
-              />
-              {errors.password && (
-                <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
-              )}
-            </div>
+
+              <div className="relative">
+
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  {...register("password")}
+                  className={`${inputClass} pr-10`}
+                />
+                <button
+                type="button"
+                onClick={() => setShowPassword((s) => !s)}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+              >
+                {showPassword ? (
+                  <EyeOff className="size-5" />
+
+                ) : (
+                  <Eye className="size-5" />
+                )}
+              </button>
+                {errors.password && (
+                  <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
+                )}
+              </div>
+              </div>
 
             <button
               type="submit"
