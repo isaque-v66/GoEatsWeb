@@ -3,8 +3,6 @@ import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/prisma"
 import { MealType } from "@prisma/client"
 
-
-
 type SubcategoryPayload = {
   name: string
   weekdayQuantity?: number | null
@@ -21,12 +19,8 @@ type ItemPayload = {
   subcategories?: SubcategoryPayload[]
 }
 
-
-
-
 export async function POST(req: Request) {
   try {
-
     const body = await req.json()
 
     const user = body.user
@@ -47,37 +41,34 @@ export async function POST(req: Request) {
       )
     }
 
-
     for (const item of items) {
-  if (!item.name || !item.mealType) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: "Todos os itens devem possuir name e mealType",
-        item,
-      },
-      { status: 400 }
-    )
-  }
-
-  if (item.subcategories?.length) {
-    for (const sub of item.subcategories) {
-      if (!sub.name) {
+      if (!item.name || !item.mealType) {
         return NextResponse.json(
           {
             success: false,
-            message: "Subcategoria inválida",
-            sub,
+            message: "Todos os itens devem possuir name e mealType",
+            item,
           },
           { status: 400 }
         )
       }
+
+      if (item.subcategories?.length) {
+        for (const sub of item.subcategories) {
+          if (!sub.name) {
+            return NextResponse.json(
+              {
+                success: false,
+                message: "Subcategoria inválida",
+                sub,
+              },
+              { status: 400 }
+            )
+          }
+        }
+      }
     }
-  }
-}
 
-
-    
     const passwordHash = await bcrypt.hash(user.password, 10)
 
     const result = await prisma.$transaction(async (tx) => {
@@ -90,14 +81,18 @@ export async function POST(req: Request) {
         throw new Error("USER_ALREADY_EXISTS")
       }
 
-
-
-
-      // COMPANY
-      const createdCompany = await tx.company.upsert({
+      // Checagem de CNPJ duplicado 
+      const existingCompany = await tx.company.findUnique({
         where: { cnpj: company.cnpj },
-        update: { socialName: company.socialName },
-        create: {
+      })
+
+      if (existingCompany) {
+        throw new Error("CNPJ_ALREADY_EXISTS")
+      }
+
+      // COMPANY 
+      const createdCompany = await tx.company.create({
+        data: {
           cnpj: company.cnpj,
           socialName: company.socialName,
         },
@@ -111,92 +106,79 @@ export async function POST(req: Request) {
           companyId: createdCompany.id,
         },
         select: {
-            id: true,
-            email: true,
-            companyId: true,
-            createdAt: true,
+          id: true,
+          email: true,
+          companyId: true,
+          createdAt: true,
         }
       })
 
       // ITENS
-await Promise.all(
-  items.map(async (item) => {
-    const dbItem = await tx.item.upsert({
-      where: {
-        name_mealType: {
-          name: item.name,
-          mealType: item.mealType,
-        },
-      },
-      update: {},
-      create: {
-        name: item.name,
-        mealType: item.mealType,
-      },
-    })
-
-    const userItemConfig = await tx.userItemConfig.create({
-      data: {
-        userId: createdUser.id,
-        itemId: dbItem.id,
-        weekdayQuantity:
-        item.weekdayQuantity ?? null,
-
-      saturdayQuantity:
-        item.saturdayQuantity ?? null,
-
-      sundayQuantity:
-        item.sundayQuantity ?? null,
-        },
-    })
-
-    // SUBCATEGORIAS
-    if (item.subcategories?.length) {
       await Promise.all(
-        item.subcategories.map(async (sub) => {
-          const dbSubcategory = await tx.subcategory.upsert({
+        items.map(async (item) => {
+          const dbItem = await tx.item.upsert({
             where: {
               name_mealType: {
-                name: sub.name,
+                name: item.name,
                 mealType: item.mealType,
               },
             },
             update: {},
             create: {
-              name: sub.name,
+              name: item.name,
               mealType: item.mealType,
             },
           })
 
-          await tx.userSubcategoryConfig.create({
+          const userItemConfig = await tx.userItemConfig.create({
             data: {
-              userItemId: userItemConfig.id,
-              subcategoryId: dbSubcategory.id,
-              weekdayQuantity:
-              sub.weekdayQuantity ?? null,
-
-              saturdayQuantity:
-              sub.saturdayQuantity ?? null,
-
-              sundayQuantity:
-              sub.sundayQuantity ?? null,
+              userId: createdUser.id,
+              itemId: dbItem.id,
+              weekdayQuantity: item.weekdayQuantity ?? null,
+              saturdayQuantity: item.saturdayQuantity ?? null,
+              sundayQuantity: item.sundayQuantity ?? null,
             },
           })
+
+          // SUBCATEGORIAS
+          if (item.subcategories?.length) {
+            await Promise.all(
+              item.subcategories.map(async (sub) => {
+                const dbSubcategory = await tx.subcategory.upsert({
+                  where: {
+                    name_mealType: {
+                      name: sub.name,
+                      mealType: item.mealType,
+                    },
+                  },
+                  update: {},
+                  create: {
+                    name: sub.name,
+                    mealType: item.mealType,
+                  },
+                })
+
+                await tx.userSubcategoryConfig.create({
+                  data: {
+                    userItemId: userItemConfig.id,
+                    subcategoryId: dbSubcategory.id,
+                    weekdayQuantity: sub.weekdayQuantity ?? null,
+                    saturdayQuantity: sub.saturdayQuantity ?? null,
+                    sundayQuantity: sub.sundayQuantity ?? null,
+                  },
+                })
+              })
+            )
+          }
         })
       )
-    }
-  })
-), 
-  {
-    timeout: 15000, 
-  }
 
-
-//
       return {
         userId: createdUser.id,
         companyId: createdCompany.id,
       }
+    }, {
+      timeout: 15000,
     })
 
     return NextResponse.json({ success: true, result }, { status: 201 })
@@ -205,24 +187,36 @@ await Promise.all(
     console.error(err)
 
     if (err instanceof Error) {
-    if (err.message === "USER_ALREADY_EXISTS") {
+      if (err.message === "USER_ALREADY_EXISTS") {
+        return NextResponse.json(
+          { success: false, message: "Usuário já existe" },
+          { status: 409 }
+        )
+      }
+
+      if (err.message === "CNPJ_ALREADY_EXISTS") {
+        return NextResponse.json(
+          { success: false, message: "Este CNPJ já está cadastrado" },
+          { status: 409 }
+        )
+      }
+
+      if (err.message === "ITEM_WITHOUT_MEALTYPE") {
+        return NextResponse.json(
+          { success: false, message: "Item sem mealType" },
+          { status: 400 }
+        )
+      }
+
       return NextResponse.json(
-        { success: false, message: "Usuário já existe" },
-        { status: 409 }
+        { error: "Erro interno ao registrar usuário" },
+        { status: 500 }
       )
     }
-
-    if (err.message === "ITEM_WITHOUT_MEALTYPE") {
-      return NextResponse.json(
-        { success: false, message: "Item sem mealType" },
-        { status: 400 }
-      )
-    }
-
 
     return NextResponse.json(
-      { error: "Erro interno ao registrar usuário" },
+      { error: "Erro desconhecido ao registrar usuário" },
       { status: 500 }
     )
   }
-  }}
+}

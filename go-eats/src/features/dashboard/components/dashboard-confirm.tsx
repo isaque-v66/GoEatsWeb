@@ -162,25 +162,32 @@ export function DashboardConfirm() {
                 `}>
                   <CardContent className="pt-6">
                     <div className="flex flex-col items-center text-center space-y-4">
-                      {/* ... conteúdo do card de sucesso ... */}
-                      <div className="flex gap-3 w-full pt-4">
+
+                      {/* CARD DE SUCESSO */}
+                      <div className="flex flex-col sm:flex-row gap-3 w-full pt-4">
                         <Button
                           variant="outline"
-                          className="flex-1"
-                          onClick={() => {clearData() 
-                            router.replace('/dashboardRegister')}}
+                          className="w-full sm:flex-1"
+                          onClick={() => {
+                            clearData()
+                            router.replace('/dashboardRegister')
+                          }}
                         >
                           <ArrowLeft className="mr-2 h-4 w-4" />
                           Voltar
                         </Button>
-                        
-                        <Button 
-                          className="flex-1 bg-green-600 hover:bg-green-700"
-                          onClick={() => { clearData()
-                            router.push('/login')}}
+
+                        <Button
+                          className="w-full sm:flex-1 bg-green-600 hover:bg-green-700"
+                          onClick={() => {
+                            clearData()
+                            router.push('/login')
+                          }}
                         >
-                          Ir para página de Login
-                          <ArrowRight className="ml-2 h-4 w-4" />
+                          <span className="truncate">
+                            Ir para página de Login
+                          </span>
+                          <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0" />
                         </Button>
                       </div>
                     </div>
