@@ -195,6 +195,7 @@ export async function runCron(cronKey: CronKey) {
       companyName: user.company.socialName,
       cronKey,
       items: digestItems,
+      
     })
 
     await sendEmail({
