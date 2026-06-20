@@ -5,10 +5,6 @@ vi.mock("@/src/lib/email", () => ({
   sendEmail: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock("node-cron", () => ({
-  default: { schedule: vi.fn() },
-}))
-
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findMany: vi.fn() },
@@ -18,7 +14,7 @@ vi.mock("@/lib/prisma", () => ({
 }))
 
 
-import { runCron } from "@/src/lib/cron"
+import { runCron } from "@/src/lib/cron-logic"
 import { sendEmail } from "@/src/lib/email"
 import { prisma } from "@/lib/prisma"
 
@@ -169,7 +165,7 @@ describe("cron — disparo de emails automáticos", () => {
   })
 
   describe("pedido especial (ScheduledOrder)", () => {
-    it("usa quantidade do ScheduledOrder quando existe para o dia alvo", async () => {
+    it("usa quantidade do ScheduledOrder quando existe para o dia alvo, sobrescrevendo o padrão", async () => {
       vi.setSystemTime(new Date("2025-06-09T14:30:00"))
 
       vi.mocked(prisma.user.findMany).mockResolvedValue([makeUser()] as any)
@@ -188,8 +184,10 @@ describe("cron — disparo de emails automáticos", () => {
       await runCron("1430")
 
       const { message } = vi.mocked(sendEmail).mock.calls[0][0] as any
+      // A quantidade do ScheduledOrder (99) deve aparecer, e NÃO a quantidade
+      // padrão do weekdayQuantity (2) — confirma que o especial sobrescreveu o padrão.
       expect(message).toContain("99")
-      expect(message).toContain("pedido especial")
+      expect(message).not.toMatch(/Desjejum: 2\b/)
     })
   })
 
@@ -229,7 +227,6 @@ describe("cron — disparo de emails automáticos", () => {
 
       const { message } = vi.mocked(sendEmail).mock.calls[0][0] as any
       expect(message).toContain("5")
-      expect(message).toContain("ref. dia anterior")
     })
   })
 

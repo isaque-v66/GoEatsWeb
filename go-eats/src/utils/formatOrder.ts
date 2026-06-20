@@ -1,54 +1,37 @@
 import { OrderFromDB } from "../types/order-db.types"
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
 
 type FormatOrderParams = {
   order: OrderFromDB
-  userName: string
-  companyName?: string
   isScheduled?: boolean
 }
 
-export function formatOrderMessage({
-  order,
-  userName,
-  companyName,
-  isScheduled = false,
-}: FormatOrderParams) {
-  const createdAt = new Date(order.createdAt).toLocaleString("pt-BR")
+export function formatOrderMessage({ order, isScheduled = false }: FormatOrderParams) {
+  const dateLabel = format(new Date(order.date), "dd/MM/yyyy", { locale: ptBR })
 
   let text = ""
 
-  text += isScheduled
-    ? "📅 PEDIDO ESPECIAL\n"
-    : "🍽️ PEDIDO PADRÃO\n"
+  text += isScheduled ? "PEDIDO ESPECIAL\n" : "PEDIDO\n"
+  text += "==============================\n\n"
 
-  text += "══════════════════════\n\n"
+  text += `Empresa: ${order.company.socialName}\n`
+  text += `Data: ${dateLabel}\n\n`
 
-  text += `👤 Solicitante: ${userName}\n`
-
-  if (companyName) {
-    text += `🏢 Empresa: ${companyName}\n`
-  }
-
-  text += `🕒 Data de envio: ${createdAt}\n`
-  text += `🆔 Pedido: ${order.id}\n\n`
-
-  text += "📦 ITENS\n"
-  text += "──────────────────────\n"
+  text += "ITENS\n"
+  text += "------------------------------\n"
 
   order.items.forEach(item => {
     if (item.subcategory) {
-      text += `• ${item.item.name} - ${item.subcategory.name}\n`
-      text += `  Quantidade: ${item.quantity}\n`
+      text += `- ${item.item.name} - ${item.subcategory.name}\n`
     } else {
-      text += `• ${item.item.name}\n`
-      text += `  Quantidade: ${item.quantity}\n`
+      text += `- ${item.item.name}\n`
     }
-
-    text += "\n"
+    text += `  Quantidade: ${item.quantity}\n\n`
   })
 
-  text += "══════════════════════\n"
-  text += "✅ Pedido enviado pelo sistema GoEats"
+  text += "==============================\n"
+  text += "Pedido enviado pelo sistema GoEats"
 
   return text
 }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { formatOrderMessage } from "@/src/utils/formatOrder"
-import { OrderFromDB } from "@/src/types/order-db.types"
 import { sendEmail } from "@/src/lib/email"
 
 export async function POST(req: Request) {
@@ -18,8 +17,8 @@ export async function POST(req: Request) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        user: true,      
-        company: true,   
+        user: true,
+        company: true,
         items: {
           include: {
             item: true,
@@ -27,7 +26,7 @@ export async function POST(req: Request) {
           },
         },
       },
-    }) 
+    })
 
     if (!order) {
       return NextResponse.json(
@@ -37,10 +36,9 @@ export async function POST(req: Request) {
     }
 
     const message = formatOrderMessage({
-        order,
-        userName: order.company.socialName,
-        isScheduled: false,
-      })
+      order,
+      isScheduled: false,
+    })
 
     await sendEmail({
       subject: `Novo Pedido - ${order.company.socialName}`,
