@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon, X, AlertTriangle } from "lucide-react"
-import { format, eachDayOfInterval, parseISO, isSameDay } from "date-fns"
+import { format, eachDayOfInterval, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { useMemo, useState } from "react"
 import { DateRange } from "react-day-picker"
@@ -27,10 +27,8 @@ type Props = {
   onUpdateSubDefaultFlag: (orderId: string, subId: string, value: boolean) => void
   onUpdateDateRange: (orderId: string, startDate?: string, endDate?: string, subId?: string) => void
   submitting: boolean
+  occupiedDates: string[] 
 }
-
-
-
 
 function formatDateRange(startDate?: string, endDate?: string) {
   if (!startDate) return null
@@ -40,20 +38,11 @@ function formatDateRange(startDate?: string, endDate?: string) {
   return `${start} → ${end}`
 }
 
-
-
-
-
 function countDays(startDate?: string, endDate?: string) {
   if (!startDate) return 0
   if (!endDate || endDate === startDate) return 1
   return eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) }).length
 }
-
-// Detecta conflitos: mesmo item (+sub) em datas que se sobrepõem
-type ConflictEntry = { key: string; date: string }
-
-
 
 function getAllDatesForEntry(startDate?: string, endDate?: string): string[] {
   if (!startDate) return []
@@ -64,14 +53,11 @@ function getAllDatesForEntry(startDate?: string, endDate?: string): string[] {
   }).map(d => format(d, "yyyy-MM-dd"))
 }
 
-
-
-
-
-function findConflicts(orders: Order): Set<string> {
-  
-  const seen = new Map<string, Set<string>>() // key -> set de datas já usadas
-  const conflictingOrderIds = new Set<string>()
+// Conflitos entre linhas do carrinho (mesmo item/sub na mesma data)
+function findConflicts(orders: Order, occupiedDates: string[]): Set<string> {
+  const seen = new Map<string, Set<string>>()
+  const conflictingIds = new Set<string>()
+  const occupiedSet = new Set(occupiedDates)
 
   for (const order of orders.items) {
     if (!order.subcategories?.length) {
@@ -82,8 +68,8 @@ function findConflicts(orders: Order): Set<string> {
       const usedDates = seen.get(key)!
 
       for (const date of dates) {
-        if (usedDates.has(date)) {
-          conflictingOrderIds.add(order.id)
+        if (usedDates.has(date) || occupiedSet.has(date)) {
+          conflictingIds.add(order.id)
         }
         usedDates.add(date)
       }
@@ -96,8 +82,8 @@ function findConflicts(orders: Order): Set<string> {
         const usedDates = seen.get(key)!
 
         for (const date of dates) {
-          if (usedDates.has(date)) {
-            conflictingOrderIds.add(sub.id)
+          if (usedDates.has(date) || occupiedSet.has(date)) {
+            conflictingIds.add(sub.id)
           }
           usedDates.add(date)
         }
@@ -105,15 +91,18 @@ function findConflicts(orders: Order): Set<string> {
     }
   }
 
-  return conflictingOrderIds
+  return conflictingIds
 }
 
-function DateRangePicker({startDate, endDate, onChange, onClear, hasConflict}: {
+function DateRangePicker({
+  startDate, endDate, onChange, onClear, hasConflict, occupiedDates,
+}: {
   startDate?: string
   endDate?: string
   onChange: (start?: string, end?: string) => void
   onClear: () => void
   hasConflict?: boolean
+  occupiedDates: string[]
 }) {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<"single" | "range">("single")
@@ -124,6 +113,18 @@ function DateRangePicker({startDate, endDate, onChange, onClear, hasConflict}: {
 
   const label = formatDateRange(startDate, endDate)
   const days = countDays(startDate, endDate)
+
+  // Converte as strings yyyy-MM-dd ocupadas em objetos Date para o Calendar
+  const occupiedDateObjects = useMemo(
+    () => occupiedDates.map(d => parseISO(d)),
+    [occupiedDates]
+  )
+
+  // Função de disabled combinando "antes de hoje" + "datas ocupadas"
+  const isDisabled = (date: Date) => {
+    if (date < new Date(new Date().setHours(0, 0, 0, 0))) return true
+    return occupiedDates.includes(format(date, "yyyy-MM-dd"))
+  }
 
   return (
     <div className="space-y-1.5">
@@ -190,7 +191,11 @@ function DateRangePicker({startDate, endDate, onChange, onClear, hasConflict}: {
               mode="single"
               locale={ptBR}
               selected={selected?.from}
-              disabled={{ before: new Date() }}
+              disabled={isDisabled}
+              modifiers={{ occupied: occupiedDateObjects }}
+              modifiersClassNames={{
+                occupied: "line-through opacity-40 bg-muted",
+              }}
               onSelect={date => {
                 if (!date) return
                 const iso = format(date, "yyyy-MM-dd")
@@ -204,7 +209,11 @@ function DateRangePicker({startDate, endDate, onChange, onClear, hasConflict}: {
                 mode="range"
                 locale={ptBR}
                 selected={selected}
-                disabled={{ before: new Date() }}
+                disabled={isDisabled}
+                modifiers={{ occupied: occupiedDateObjects }}
+                modifiersClassNames={{
+                  occupied: "line-through opacity-40 bg-muted",
+                }}
                 numberOfMonths={2}
                 onSelect={range => {
                   if (!range?.from) return
@@ -249,8 +258,12 @@ export function OrderReviewDialog({
   onUpdateSubDefaultFlag,
   onUpdateDateRange,
   submitting,
+  occupiedDates,
 }: Props) {
-  const conflicts = useMemo(() => findConflicts(orders), [orders])
+  const conflicts = useMemo(
+    () => findConflicts(orders, occupiedDates),
+    [orders, occupiedDates]
+  )
   const hasAnyConflict = conflicts.size > 0
 
   return (
@@ -279,6 +292,7 @@ export function OrderReviewDialog({
                       startDate={order.startDate}
                       endDate={order.endDate}
                       hasConflict={conflicts.has(order.id)}
+                      occupiedDates={occupiedDates}
                       onChange={(start, end) => onUpdateDateRange(order.id, start, end)}
                       onClear={() => onUpdateDateRange(order.id, undefined, undefined)}
                     />
@@ -320,6 +334,7 @@ export function OrderReviewDialog({
                           startDate={sub.startDate}
                           endDate={sub.endDate}
                           hasConflict={conflicts.has(sub.id)}
+                          occupiedDates={occupiedDates}
                           onChange={(start, end) => onUpdateDateRange(order.id, start, end, sub.id)}
                           onClear={() => onUpdateDateRange(order.id, undefined, undefined, sub.id)}
                         />
@@ -354,7 +369,7 @@ export function OrderReviewDialog({
           {hasAnyConflict && (
             <p className="text-xs text-destructive flex items-center gap-1.5 mr-auto">
               <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-              Resolva as datas conflitantes antes de confirmar
+              Resolva as datas conflitantes (ou já ocupadas) antes de confirmar
             </p>
           )}
           <div className="flex gap-2 justify-end">

@@ -19,6 +19,7 @@ import { useSubmitOrder } from "../../hooks/useSubmitOrder"
 import { QuantityInput } from "./quantity-input"
 import { Button } from "@/components/ui/button"
 import { OrderReviewDialog } from "./order-review-dialog"
+import { useOccupiedDates } from "../../hooks/useOccupiedDates"
 
 
 
@@ -92,6 +93,7 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
   const [reviewOpen, setReviewOpen] = useState(false)
   const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
   const isSubmitting = loading || isSubmittingLocal
+  const { occupiedDates } = useOccupiedDates(user?.id, reviewOpen)
 
 
   const totalItems = orders.items.reduce((sum, order) => {
@@ -437,6 +439,7 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
         onUpdateSubDefaultFlag={onUpdateSubDefaultFlag}
         onUpdateDateRange={onUpdateDateRange}
         submitting={isSubmitting}
+        occupiedDates={occupiedDates} 
       />
     </Card>
   )

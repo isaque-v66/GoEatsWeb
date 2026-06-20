@@ -18,7 +18,6 @@ export async function POST(req: Request) {
   try {
     const { userId, companyId, orders } = await req.json()
 
-    
     if (!userId || !companyId) {
       return NextResponse.json(
         { error: "userId ou companyId não enviados" },
@@ -27,7 +26,7 @@ export async function POST(req: Request) {
     }
 
     if (!orders?.items?.length) {
-         console.log("ERRO: Pedido vazio")
+      console.log("ERRO: Pedido vazio")
       return NextResponse.json(
         { error: "Pedido vazio" },
         { status: 400 }
@@ -36,9 +35,8 @@ export async function POST(req: Request) {
 
     const items: OrderPayload[] = orders.items
 
-    
     if (!items[0]?.mealType) {
-        console.log("ERRO: MealType não definido")
+      console.log("ERRO: MealType não definido")
       return NextResponse.json(
         { error: "MealType não definido" },
         { status: 400 }
@@ -48,7 +46,7 @@ export async function POST(req: Request) {
     const mealTypes = new Set(items.map(i => i.mealType))
 
     if (mealTypes.size > 1) {
-        console.log("ERRO: MealTypes diferentes", items.map(i => i.mealType))
+      console.log("ERRO: MealTypes diferentes", items.map(i => i.mealType))
       return NextResponse.json(
         { error: "Todos os itens devem ser do mesmo tipo de refeição" },
         { status: 400 }
@@ -57,7 +55,6 @@ export async function POST(req: Request) {
 
     const mealType: MealType = items[0].mealType
 
-    
     const now = new Date()
     const today = new Date(
       now.getFullYear(),
@@ -66,9 +63,17 @@ export async function POST(req: Request) {
     )
 
     const result = await prisma.$transaction(async (tx) => {
-    
-      const createdOrder = await tx.order.create({
-        data: {
+      
+      const createdOrder = await tx.order.upsert({
+        where: {
+          userId_date_mealType: {
+            userId,
+            date: today,
+            mealType,
+          },
+        },
+        update: {},
+        create: {
           userId,
           companyId,
           mealType,
@@ -76,7 +81,6 @@ export async function POST(req: Request) {
         },
       })
 
-      
       for (const item of items) {
         const dbItem = await tx.item.findUnique({
           where: {
@@ -89,7 +93,6 @@ export async function POST(req: Request) {
 
         if (!dbItem) continue
 
-        
         if (!item.subcategories?.length) {
           await tx.orderItem.create({
             data: {
@@ -100,7 +103,6 @@ export async function POST(req: Request) {
           })
         }
 
-      
         if (item.subcategories?.length) {
           for (const sub of item.subcategories) {
             const dbSub = await tx.subcategory.findUnique({

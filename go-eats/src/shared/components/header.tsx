@@ -1,12 +1,13 @@
 "use client"
 
-import { LogOut, Utensils } from "lucide-react"
+import { LogOut, Utensils, History } from "lucide-react"
 import { useTheme } from "../contexts/theme-context"
 import { Button } from "@/components/ui/button"
 import { useUser } from "../../features/auth/contexts/user-context"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
 import { useState } from "react"
+import { useOrderHistory } from "@/src/features/orders/context/ordersHistory.context"
 
 import {
   Dialog,
@@ -23,6 +24,9 @@ export function Header() {
   const { user, loading, setUser } = useUser()
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false)
   const [loadingLogout, setLoadingLogout] = useState(false)
+
+
+  const orderHistory = useOrderHistory()
 
   async function logOut() {
     try {
@@ -85,15 +89,34 @@ export function Header() {
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {!loading && user && (
               <span
-                className={`hidden text-sm font-medium sm:inline ${
+                className={`hidden text-sm font-medium mr-2 sm:inline ${
                   theme === "dark" ? "text-neutral-300" : "text-neutral-700"
                 }`}
               >
                 Olá, {user.name}
               </span>
+            )}
+
+            {orderHistory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={orderHistory.openHistory}
+                className={`
+                  relative shrink-0 px-2 sm:px-3
+                  transition-colors duration-300
+                  ${theme === "dark"
+                    ? "text-neutral-300 hover:text-orange-400"
+                    : "text-neutral-700 hover:text-orange-600"
+                  }
+                `}
+              >
+                <History className="h-4 w-4 sm:mr-2" />
+                <span className="hidden font-medium sm:inline">Pedidos</span>
+              </Button>
             )}
 
             <Button
@@ -110,7 +133,7 @@ export function Header() {
                 }
               `}
             >
-             
+              {/* Glow */}
               <span
                 className={`
                   absolute inset-0 opacity-0 group-hover:opacity-100
@@ -134,7 +157,7 @@ export function Header() {
         </div>
       </header>
 
-      
+      {/* MODAL DE CONFIRMAÇÃO */}
       <Dialog open={openLogoutDialog} onOpenChange={setOpenLogoutDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

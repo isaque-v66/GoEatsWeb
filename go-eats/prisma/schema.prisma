@@ -175,7 +175,8 @@ model Order {
 
   createdAt DateTime @default(now())
 
-  @@unique([companyId, date, mealType])
+  
+  @@unique([userId, date, mealType])
   @@index([companyId])
 }
 
@@ -256,9 +257,7 @@ model ScheduledOrder {
 
   createdAt        DateTime @default(now())
 
+  @@unique([userId, date])
   @@index([userId])
   @@index([date])
 }
-
-
-

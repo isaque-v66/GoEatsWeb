@@ -18,6 +18,8 @@ import { ITEM_VALUES, ItemType } from "../constants/itemValues.constants"
 import { getRemainingTime, isMealAvailable } from "../utils/meal.utils"
 import { useDashboardItems } from "../hooks/useDashboardItems"
 import { ITEM_TO_MEAL_TYPE } from "../constants/itemValues.constants"
+import { OrderHistoryProvider } from "../../orders/context/ordersHistory.context"
+import { OrderHistorySheet } from "../../orders/components/OrderHistorySheet"
 
 export const ITEM_ICONS: Record<ItemType, ReactNode> = {
   Desjejum: <Coffee className="w-5 h-5" />,
@@ -42,7 +44,7 @@ const OrderSchema = z.object({
 
 export type Order = z.infer<typeof OrderSchema>
 
-export function DashboardContent() {
+function DashboardContentInner() {
   const { theme } = useTheme()
   const [mobileCartOpen, setMobileCartOpen] = useState(false)
 
@@ -60,23 +62,10 @@ export function DashboardContent() {
     return sum + (order.quantity ?? 0)
   }, 0)
 
-  
-
-
-
-
-
-
-
-
-
-
-
-
-
   return (
     <div className={`min-h-screen ${isDark ? "bg-neutral-950" : "bg-neutral-50"}`}>
       <Header />
+      <OrderHistorySheet />
 
       <div className="container mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-8">
         <div className="grid lg:grid-cols-3 gap-6 items-start">
@@ -279,5 +268,14 @@ export function DashboardContent() {
         </div>
       )}
     </div>
+  )
+}
+
+
+export function DashboardContent() {
+  return (
+    <OrderHistoryProvider>
+      <DashboardContentInner />
+    </OrderHistoryProvider>
   )
 }
