@@ -7,7 +7,7 @@ import { ThemeProvider } from "../shared/contexts/theme-context"
 import { ToggleTheme } from "../shared/components/toggleTheme"
 import { FormProvider } from "../features/register/contexts/formRegister-context"
 import { UserProvider } from "../features/auth/contexts/user-context"
-import "@/src/lib/cron"
+import "@/src/lib/cron-logic"
 import { QueryProvider } from "../providers/query-provider"
 
 const _geist = Geist({ subsets: ["latin"] })

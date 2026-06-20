@@ -52,8 +52,7 @@ function formatShortDate(dateKey: string) {
   return format(parseISO(dateKey), "dd/MM/yyyy")
 }
 
-// ── Mini-card de confirmação: aparece logo abaixo do item/pedido que tem
-// uma mudança pendente, com "Confirmar" (dispara API) e "Cancelar" (descarta).
+
 function PendingConfirmCard({
   description,
   busy,
@@ -360,7 +359,7 @@ export function OrderHistorySheet() {
     <Sheet
       open={ui.open}
       onOpenChange={open => {
-        // Fechar o sheet descarta qualquer alteração pendente não confirmada
+        
         if (!open) {
           for (const entry of entries) {
             if (entry.kind === "scheduled") pending.discardAllForOrder(entry.id)
