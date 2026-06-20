@@ -1,16 +1,22 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 import { UsersTable } from "../types/table-types"
 import { Dispatch, SetStateAction, useEffect } from "react"
-import { useTheme } from "@/src/shared/contexts/theme-context"
-import { deleteUserTable, updateUserTable } from "../services/table.service"
+import { updateUserTable } from "../services/table.service"
 import toast from "react-hot-toast"
 import z from "zod"
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 
 
 type EditUsersDialogProps = {
@@ -21,144 +27,153 @@ type EditUsersDialogProps = {
 
 
 const EditUserSchema = z.object({
-    email: z.email("Email inválido"),
-    role: z.enum(["ADMIN", "USER"])
+  email: z.email("Email inválido").optional().or(z.literal("")),
+  role: z.enum(["ADMIN", "USER"]).optional(),
 })
-
 
 type EditUserData = z.infer<typeof EditUserSchema>
 
+export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUser }: EditUsersDialogProps) {
+  const queryClient = useQueryClient()
 
-export function EditUsersDialog({openEditDialog, setOpenEditDialog, selectedUser}: EditUsersDialogProps) {
-    const {theme} = useTheme()
-    const queryClient = useQueryClient()
-    const {register, handleSubmit, formState: { errors},} = useForm<EditUserData>({
-        resolver: zodResolver(EditUserSchema),
-    })
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors, dirtyFields },
+  } = useForm<EditUserData>({
+    resolver: zodResolver(EditUserSchema),
+  })
 
+ 
+  useEffect(() => {
+    if (selectedUser) {
+      reset({
+        email: selectedUser.email,
+        role: selectedUser.role as "ADMIN" | "USER",
+      })
+    }
+  }, [selectedUser, reset])
 
+  const updateUserMutation = useMutation({
+    mutationFn: updateUserTable,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] })
+      toast.success("Usuário atualizado")
+      setOpenEditDialog(false)
+    },
+    onError: () => {
+      toast.error("Erro ao atualizar o usuário")
+    },
+  })
 
-    const updateUserMutation = useMutation({
-        mutationFn: updateUserTable,
+  async function handleUpdate(data: EditUserData) {
+    if (!selectedUser) return
 
-        onSuccess: () => {
-            queryClient.invalidateQueries({queryKey: ["users"]})
-            toast.success("Usuário atualizado")
-            setOpenEditDialog(false)
-        },
-
-        onError: () => {
-            toast.error('Erro ao atualizar o usuário')
-        }
-
-    })
-
-
-
-
-
-
-    async function handleUpdate(data: EditUserData) {
-        if (!selectedUser) return
-
-        updateUserMutation.mutate({
-            id: selectedUser.id,
-            email: data.email,
-            role: data.role
-        })
-      
+    
+    const payload: { id: string; email?: string; role?: "ADMIN" | "USER" } = {
+      id: selectedUser.id,
     }
 
+    if (dirtyFields.email && data.email) {
+      payload.email = data.email
+    }
 
-    return(
-        <Dialog
-            open={openEditDialog}
-            onOpenChange={setOpenEditDialog}
-          >
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Editar Usuário</DialogTitle>
-                <DialogDescription>
-                  Atualize as informações do usuário.
-                </DialogDescription>
-              </DialogHeader>
+    if (dirtyFields.role && data.role) {
+      payload.role = data.role
+    }
 
-              {selectedUser && (
-                <form
-                    onSubmit={handleSubmit(handleUpdate)}
-                    className="space-y-4"
-                    >
+    if (!payload.email && !payload.role) {
+      toast.error("Altere ao menos um campo antes de salvar")
+      return
+    }
 
-                  <div>
-                   <input
-                        {...register("email")}
-                        className="w-full rounded-md border p-2"
-                    />
+    updateUserMutation.mutate(payload)
+  }
 
-                    {errors.email && (
-                        <p className="text-sm text-red-500">
-                        {errors.email.message}
-                        </p>
-                    )}
-                  </div>
+  return (
+    <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold tracking-tight">
+            Editar usuário
+          </DialogTitle>
+          <DialogDescription className="text-sm">
+            Altere apenas os campos que deseja atualizar
+          </DialogDescription>
+        </DialogHeader>
 
-                  <div>
-                    <label className="text-sm font-medium">
-                        Perfil
-                    </label>
+        {selectedUser && (
+          <form onSubmit={handleSubmit(handleUpdate)} className="space-y-4">
 
-                    <select
-                        {...register("role")}
-                        className={`w-full rounded-md border p-2 ${
-                        theme === "dark"
-                            ? "bg-neutral-800 text-white"
-                            : "bg-white text-black"
-                        }`}
-                    >
-                        <option value="ADMIN">
-                        ADMIN
-                        </option>
+       
+            <div className="rounded-lg border bg-muted/40 px-3 py-2.5">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
+                Empresa
+              </p>
+              <p className="text-sm font-medium mt-0.5">
+                {selectedUser.company.socialName}
+              </p>
+            </div>
 
-                        <option value="USER">
-                        USER
-                        </option>
-                    </select>
-
-                    {errors.role && (
-                        <p className="text-sm text-red-500">
-                        {errors.role.message}
-                        </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium">
-                      Empresa
-                    </label>
-
-                    <input
-                      defaultValue={selectedUser.company.socialName}
-                      className="w-full rounded-md border p-2 bg-muted"
-                      />
-                  </div>
-                    <DialogFooter>
-                        <Button
-                        variant="outline"
-                        onClick={() => setOpenEditDialog(false)}
-                        >
-                        Cancelar
-                        </Button>
-
-                        <Button type="submit" disabled={updateUserMutation.isPending}>
-                         {updateUserMutation.isPending
-                            ? "Salvando..."
-                            : "Salvar"}
-                        </Button>
-
-                    </DialogFooter>
-                  </form>
+            
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Email
+              </Label>
+              <Input
+                id="email"
+                {...register("email")}
+                className="h-9 text-sm"
+                placeholder={selectedUser.email}
+              />
+              {errors.email && (
+                <p className="text-xs text-destructive">{errors.email.message}</p>
               )}
-            </DialogContent>
-          </Dialog>
-    )
+            </div>
+
+       
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Perfil
+              </Label>
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder="Selecione o perfil" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                      <SelectItem value="USER">Usuário</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.role && (
+                <p className="text-xs text-destructive">{errors.role.message}</p>
+              )}
+            </div>
+
+            <DialogFooter className="gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setOpenEditDialog(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" size="sm" disabled={updateUserMutation.isPending}>
+                {updateUserMutation.isPending ? "Salvando..." : "Salvar alterações"}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
 }

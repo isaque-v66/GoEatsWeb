@@ -2,8 +2,8 @@ import { ApiError } from "../../auth/services/auth.service"
 
 type UserUpdateType = {
   id: string
-  email: string
-  role: string
+  email?: string
+  role?: string
 }
 
 type FetchUsersParams = {
