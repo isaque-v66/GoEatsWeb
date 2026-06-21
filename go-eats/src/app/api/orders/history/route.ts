@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { NextRequest, NextResponse } from "next/server"
-import { format } from "date-fns"
+import { format, startOfDay } from "date-fns"
 import type { HistoryEntry } from "@/src/features/orders/types/order-history.types"
 
 export async function GET(req: NextRequest) {
@@ -12,7 +12,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: "userId não informado" }, { status: 400 })
     }
 
+    const today = startOfDay(new Date())
+
     const [orders, scheduledOrders] = await Promise.all([
+      
       prisma.order.findMany({
         where: { userId },
         include: {
@@ -22,8 +25,9 @@ export async function GET(req: NextRequest) {
         },
         orderBy: { date: "desc" },
       }),
+      // ScheduledOrder: só os que ainda não passaram da data (editáveis)
       prisma.scheduledOrder.findMany({
-        where: { userId },
+        where: { userId, date: { gte: today } },
         include: {
           items: {
             include: { item: true, subcategory: true },

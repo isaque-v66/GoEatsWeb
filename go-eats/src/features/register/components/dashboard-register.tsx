@@ -373,12 +373,13 @@ export function DashboardRegister() {
               <CardContent className="pt-5 space-y-2">
                 {ITEM_VALUES.map(item => {
                   const selected = selectedItems.find(i => i.item === item)
-                  const isFoodWithSub = ITEMS_WITH_SUBCATEGORY.includes(item)
                   const isDrink = item === "Bebidas"
-                  const subcategories = isFoodWithSub
-                    ? SUBCATEGORIES_VALUES
-                    : isDrink
+                  const isFoodWithSub = !isDrink && ITEMS_WITH_SUBCATEGORY.includes(item)
+
+                  const subcategories = isDrink
                     ? SUBCATEGORIES_DRINKS
+                    : isFoodWithSub
+                    ? SUBCATEGORIES_VALUES
                     : null
 
                   return (

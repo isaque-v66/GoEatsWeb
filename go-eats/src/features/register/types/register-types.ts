@@ -45,7 +45,7 @@ export const MEAL_TYPE_MAP = {
 
 
 
-export const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar"]
+export const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar", "Bebidas"]
 
 
 

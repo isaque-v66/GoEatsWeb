@@ -15,6 +15,8 @@ import { ptBR } from "date-fns/locale"
 import { useMemo, useState } from "react"
 import { DateRange } from "react-day-picker"
 import { Order, ScheduleType } from "../../types/order.types"
+import { ITEM_TO_MEAL_TYPE, ItemType } from "../../constants/itemValues.constants"
+import { isDateAvailableForMeal, getNextAvailableDate } from "../../utils/mealCutoff.rules"
 
 type Props = {
   open: boolean
@@ -95,7 +97,7 @@ function findConflicts(orders: Order, occupiedDates: string[]): Set<string> {
 }
 
 function DateRangePicker({
-  startDate, endDate, onChange, onClear, hasConflict, occupiedDates,
+  startDate, endDate, onChange, onClear, hasConflict, occupiedDates, itemName,
 }: {
   startDate?: string
   endDate?: string
@@ -103,9 +105,12 @@ function DateRangePicker({
   onClear: () => void
   hasConflict?: boolean
   occupiedDates: string[]
+  itemName: ItemType
 }) {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<"single" | "range">("single")
+
+  const mealType = ITEM_TO_MEAL_TYPE[itemName]
 
   const selected: DateRange | undefined = startDate
     ? { from: parseISO(startDate), to: endDate ? parseISO(endDate) : undefined }
@@ -120,9 +125,11 @@ function DateRangePicker({
     [occupiedDates]
   )
 
-  // Função de disabled combinando "antes de hoje" + "datas ocupadas"
+  // Função de disabled combinando "antes de hoje" + "datas ocupadas" +
+  // "regra de horário de corte do item" (ex: desjejum nunca permite hoje,
+  // almoço só permite hoje antes das 8h, fim de semana fecha sexta 14:30)
   const isDisabled = (date: Date) => {
-    if (date < new Date(new Date().setHours(0, 0, 0, 0))) return true
+    if (!isDateAvailableForMeal(mealType, date)) return true
     return occupiedDates.includes(format(date, "yyyy-MM-dd"))
   }
 
@@ -190,6 +197,7 @@ function DateRangePicker({
             <Calendar
               mode="single"
               locale={ptBR}
+              defaultMonth={getNextAvailableDate(mealType)}
               selected={selected?.from}
               disabled={isDisabled}
               modifiers={{ occupied: occupiedDateObjects }}
@@ -208,6 +216,7 @@ function DateRangePicker({
               <Calendar
                 mode="range"
                 locale={ptBR}
+                defaultMonth={getNextAvailableDate(mealType)}
                 selected={selected}
                 disabled={isDisabled}
                 modifiers={{ occupied: occupiedDateObjects }}
@@ -293,6 +302,7 @@ export function OrderReviewDialog({
                       endDate={order.endDate}
                       hasConflict={conflicts.has(order.id)}
                       occupiedDates={occupiedDates}
+                      itemName={order.item}
                       onChange={(start, end) => onUpdateDateRange(order.id, start, end)}
                       onClear={() => onUpdateDateRange(order.id, undefined, undefined)}
                     />
@@ -335,6 +345,7 @@ export function OrderReviewDialog({
                           endDate={sub.endDate}
                           hasConflict={conflicts.has(sub.id)}
                           occupiedDates={occupiedDates}
+                          itemName={order.item}
                           onChange={(start, end) => onUpdateDateRange(order.id, start, end, sub.id)}
                           onClear={() => onUpdateDateRange(order.id, undefined, undefined, sub.id)}
                         />

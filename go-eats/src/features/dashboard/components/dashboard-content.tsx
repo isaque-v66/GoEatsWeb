@@ -88,8 +88,7 @@ function DashboardContentInner() {
               {availableItems.map(item => {
                 const mealType = ITEM_TO_MEAL_TYPE[item.name]
                 const available = isMealAvailable(mealType)
-                const remainingTime = getRemainingTime(mealType)
-                const isEncerrado = remainingTime === "Encerrado"
+                const availabilityLabel = getRemainingTime(mealType)
 
                 return (
                   <Card
@@ -120,8 +119,8 @@ function DashboardContentInner() {
                         <p className={`font-medium text-sm ${isDark ? "text-white" : "text-neutral-900"}`}>
                           {item.name}
                         </p>
-                        <p className={`text-xs mt-0.5 ${isEncerrado ? "text-neutral-400" : "text-orange-500"}`}>
-                          {isEncerrado ? "Indisponível agora" : `Encerra em ${remainingTime}`}
+                        <p className={`text-xs mt-0.5 ${available ? "text-orange-500" : "text-neutral-400"}`}>
+                          {availabilityLabel}
                         </p>
                       </div>
 
@@ -271,7 +270,8 @@ function DashboardContentInner() {
   )
 }
 
-
+// O Provider precisa envolver o Header também (que está dentro do Inner),
+// então o componente exportado faz essa composição por fora.
 export function DashboardContent() {
   return (
     <OrderHistoryProvider>

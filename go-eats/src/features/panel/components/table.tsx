@@ -25,7 +25,7 @@ export function Table({ users }: TableProps) {
 
   return (
     <>
-      {/* ── Desktop: tabela ── */}
+      
       <div className="hidden md:block overflow-hidden rounded-lg border border-border mt-5">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -46,7 +46,7 @@ export function Table({ users }: TableProps) {
               {users.map(user => (
                 <tr key={user.id} className="bg-card transition-colors hover:bg-muted/30">
 
-                  {/* Avatar + nome */}
+                 
                   <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8 border border-border shrink-0">
@@ -60,17 +60,17 @@ export function Table({ users }: TableProps) {
                     </div>
                   </td>
 
-                  {/* Email */}
+                  
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">
                     {user.email}
                   </td>
 
-                  {/* Companhia */}
+                  
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">
                     {user.company.socialName}
                   </td>
 
-                  {/* Role / status */}
+                  
                   <td className="whitespace-nowrap px-4 py-3">
                     <Badge
                       variant={user.role === "ADMIN" ? "default" : "secondary"}
@@ -80,12 +80,12 @@ export function Table({ users }: TableProps) {
                     </Badge>
                   </td>
 
-                  {/* CNPJ */}
+                  
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground font-mono">
                     {user.company.cnpj}
                   </td>
 
-                  {/* Itens */}
+                 
                   <td className="px-4 py-3 max-w-[200px]">
                     <div className="flex flex-wrap gap-1">
                       {user.itemConfigs.length > 0
@@ -104,7 +104,7 @@ export function Table({ users }: TableProps) {
                     </div>
                   </td>
 
-                  {/* Ações */}
+                  
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -140,14 +140,14 @@ export function Table({ users }: TableProps) {
         </div>
       </div>
 
-      {/* ── Mobile: lista de cards ── */}
+      {/*lista de cards */}
       <div className="md:hidden mt-4 space-y-3">
         {users.map(user => (
           <div
             key={user.id}
             className="rounded-lg border border-border bg-card p-4 space-y-3"
           >
-            {/* Cabeçalho do card */}
+         
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-9 w-9 border border-border shrink-0">
