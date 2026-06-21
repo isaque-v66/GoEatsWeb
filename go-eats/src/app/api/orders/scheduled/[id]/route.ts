@@ -8,17 +8,17 @@ import { isDateAvailableForMeal } from "@/src/features/dashboard/utils/mealCutof
 type PatchPayload = {
   userId: string
   // Nova data para o pedido inteiro (mover o dia). Opcional.
-  newDate?: string // yyyy-MM-dd
+  newDate?: string 
   // Atualizações de quantidade por item do ScheduledOrder. Opcional.
   itemUpdates?: { scheduledOrderItemId: string; quantity: number }[]
 }
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const { userId, newDate, itemUpdates }: PatchPayload = await req.json()
 
     if (!userId) {
@@ -47,9 +47,7 @@ export async function PATCH(
       return NextResponse.json({ message: "Usuário não encontrado" }, { status: 404 })
     }
 
-    // ── Valida a regra de horário de corte por refeição antes de mover ──
-    // Cada item do ScheduledOrder pode ser de um mealType diferente, então
-    // a nova data precisa respeitar o corte de TODOS os itens presentes.
+    // Valida a regra de horário de corte por refeição
     if (newDate) {
       const targetDate = parseISO(newDate)
 
