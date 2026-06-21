@@ -58,6 +58,76 @@ npm run dev
 
 ---
 
+## Primeiro Acesso ao Sistema
+
+Para acessar o sistema pela primeira vez é necessário criar manualmente um usuário administrador (`ADMIN`), pois não existe cadastro público de administradores.
+
+### Criando o usuário administrador
+
+1. Abra o terminal integrado do VS Code na raiz do projeto.
+
+2. Gere o hash da senha desejada utilizando o Node.js:
+
+```bash
+node -e "const bcrypt=require('bcryptjs'); bcrypt.hash('SuaSenhaAqui',10).then(hash=>console.log(hash))"
+```
+
+Exemplo:
+
+```bash
+node -e "const bcrypt=require('bcryptjs'); bcrypt.hash('Admin123@',10).then(hash=>console.log(hash))"
+```
+
+Copie o hash gerado no terminal.
+
+3. Abra o Prisma Studio:
+
+```bash
+npx prisma studio
+```
+
+4. Crie uma empresa na tabela `Company` preenchendo:
+
+* `cnpj`
+* `socialName`
+
+5. Em seguida, crie um registro na tabela `User` utilizando:
+
+| Campo          | Valor                                         |
+| -------------- | --------------------------------------------- |
+| `email`        | [admin@empresa.com](mailto:admin@empresa.com) |
+| `passwordHash` | Hash gerado anteriormente                     |
+| `role`         | `ADMIN`                                       |
+| `companyId`    | ID da empresa criada                          |
+| `isActive`     | `true`                                        |
+
+Após salvar o registro, utilize o e-mail e a senha definidos para acessar o sistema.
+
+---
+
+## Cadastro de Usuários Operacionais
+
+Após realizar o login com um usuário `ADMIN`, acesse o painel administrativo e utilize a funcionalidade **"Registrar novo usuário"** para cadastrar usuários operacionais.
+
+Os usuários cadastrados pelo painel recebem automaticamente o papel:
+
+```txt
+USER
+```
+
+Usuários com perfil `USER` possuem acesso apenas ao painel de pedidos da empresa, podendo:
+
+* Realizar pedidos de refeições;
+* Criar pedidos agendados;
+* Consultar seus pedidos;
+* Gerenciar pedidos especiais.
+
+Usuários `USER` não possuem acesso às funcionalidades administrativas do sistema.
+
+
+
+---
+
 ## Rodando com Docker
 
 ### Pré-requisitos
