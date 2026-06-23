@@ -32,6 +32,12 @@ O **Go Eats** foi desenvolvido como um **protótipo funcional** para a empresa *
 
 
 ---
+### Painel De Visualização de Pedidos
+![Panel](go-eats/docs/PanelCalendar.png)
+
+
+
+---
 ## Stack
 
 **Frontend:** Next.js, React, TypeScript, TailwindCSS, Shadcn/UI
