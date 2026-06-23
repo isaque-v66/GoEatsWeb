@@ -8,17 +8,17 @@ import { isDateAvailableForMeal } from "@/src/features/dashboard/utils/mealCutof
 type PatchPayload = {
   userId: string
   // Nova data para o pedido inteiro (mover o dia). Opcional.
-  newDate?: string 
+  newDate?: string // yyyy-MM-dd
   // Atualizações de quantidade por item do ScheduledOrder. Opcional.
   itemUpdates?: { scheduledOrderItemId: string; quantity: number }[]
 }
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
+    const { id } = params
     const { userId, newDate, itemUpdates }: PatchPayload = await req.json()
 
     if (!userId) {
@@ -47,7 +47,9 @@ export async function PATCH(
       return NextResponse.json({ message: "Usuário não encontrado" }, { status: 404 })
     }
 
-    // Valida a regra de horário de corte por refeição
+    // ── Valida a regra de horário de corte por refeição antes de mover ──
+    // Cada item do ScheduledOrder pode ser de um mealType diferente, então
+    // a nova data precisa respeitar o corte de TODOS os itens presentes.
     if (newDate) {
       const targetDate = parseISO(newDate)
 
@@ -112,13 +114,18 @@ export async function PATCH(
         return
       }
 
-      if (newDate) {
-        const targetDate = parseISO(newDate)
-        await tx.scheduledOrder.update({
-          where: { id },
-          data: { date: targetDate, startDate: targetDate, endDate: targetDate },
-        })
-      }
+      // Sempre reseta reviewedAt ao editar — o admin precisa re-conferir
+      // o pedido modificado, independente de ter mudado data ou quantidade.
+      await tx.scheduledOrder.update({
+        where: { id },
+        data: {
+          reviewedAt: null,
+          ...(newDate && (() => {
+            const targetDate = parseISO(newDate)
+            return { date: targetDate, startDate: targetDate, endDate: targetDate }
+          })()),
+        },
+      })
     })
 
     // ── Busca o estado final atualizado para montar o e-mail consolidado ──

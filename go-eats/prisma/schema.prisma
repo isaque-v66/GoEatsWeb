@@ -14,134 +14,85 @@ enum UserRole {
   USER
 }
 
-
 model User { 
   id            String @id @default(uuid()) 
   email         String @unique 
   passwordHash  String 
-
   role          UserRole @default(USER)
-
   companyId     String 
   company       Company @relation(fields: [companyId], references: [id]) 
-
   scheduledOrders ScheduledOrder[]
-
   itemConfigs   UserItemConfig[]
   orders        Order[]
   sessions      Session[]
-
   isActive      Boolean  @default(true) 
   createdAt     DateTime @default(now()) 
   updatedAt     DateTime @updatedAt 
-
   @@index([companyId])
   @@map("users") 
 }
-
-
-
-
-
 
 model Company { 
   id          String @id @default(uuid()) 
   cnpj        String @unique 
   socialName  String 
-
   users       User[] 
   orders      Order[] 
   isActive    Boolean @default(true) 
-
   createdAt   DateTime @default(now()) 
   updatedAt   DateTime @updatedAt 
   @@map("companies") 
-  }
-
-
+}
 
 model Item {
   id         String   @id @default(uuid())
   name       String
-
   mealType   MealType
-
   configs    UserItemConfig[]
   orderItems OrderItem[]
   scheduledOrderItems ScheduledOrderItem[]
-
   createdAt  DateTime @default(now())
-
   @@unique([name, mealType])
 }
-
-
-
-
-
 
 model Subcategory {
   id      String @id @default(uuid())
   name    String
-
-
   mealType   MealType
   configs    UserSubcategoryConfig[]
   orderItems OrderItem[]
   scheduledOrderItems ScheduledOrderItem[]
-
   @@unique([name, mealType])
 }
 
-
-
-
-
-
 model UserItemConfig {
   id        String @id @default(uuid())
-
   userId    String
   user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   itemId    String
   item      Item   @relation(fields: [itemId], references: [id])
-
-
   weekdayQuantity Int?
   saturdayQuantity Int?
   sundayQuantity Int?
-
   subcategories UserSubcategoryConfig[]
-
   @@unique([userId, itemId])
   @@index([userId])
   @@index([itemId])
 }
 
-
-
-
-
 model UserSubcategoryConfig {
   id            String @id @default(uuid())
-
   userItemId    String
   userItem      UserItemConfig @relation(fields: [userItemId], references: [id], onDelete: Cascade)
-
   subcategoryId String
   subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
-
   weekdayQuantity Int?
   saturdayQuantity Int?
   sundayQuantity Int?
-
   @@unique([userItemId, subcategoryId])
   @@index([userItemId])
   @@index([subcategoryId])
 }
-
-
 
 enum MealType {
   DESJEJUM
@@ -154,86 +105,60 @@ enum MealType {
   CAFE_NOTURNO
 }
 
-
-
-
-
 model Order {
   id        String   @id @default(uuid())
-
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   companyId String
   company   Company  @relation(fields: [companyId], references: [id])
-
   mealType  MealType
   date      DateTime
   comments  String?
-
   items     OrderItem[]
-
+ 
+  reviewedAt DateTime?
   createdAt DateTime @default(now())
-
-  
   @@unique([userId, date, mealType])
   @@index([companyId])
 }
 
-
-
-
-
-
 model OrderItem {
   id            String @id @default(uuid())
-
   orderId       String
   order         Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
   itemId        String
   item          Item   @relation(fields: [itemId], references: [id])
-
   subcategoryId String?
   subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
-
   quantity      Int
   customText    String?
-
   createdAt     DateTime @default(now())
   @@index([orderId])
   @@index([itemId])
   @@index([subcategoryId])
 }
 
-
-
-
 model Session {
   id        String   @id @default(uuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
-
   @@index([expiresAt])
   @@index([userId])
 }
 
 
+
+
 model ScheduledOrderItem {
   id                  String @id @default(uuid())
-
   scheduledOrderId    String
   scheduledOrder      ScheduledOrder @relation(fields: [scheduledOrderId], references: [id], onDelete: Cascade)
-
   itemId              String
   item                Item @relation(fields: [itemId],references: [id])
-
   subcategoryId       String?
   subcategory         Subcategory? @relation(fields: [subcategoryId], references: [id])
-
   quantity            Int
-
   @@index([scheduledOrderId])
 }
 
@@ -242,21 +167,16 @@ model ScheduledOrderItem {
 
 model ScheduledOrder {
   id               String @id @default(uuid())
-
   userId           String
   user             User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   date             DateTime
-
-  startDate      DateTime?   
-  endDate        DateTime?
-
+  startDate        DateTime?   
+  endDate          DateTime?
   applyAsDefault   Boolean @default(false)
-
   items            ScheduledOrderItem[]
 
+  reviewedAt       DateTime?
   createdAt        DateTime @default(now())
-
   @@unique([userId, date])
   @@index([userId])
   @@index([date])
