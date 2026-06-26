@@ -1,7 +1,6 @@
 "use client"
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { format } from "date-fns"
 
 export type AdminOrderItem = {
   itemName: string
@@ -9,24 +8,41 @@ export type AdminOrderItem = {
   quantity: number
 }
 
-export type AdminOrderEntry = {
-  id: string
-  kind: "normal" | "scheduled"
-  date: string
-  mealType?: string
-  companyName: string
-  cnpj: string
-  reviewedAt: string | null
+export type MealEntry = {
+  mealType: string
   items: AdminOrderItem[]
 }
 
-export type AdminOrdersResponse = {
-  orders: AdminOrderEntry[]
-  scheduledOrders: AdminOrderEntry[]
-  daysWithOrders: string[]
+export type SourceRef = {
+  id: string
+  kind: "normal" | "scheduled"
 }
 
-const MEAL_LABELS: Record<string, string> = {
+export type UserDayRow = {
+  userId: string
+  date: string
+  companyName: string
+  cnpj: string
+  meals: MealEntry[]
+  sources: SourceRef[]
+  reviewedAt: string | null
+  hasProjection: boolean
+}
+
+export type Pagination = {
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
+export type AdminOrdersResponse = {
+  rows: UserDayRow[]
+  daysWithOrders: string[]
+  pagination: Pagination
+}
+
+export const MEAL_LABELS: Record<string, string> = {
   DESJEJUM: "Desjejum",
   ALMOCO: "Almoço",
   CAFE_TARDE: "Café da Tarde",
@@ -35,19 +51,18 @@ const MEAL_LABELS: Record<string, string> = {
   LANCHE: "Lanche",
   BEBIDAS: "Bebidas",
   CAFE_NOTURNO: "Café Noturno",
+  ESPECIAL: "Especial",
 }
 
-export { MEAL_LABELS }
-
-async function fetchAdminOrders(month: string, day?: string): Promise<AdminOrdersResponse> {
-  const params = new URLSearchParams({ month })
+async function fetchAdminOrders(month: string, day: string | undefined, page: number, pageSize: number): Promise<AdminOrdersResponse> {
+  const params = new URLSearchParams({ month, page: String(page), pageSize: String(pageSize) })
   if (day) params.set("day", day)
   const res = await fetch(`/api/admin/orders?${params}`)
   if (!res.ok) throw new Error("Erro ao buscar pedidos")
   return res.json()
 }
 
-async function markReviewed(payload: { id: string; kind: "normal" | "scheduled"; reviewed: boolean }) {
+async function markReviewed(payload: { sources: SourceRef[]; reviewed: boolean }) {
   const res = await fetch("/api/admin/orders/review", {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
@@ -57,14 +72,14 @@ async function markReviewed(payload: { id: string; kind: "normal" | "scheduled";
   return res.json()
 }
 
-export function useAdminOrders(month: string, day?: string) {
+export function useAdminOrders(month: string, day: string | undefined, page: number, pageSize = 15) {
   return useQuery({
-    queryKey: ["admin-orders", month, day ?? "all"],
-    queryFn: () => fetchAdminOrders(month, day),
-    // Polling de 30s: novos pedidos aparecem automaticamente sem recarregar
+    queryKey: ["admin-orders", month, day ?? "all", page, pageSize],
+    queryFn: () => fetchAdminOrders(month, day, page, pageSize),
     refetchInterval: 30_000,
     refetchIntervalInBackground: false,
     staleTime: 20_000,
+    placeholderData: prev => prev,
   })
 }
 
@@ -73,31 +88,27 @@ export function useReviewMutation() {
 
   return useMutation({
     mutationFn: markReviewed,
-    // Optimistic update: o checkbox responde imediatamente sem esperar o servidor
-    onMutate: async ({ id, kind, reviewed }) => {
+    onMutate: async ({ sources, reviewed }) => {
       await queryClient.cancelQueries({ queryKey: ["admin-orders"] })
-
       const snapshot = queryClient.getQueriesData({ queryKey: ["admin-orders"] })
+
+      const sourceIds = new Set(sources.map(s => `${s.kind}::${s.id}`))
 
       queryClient.setQueriesData(
         { queryKey: ["admin-orders"] },
         (old: AdminOrdersResponse | undefined) => {
           if (!old) return old
           const now = new Date().toISOString()
-          const update = (entries: AdminOrderEntry[]) =>
-            entries.map(e =>
-              e.id === id && e.kind === kind
-                ? { ...e, reviewedAt: reviewed ? now : null }
-                : e
-            )
           return {
             ...old,
-            orders: update(old.orders),
-            scheduledOrders: update(old.scheduledOrders),
+            rows: old.rows.map(row => {
+              const matches = row.sources.some(s => sourceIds.has(`${s.kind}::${s.id}`))
+              if (!matches) return row
+              return { ...row, reviewedAt: reviewed ? now : null }
+            }),
           }
         }
       )
-
       return { snapshot }
     },
     onError: (_err, _vars, ctx) => {

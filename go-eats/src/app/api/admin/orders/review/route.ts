@@ -13,9 +13,10 @@ async function requireAdmin(req: NextRequest) {
   return session.user
 }
 
+type SourceRef = { id: string; kind: "normal" | "scheduled" }
+
 type ReviewPayload = {
-  id: string
-  kind: "normal" | "scheduled"
+  sources: SourceRef[]
   reviewed: boolean
 }
 
@@ -26,21 +27,25 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ message: "Não autorizado" }, { status: 401 })
     }
 
-    const { id, kind, reviewed }: ReviewPayload = await req.json()
+    const { sources, reviewed }: ReviewPayload = await req.json()
+
+    if (!sources?.length) {
+      return NextResponse.json({ message: "Nenhuma origem informada" }, { status: 400 })
+    }
 
     const reviewedAt = reviewed ? new Date() : null
 
-    if (kind === "normal") {
-      await prisma.order.update({
-        where: { id },
-        data: { reviewedAt },
-      })
-    } else {
-      await prisma.scheduledOrder.update({
-        where: { id },
-        data: { reviewedAt },
-      })
-    }
+    const normalIds = sources.filter(s => s.kind === "normal").map(s => s.id)
+    const scheduledIds = sources.filter(s => s.kind === "scheduled").map(s => s.id)
+
+    await Promise.all([
+      normalIds.length
+        ? prisma.order.updateMany({ where: { id: { in: normalIds } }, data: { reviewedAt } })
+        : Promise.resolve(),
+      scheduledIds.length
+        ? prisma.scheduledOrder.updateMany({ where: { id: { in: scheduledIds } }, data: { reviewedAt } })
+        : Promise.resolve(),
+    ])
 
     return NextResponse.json({ success: true })
   } catch (err) {

@@ -44,7 +44,7 @@ export default function Panel() {
       <Header />
       <div className="min-h-screen p-6">
         <Tabs defaultValue="users">
-          {/* ── Cabeçalho com abas ── */}
+     
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
             <TabsList className="w-full sm:w-auto">
               <TabsTrigger value="users" className="flex items-center gap-2">
@@ -58,7 +58,7 @@ export default function Panel() {
             </TabsList>
           </div>
 
-          {/* ── Aba: Usuários (conteúdo original intacto) ── */}
+          
           <TabsContent value="users">
             <UserCards users={users} />
 
@@ -151,7 +151,7 @@ export default function Panel() {
             </div>
           </TabsContent>
 
-          {/* ── Aba: Pedidos ── */}
+
           <TabsContent value="orders">
             <OrdersPanel />
           </TabsContent>

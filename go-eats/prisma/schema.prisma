@@ -115,7 +115,7 @@ model Order {
   date      DateTime
   comments  String?
   items     OrderItem[]
- 
+  
   reviewedAt DateTime?
   createdAt DateTime @default(now())
   @@unique([userId, date, mealType])
@@ -147,9 +147,6 @@ model Session {
   @@index([userId])
 }
 
-
-
-
 model ScheduledOrderItem {
   id                  String @id @default(uuid())
   scheduledOrderId    String
@@ -162,9 +159,6 @@ model ScheduledOrderItem {
   @@index([scheduledOrderId])
 }
 
-
-
-
 model ScheduledOrder {
   id               String @id @default(uuid())
   userId           String
@@ -174,7 +168,6 @@ model ScheduledOrder {
   endDate          DateTime?
   applyAsDefault   Boolean @default(false)
   items            ScheduledOrderItem[]
-
   reviewedAt       DateTime?
   createdAt        DateTime @default(now())
   @@unique([userId, date])
