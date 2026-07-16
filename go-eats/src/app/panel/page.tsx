@@ -44,7 +44,7 @@ export default function Panel() {
       <Header />
       <div className="min-h-screen p-6">
         <Tabs defaultValue="users">
-     
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
             <TabsList className="w-full sm:w-auto">
               <TabsTrigger value="users" className="flex items-center gap-2">
@@ -58,17 +58,16 @@ export default function Panel() {
             </TabsList>
           </div>
 
-          
+
           <TabsContent value="users">
             <UserCards users={users} />
 
             <div className="flex flex-col mt-4 space-y-4">
               <Button
-                className={`self-end ${
-                  isDark
+                className={`self-end ${isDark
                     ? "bg-orange-600 hover:bg-orange-700 text-white"
                     : "bg-orange-500 hover:bg-orange-600 text-white"
-                }`}
+                  }`}
                 onClick={() => router.replace("/dashboardRegister")}
               >
                 <Plus className="w-4 h-4 mr-1" />

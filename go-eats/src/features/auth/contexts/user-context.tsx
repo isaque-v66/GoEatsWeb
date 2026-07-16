@@ -6,7 +6,7 @@ type User = {
   id: string
   name: string
   email: string
-  companyId: string 
+  companyId: string
 }
 
 type UserContextType = {

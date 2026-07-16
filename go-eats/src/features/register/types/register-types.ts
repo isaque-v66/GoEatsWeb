@@ -16,18 +16,18 @@ export type ItemType = (typeof ITEM_VALUES)[number]
 
 
 export const SUBCATEGORIES_VALUES = [
-    "Granel",
-    "MTX8",
-    "MTX9",
-    "Divisional"
+  "Granel",
+  "MTX8",
+  "MTX9",
+  "Divisional"
 ] as const
 
 
 export const SUBCATEGORIES_DRINKS = [
-    "Achocolatado",
-    "Litro de leite",
-    "Litro de café",
-    "Litro de chá"
+  "Achocolatado",
+  "Litro de leite",
+  "Litro de café",
+  "Litro de chá"
 ] as const
 
 
@@ -108,9 +108,9 @@ export const TypeSchemaForm = z.object({
   email: z.email("Email inválido"),
   password: z.string().min(5).max(50),
   cnpj: z.string().transform(val => val.replace(/\D/g, "")).refine(
-  val => val.length === 14,
-  "CNPJ inválido"
-),
+    val => val.length === 14,
+    "CNPJ inválido"
+  ),
   company: z.string(),
   nomeSocial: z.string(),
   items: z.array(ItemSchema),

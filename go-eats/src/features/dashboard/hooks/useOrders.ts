@@ -6,7 +6,7 @@ import {
   SubcategoryType
 } from "../constants/itemValues.constants"
 
-import {ScheduleType, OrderItem} from "../types/order.types"
+import { ScheduleType, OrderItem } from "../types/order.types"
 
 
 
@@ -32,9 +32,9 @@ type OrderState = {
 export function useOrder() {
   const [orders, setOrders] = useState<OrderState>({
     items: []
-    })
+  })
 
-  
+
   const addOrder = ({
     item,
     subcategory,
@@ -48,30 +48,30 @@ export function useOrder() {
         ...prev.items,
         subcategory
           ? {
-              id: crypto.randomUUID(),
-              item,
-              scheduleType,
-              specificDate,
-              updateDefault,
-              subcategories: [
-                {
-                  id: crypto.randomUUID(),
-                  name: subcategory,
-                  quantity,
-                  scheduleType: scheduleType ?? "WEEKDAY",
-                  specificDate,
-                  updateDefault,
-                },
-              ],
-            }
+            id: crypto.randomUUID(),
+            item,
+            scheduleType,
+            specificDate,
+            updateDefault,
+            subcategories: [
+              {
+                id: crypto.randomUUID(),
+                name: subcategory,
+                quantity,
+                scheduleType: scheduleType ?? "WEEKDAY",
+                specificDate,
+                updateDefault,
+              },
+            ],
+          }
           : {
-              id: crypto.randomUUID(),
-              item,
-              quantity,
-              scheduleType,
-              specificDate,
-              updateDefault,
-            },
+            id: crypto.randomUUID(),
+            item,
+            quantity,
+            scheduleType,
+            specificDate,
+            updateDefault,
+          },
       ],
     }))
   }
@@ -80,45 +80,45 @@ export function useOrder() {
 
 
   const updateQuantity = (orderId: string, delta: number, subId?: string) => {
-  setOrders(prev => {
-    const items = prev.items.map(order => {
-      if (order.id !== orderId) return order
+    setOrders(prev => {
+      const items = prev.items.map(order => {
+        if (order.id !== orderId) return order
 
-      // ITEM SEM SUB
-      if (!subId) {
-        const newQuantity = (order.quantity ?? 0) + delta
+        // ITEM SEM SUB
+        if (!subId) {
+          const newQuantity = (order.quantity ?? 0) + delta
 
-        if (newQuantity <= 0) return null
+          if (newQuantity <= 0) return null
+
+          return {
+            ...order,
+            quantity: newQuantity,
+          }
+        }
+
+        // ITEM COM SUB
+        const updatedSubs = (order.subcategories ?? [])
+          .map(s => {
+            if (s.id !== subId) return s
+
+            const newQ = s.quantity + delta
+            if (newQ <= 0) return null
+
+            return { ...s, quantity: newQ }
+          })
+          .filter(Boolean) as typeof order.subcategories
+
+        if (!updatedSubs?.length) return null
 
         return {
           ...order,
-          quantity: newQuantity,
+          subcategories: updatedSubs,
         }
-      }
+      }).filter(Boolean) as typeof prev.items
 
-      // ITEM COM SUB
-      const updatedSubs = (order.subcategories ?? [])
-        .map(s => {
-          if (s.id !== subId) return s
-
-          const newQ = s.quantity + delta
-          if (newQ <= 0) return null
-
-          return { ...s, quantity: newQ }
-        })
-        .filter(Boolean) as typeof order.subcategories
-
-      if (!updatedSubs?.length) return null
-
-      return {
-        ...order,
-        subcategories: updatedSubs,
-      }
-    }).filter(Boolean) as typeof prev.items
-
-    return { items }
-  })
-}
+      return { items }
+    })
+  }
 
 
 
@@ -160,11 +160,11 @@ export function useOrder() {
       )
     }))
   }
-  
 
 
-  
-  const updateDefaultFlag = (orderId: string,value: boolean) => {
+
+
+  const updateDefaultFlag = (orderId: string, value: boolean) => {
     setOrders(prev => ({
       items: prev.items.map(order =>
         order.id === orderId
@@ -173,10 +173,10 @@ export function useOrder() {
       )
     }))
   }
-  
 
 
-  
+
+
   const updateSpecificDate = (
     orderId: string,
     date?: string
@@ -185,9 +185,9 @@ export function useOrder() {
       items: prev.items.map(order =>
         order.id === orderId
           ? {
-              ...order,
-              specificDate: date,
-            }
+            ...order,
+            specificDate: date,
+          }
           : order
       )
     }))
@@ -198,91 +198,91 @@ export function useOrder() {
 
 
   const updateSubScheduleType = (
-  orderId: string,
-  subId: string,
-  scheduleType: ScheduleType
-) => {
-  setOrders(prev => ({
-    items: prev.items.map(order => {
-      if (order.id !== orderId) {
-        return order
-      }
+    orderId: string,
+    subId: string,
+    scheduleType: ScheduleType
+  ) => {
+    setOrders(prev => ({
+      items: prev.items.map(order => {
+        if (order.id !== orderId) {
+          return order
+        }
 
-      return {
-        ...order,
-        subcategories: order.subcategories?.map(sub =>
-          sub.id === subId
-            ? {
+        return {
+          ...order,
+          subcategories: order.subcategories?.map(sub =>
+            sub.id === subId
+              ? {
                 ...sub,
                 scheduleType,
               }
-            : sub
-        ),
-      }
-    }),
-  }))
-}
+              : sub
+          ),
+        }
+      }),
+    }))
+  }
 
 
 
-const updateSubDefaultFlag = (
-  orderId: string,
-  subId: string,
-  value: boolean
-) => {
-  setOrders(prev => ({
-    items: prev.items.map(order => {
-      if (order.id !== orderId) {
-        return order
-      }
+  const updateSubDefaultFlag = (
+    orderId: string,
+    subId: string,
+    value: boolean
+  ) => {
+    setOrders(prev => ({
+      items: prev.items.map(order => {
+        if (order.id !== orderId) {
+          return order
+        }
 
-      return {
-        ...order,
-        subcategories: order.subcategories?.map(sub =>
-          sub.id === subId
-            ? {
+        return {
+          ...order,
+          subcategories: order.subcategories?.map(sub =>
+            sub.id === subId
+              ? {
                 ...sub,
                 updateDefault: value,
               }
-            : sub
-        ),
-      }
-    }),
-  }))
-}
+              : sub
+          ),
+        }
+      }),
+    }))
+  }
 
 
 
 
-const updateDateRange = (
-  orderId: string,
-  startDate?: string,
-  endDate?: string,
-  subId?: string
-) => {
-  setOrders(prev => ({
-    items: prev.items.map(order => {
-      if (order.id !== orderId) return order
+  const updateDateRange = (
+    orderId: string,
+    startDate?: string,
+    endDate?: string,
+    subId?: string
+  ) => {
+    setOrders(prev => ({
+      items: prev.items.map(order => {
+        if (order.id !== orderId) return order
 
-      if (!subId) {
-        return { ...order, startDate, endDate, specificDate: undefined }
-      }
+        if (!subId) {
+          return { ...order, startDate, endDate, specificDate: undefined }
+        }
 
-      return {
-        ...order,
-        subcategories: order.subcategories?.map(sub =>
-          sub.id === subId
-            ? { ...sub, startDate, endDate, specificDate: undefined }
-            : sub
-        ),
-      }
-    }),
-  }))
-}
+        return {
+          ...order,
+          subcategories: order.subcategories?.map(sub =>
+            sub.id === subId
+              ? { ...sub, startDate, endDate, specificDate: undefined }
+              : sub
+          ),
+        }
+      }),
+    }))
+  }
 
 
 
- const clearOrders = () => {
+  const clearOrders = () => {
     setOrders({ items: [] })
   }
 

@@ -29,7 +29,7 @@ type Props = {
   onUpdateSubDefaultFlag: (orderId: string, subId: string, value: boolean) => void
   onUpdateDateRange: (orderId: string, startDate?: string, endDate?: string, subId?: string) => void
   submitting: boolean
-  occupiedDates: string[] 
+  occupiedDates: string[]
 }
 
 function formatDateRange(startDate?: string, endDate?: string) {
@@ -156,11 +156,10 @@ function DateRangePicker({
             key={m}
             type="button"
             onClick={() => setMode(m)}
-            className={`text-xs px-2.5 py-1 rounded-md border transition-colors ${
-              mode === m
+            className={`text-xs px-2.5 py-1 rounded-md border transition-colors ${mode === m
                 ? "bg-foreground text-background border-foreground"
                 : "border-border text-muted-foreground hover:border-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             {m === "single" ? "Dia único" : "Intervalo"}
           </button>
@@ -170,11 +169,10 @@ function DateRangePicker({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
-            className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${
-              hasConflict
+            className={`w-full flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors text-left ${hasConflict
                 ? "border-destructive bg-destructive/5 text-destructive"
                 : "border-border bg-background hover:border-foreground"
-            }`}
+              }`}
           >
             <CalendarIcon className="w-3.5 h-3.5 shrink-0" />
             {label ? (

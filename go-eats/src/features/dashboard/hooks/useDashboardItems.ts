@@ -27,17 +27,17 @@ export function useDashboardItems(userId?: string) {
     let cancelled = false
 
     async function load() {
-       if (!userId) return
+      if (!userId) return
 
-        try {
-            setLoading(true)
+      try {
+        setLoading(true)
 
-            const data = await getDashboardItems(userId) 
+        const data = await getDashboardItems(userId)
 
-            if (!cancelled) setItems(data)
-        } finally {
-            setLoading(false)
-        }
+        if (!cancelled) setItems(data)
+      } finally {
+        setLoading(false)
+      }
     }
 
     load()

@@ -23,7 +23,7 @@ export async function proxy(req: NextRequest) {
     )
   }
 
-  
+
   if (
     req.nextUrl.pathname.startsWith("/dashboardRegister") &&
     session.user.role !== "ADMIN"

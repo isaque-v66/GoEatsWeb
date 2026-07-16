@@ -44,6 +44,14 @@ const OrderSchema = z.object({
 
 export type Order = z.infer<typeof OrderSchema>
 
+
+
+
+
+
+
+
+
 function DashboardContentInner() {
   const { theme } = useTheme()
   const [mobileCartOpen, setMobileCartOpen] = useState(false)
@@ -62,6 +70,19 @@ function DashboardContentInner() {
     return sum + (order.quantity ?? 0)
   }, 0)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
   return (
     <div className={`min-h-screen ${isDark ? "bg-neutral-950" : "bg-neutral-50"}`}>
       <Header />
@@ -70,10 +91,10 @@ function DashboardContentInner() {
       <div className="container mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-8">
         <div className="grid lg:grid-cols-3 gap-6 items-start">
 
-          
+
           <div className="lg:col-span-2 space-y-6">
 
-            
+
             <div>
               <h2 className={`text-2xl font-semibold tracking-tight ${isDark ? "text-white" : "text-neutral-900"}`}>
                 Faça seu pedido
@@ -83,7 +104,7 @@ function DashboardContentInner() {
               </p>
             </div>
 
-            
+
             <div className="space-y-3">
               {availableItems.map(item => {
                 const mealType = ITEM_TO_MEAL_TYPE[item.name]
@@ -114,7 +135,7 @@ function DashboardContentInner() {
                         {ITEM_ICONS[item.name]}
                       </div>
 
-                      
+
                       <div className="flex-1 min-w-0">
                         <p className={`font-medium text-sm ${isDark ? "text-white" : "text-neutral-900"}`}>
                           {item.name}
@@ -124,7 +145,7 @@ function DashboardContentInner() {
                         </p>
                       </div>
 
-                      
+
                       {!item.subcategories?.length && (
                         <Button
                           size="sm"
@@ -145,7 +166,7 @@ function DashboardContentInner() {
                       )}
                     </div>
 
-                    
+
                     {item.subcategories?.length ? (
                       <div className={`
                         px-4 pb-3 pt-1 border-t flex flex-wrap gap-2
@@ -178,7 +199,7 @@ function DashboardContentInner() {
             </div>
           </div>
 
-          
+
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-6">
               <OrderSummary
@@ -189,7 +210,7 @@ function DashboardContentInner() {
                 onUpdateDefaultFlag={updateDefaultFlag}
                 onUpdateSubScheduleType={updateSubScheduleType}
                 onUpdateSubDefaultFlag={updateSubDefaultFlag}
-                onUpdateDateRange={updateDateRange}  
+                onUpdateDateRange={updateDateRange}
                 onOrderSubmitted={clearOrders}
               />
             </div>
@@ -198,7 +219,7 @@ function DashboardContentInner() {
         </div>
       </div>
 
-      
+
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background to-transparent">
         {orders.items.length > 0 ? (
           <Button
@@ -221,21 +242,21 @@ function DashboardContentInner() {
         )}
       </div>
 
-      
+
       {mobileCartOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
-          
+
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setMobileCartOpen(false)}
           />
 
-          
+
           <div className={`
             relative rounded-t-2xl max-h-[85vh] flex flex-col overflow-hidden
             ${isDark ? "bg-neutral-900 border-t border-neutral-800" : "bg-white border-t border-neutral-200"}
           `}>
-            
+
             <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
               <div className="w-10 h-1 rounded-full bg-muted-foreground/30 mx-auto absolute left-1/2 -translate-x-1/2 top-2" />
               <p className={`font-semibold text-sm ${isDark ? "text-white" : "text-neutral-900"}`}>
@@ -249,7 +270,7 @@ function DashboardContentInner() {
               </button>
             </div>
 
-            
+
             <div className="overflow-y-auto flex-1">
               <OrderSummary
                 orders={orders}
@@ -259,7 +280,7 @@ function DashboardContentInner() {
                 onUpdateDefaultFlag={updateDefaultFlag}
                 onUpdateSubScheduleType={updateSubScheduleType}
                 onUpdateSubDefaultFlag={updateSubDefaultFlag}
-                onUpdateDateRange={updateDateRange}  
+                onUpdateDateRange={updateDateRange}
                 onOrderSubmitted={clearOrders}
               />
             </div>
@@ -270,8 +291,7 @@ function DashboardContentInner() {
   )
 }
 
-// O Provider precisa envolver o Header também (que está dentro do Inner),
-// então o componente exportado faz essa composição por fora.
+
 export function DashboardContent() {
   return (
     <OrderHistoryProvider>

@@ -8,7 +8,7 @@ export type ScheduleType =
 
 
 
-  
+
 
 export type OrderSubcategory = {
   id: string
@@ -19,7 +19,7 @@ export type OrderSubcategory = {
 
   scheduleType: ScheduleType
 
-  startDate?: string       
+  startDate?: string
   endDate?: string
 
   specificDate?: string
@@ -41,8 +41,8 @@ export type OrderItem = {
 
   specificDate?: string
 
-  startDate?: string       
-  endDate?: string  
+  startDate?: string
+  endDate?: string
 
   updateDefault?: boolean
 

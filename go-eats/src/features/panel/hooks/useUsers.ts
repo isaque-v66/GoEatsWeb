@@ -12,6 +12,6 @@ export function useUsers({ page, pageSize = 10, search = "", status = "ALL" }: U
   return useQuery({
     queryKey: ["users", page, pageSize, search, status],
     queryFn: () => tableService({ page, pageSize, search, status }),
-    placeholderData: previousData => previousData, 
+    placeholderData: previousData => previousData,
   })
 }

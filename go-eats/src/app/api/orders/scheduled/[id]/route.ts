@@ -47,7 +47,7 @@ export async function PATCH(
       return NextResponse.json({ message: "Usuário não encontrado" }, { status: 404 })
     }
 
-    // ── Valida a regra de horário de corte por refeição antes de mover ──
+   
     // Cada item do ScheduledOrder pode ser de um mealType diferente, então
     // a nova data precisa respeitar o corte de TODOS os itens presentes.
     if (newDate) {
@@ -64,7 +64,6 @@ export async function PATCH(
       }
 
       // Mover de data: valida que o usuário não tem outro ScheduledOrder
-      // já ocupando o dia de destino
       const conflict = await prisma.scheduledOrder.findFirst({
         where: {
           userId,
@@ -128,7 +127,7 @@ export async function PATCH(
       })
     })
 
-    // ── Busca o estado final atualizado para montar o e-mail consolidado ──
+    // Busca o estado final atualizado para montar o e-mail consolidado 
     const finalOrder = await prisma.scheduledOrder.findUnique({
       where: { id },
       include: {
@@ -138,7 +137,7 @@ export async function PATCH(
       },
     })
 
-    // Se o pedido foi removido (zerou todos os itens), não há o que notificar
+    // Se o pedido foi removido (zerou todos os itens), não notifica
     if (!finalOrder) {
       return NextResponse.json({ message: "Pedido removido (sem itens restantes)", deleted: true })
     }

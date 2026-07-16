@@ -12,7 +12,7 @@ export async function PUT(req: Request) {
       )
     }
 
-    
+
     const data: { email?: string; role?: "ADMIN" | "USER" } = {}
 
     if (email !== undefined) data.email = email

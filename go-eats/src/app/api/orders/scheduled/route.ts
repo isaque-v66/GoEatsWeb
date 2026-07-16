@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
         continue
       }
 
-      
+
       for (const sub of orderItem.subcategories as SubPayload[]) {
         const subStart = sub.startDate ?? startDate
         const subEnd = sub.endDate ?? endDate ?? subStart
@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Nenhuma data válida informada" }, { status: 400 })
     }
 
-    
+
     const existing = await prisma.scheduledOrder.findMany({
       where: {
         userId,
@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
 
     let totalCreated = 0
 
-  
+
     for (const [dateKey, dayItems] of dayMap) {
       const date = parseISO(dateKey)
       const scheduleType = getScheduleType(date)
@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-   
+
     const batchesByPeriod = new Map<string, EmailBatch[]>()
     for (const batch of emailBatches) {
       const periodKey = `${batch.startDate}_${batch.endDate}`

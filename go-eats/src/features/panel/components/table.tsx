@@ -25,7 +25,7 @@ export function Table({ users }: TableProps) {
 
   return (
     <>
-      
+
       <div className="hidden md:block overflow-hidden rounded-lg border border-border mt-5">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -46,7 +46,7 @@ export function Table({ users }: TableProps) {
               {users.map(user => (
                 <tr key={user.id} className="bg-card transition-colors hover:bg-muted/30">
 
-                 
+
                   <td className="whitespace-nowrap px-4 py-3">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8 border border-border shrink-0">
@@ -60,17 +60,17 @@ export function Table({ users }: TableProps) {
                     </div>
                   </td>
 
-                  
+
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">
                     {user.email}
                   </td>
 
-                  
+
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground">
                     {user.company.socialName}
                   </td>
 
-                  
+
                   <td className="whitespace-nowrap px-4 py-3">
                     <Badge
                       variant={user.role === "ADMIN" ? "default" : "secondary"}
@@ -80,20 +80,20 @@ export function Table({ users }: TableProps) {
                     </Badge>
                   </td>
 
-                  
+
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground font-mono">
                     {user.company.cnpj}
                   </td>
 
-                 
+
                   <td className="px-4 py-3 max-w-[200px]">
                     <div className="flex flex-wrap gap-1">
                       {user.itemConfigs.length > 0
                         ? user.itemConfigs.slice(0, 3).map(config => (
-                            <Badge key={config.item.name} variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">
-                              {config.item.name}
-                            </Badge>
-                          ))
+                          <Badge key={config.item.name} variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">
+                            {config.item.name}
+                          </Badge>
+                        ))
                         : <span className="text-xs text-muted-foreground">—</span>
                       }
                       {user.itemConfigs.length > 3 && (
@@ -104,7 +104,7 @@ export function Table({ users }: TableProps) {
                     </div>
                   </td>
 
-                  
+
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -147,7 +147,7 @@ export function Table({ users }: TableProps) {
             key={user.id}
             className="rounded-lg border border-border bg-card p-4 space-y-3"
           >
-         
+
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-3 min-w-0">
                 <Avatar className="h-9 w-9 border border-border shrink-0">

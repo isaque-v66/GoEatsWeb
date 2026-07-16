@@ -1,16 +1,16 @@
-import { ApiError } from "../../auth/services/auth.service"
+import { ApiError } from "@/src/shared/errors/ApiError"
 
 type UserUpdateType = {
-  id: string
-  email?: string
-  role?: string
+    id: string
+    email?: string
+    role?: string
 }
 
 type FetchUsersParams = {
-  page?: number
-  pageSize?: number
-  search?: string
-  status?: "ALL" | "ADMIN" | "USER"
+    page?: number
+    pageSize?: number
+    search?: string
+    status?: "ALL" | "ADMIN" | "USER"
 }
 
 
@@ -20,10 +20,10 @@ type FetchUsersParams = {
 
 
 
-export async function tableService({page = 1, pageSize = 10, search = "", status = "ALL"}: FetchUsersParams = {}) {
-  
-  
-    const params = new URLSearchParams({page: String(page), pageSize: String(pageSize)})
+export async function tableService({ page = 1, pageSize = 10, search = "", status = "ALL" }: FetchUsersParams = {}) {
+
+
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) })
 
     if (search) params.set("search", search)
     if (status !== "ALL") params.set("status", status)
@@ -36,9 +36,9 @@ export async function tableService({page = 1, pageSize = 10, search = "", status
     }
 
     return data
-    }
+}
 
-    export async function updateUserTable(data: UserUpdateType) {
+export async function updateUserTable(data: UserUpdateType) {
     const req = await fetch("/api/usersUpdate", {
         method: "PUT",
         headers: { "content-type": "application/json" },

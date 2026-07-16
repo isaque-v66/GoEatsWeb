@@ -54,35 +54,31 @@ export function Header() {
   return (
     <>
       <header
-        className={`border-b backdrop-blur-sm shadow-sm transition-colors duration-300 ${
-          theme === "dark"
+        className={`border-b backdrop-blur-sm shadow-sm transition-colors duration-300 ${theme === "dark"
             ? "border-neutral-800 bg-neutral-900/90"
             : "border-neutral-200 bg-white/90"
-        }`}
+          }`}
       >
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md sm:h-12 sm:w-12 ${
-                theme === "dark"
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md sm:h-12 sm:w-12 ${theme === "dark"
                   ? "bg-gradient-to-br from-orange-600 to-orange-700"
                   : "bg-gradient-to-br from-orange-500 to-orange-600"
-              }`}
+                }`}
             >
               <Utensils className="h-5 w-5 text-white sm:h-7 sm:w-7" />
             </div>
             <div className="min-w-0">
               <h1
-                className={`truncate text-lg font-bold leading-tight sm:text-2xl ${
-                  theme === "dark" ? "text-white" : "text-neutral-900"
-                }`}
+                className={`truncate text-lg font-bold leading-tight sm:text-2xl ${theme === "dark" ? "text-white" : "text-neutral-900"
+                  }`}
               >
                 Go Eats
               </h1>
               <p
-                className={`truncate text-xs leading-tight sm:text-sm ${
-                  theme === "dark" ? "text-neutral-400" : "text-neutral-500"
-                }`}
+                className={`truncate text-xs leading-tight sm:text-sm ${theme === "dark" ? "text-neutral-400" : "text-neutral-500"
+                  }`}
               >
                 Sistema de pedidos de comida
               </p>
@@ -92,9 +88,8 @@ export function Header() {
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {!loading && user && (
               <span
-                className={`hidden text-sm font-medium mr-2 sm:inline ${
-                  theme === "dark" ? "text-neutral-300" : "text-neutral-700"
-                }`}
+                className={`hidden text-sm font-medium mr-2 sm:inline ${theme === "dark" ? "text-neutral-300" : "text-neutral-700"
+                  }`}
               >
                 Olá, {user.name}
               </span>

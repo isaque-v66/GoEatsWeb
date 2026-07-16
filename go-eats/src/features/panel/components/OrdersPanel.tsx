@@ -194,10 +194,10 @@ export function OrdersPanel() {
                 {rows.length === 0
                   ? "Nenhum pedido encontrado"
                   : [
-                      totalReviewable > 0 && `${reviewedCount}/${totalReviewable} revisado(s)`,
-                      projectedCount > 0 && `${projectedCount} com projeção`,
-                      pagination && `${pagination.total} no total`,
-                    ].filter(Boolean).join(" · ")
+                    totalReviewable > 0 && `${reviewedCount}/${totalReviewable} revisado(s)`,
+                    projectedCount > 0 && `${projectedCount} com projeção`,
+                    pagination && `${pagination.total} no total`,
+                  ].filter(Boolean).join(" · ")
                 }
               </p>
             </div>

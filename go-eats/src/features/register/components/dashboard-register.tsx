@@ -23,7 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle } from "lucide-react"
 
-// Máscara de CNPJ 
+
 function maskCNPJ(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 14)
 
@@ -69,7 +69,7 @@ export function DashboardRegister() {
       setValue("items", data.items)
       setSelectedItems(data.items as SelectedItem[])
     }
-    
+
   }, [])
 
 
@@ -171,17 +171,17 @@ export function DashboardRegister() {
           sundayQuantity: hasSub ? undefined : ativo ? item.sundayQuantity : undefined,
           subcategories: hasSub
             ? item.subcategories?.map(sub => ({
-                name: sub.name,
-                weekQuantity: ativo ? sub.weekQuantity : undefined,
-                saturdayQuantity: ativo ? sub.saturdayQuantity : undefined,
-                sundayQuantity: ativo ? sub.sundayQuantity : undefined,
-              }))
+              name: sub.name,
+              weekQuantity: ativo ? sub.weekQuantity : undefined,
+              saturdayQuantity: ativo ? sub.saturdayQuantity : undefined,
+              sundayQuantity: ativo ? sub.sundayQuantity : undefined,
+            }))
             : undefined,
         }
       }),
     }
 
-    
+
     try {
       const res = await fetch(`/api/checkCnpj?cnpj=${cnpjLimpo}`)
       const result = await res.json()
@@ -193,9 +193,9 @@ export function DashboardRegister() {
         })
         return
       }
-    } catch(err) {
+    } catch (err) {
       console.error("Falha ao verificar CNPJ:", err)
-      
+
     }
 
     setData(normalizedForm)
@@ -227,7 +227,7 @@ export function DashboardRegister() {
         <form onSubmit={handleSubmit(formHandle)}>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-            
+
             <Card className="shadow-sm">
               <CardHeader className="pb-3 border-b">
                 <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -362,7 +362,7 @@ export function DashboardRegister() {
               </CardContent>
             </Card>
 
-            
+
             <Card className="shadow-sm">
               <CardHeader className="pb-3 border-b">
                 <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -379,8 +379,8 @@ export function DashboardRegister() {
                   const subcategories = isDrink
                     ? SUBCATEGORIES_DRINKS
                     : isFoodWithSub
-                    ? SUBCATEGORIES_VALUES
-                    : null
+                      ? SUBCATEGORIES_VALUES
+                      : null
 
                   return (
                     <div key={item}>
@@ -428,7 +428,7 @@ export function DashboardRegister() {
               </CardContent>
             </Card>
 
-            
+
             <div className="space-y-4">
               {ativo ? (
                 <>

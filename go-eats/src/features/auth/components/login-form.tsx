@@ -11,7 +11,7 @@ import { useUser } from "../contexts/user-context"
 import { useLogin } from "../hook/useLogin"
 import { useState } from "react"
 
-const LoginSchema = z.object({
+export const LoginSchema = z.object({
   email: z.email("Email inválido"),
   password: z.string()
     .max(50, "Máximo 50 caracteres")
@@ -28,7 +28,7 @@ export type LoginDataType = z.infer<typeof LoginSchema>
 
 export function LoginForm() {
   const router = useRouter()
-  const [showPassword,setShowPassword] = useState<boolean>(false)
+  const [showPassword, setShowPassword] = useState<boolean>(false)
   const { user, setUser } = useUser()
   const { theme } = useTheme()
   const { login, loading } = useLogin()
@@ -53,11 +53,17 @@ export function LoginForm() {
         },
       })
 
-      
+
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro inesperado")
     }
   }
+
+
+
+
+
+
 
   const inputClass = `
     h-11 w-full rounded-lg border px-3.5 text-sm
@@ -77,21 +83,19 @@ export function LoginForm() {
 
 
   return (
-    <div className={`min-h-screen flex items-center justify-center px-4 ${
-      isDark
+    <div className={`min-h-screen flex items-center justify-center px-4 ${isDark
         ? "bg-neutral-950"
         : "bg-neutral-50"
-    }`}>
+      }`}>
       <div className="w-full max-w-sm">
 
-        
-        <div className={`rounded-xl border p-8 shadow-sm ${
-          isDark
+
+        <div className={`rounded-xl border p-8 shadow-sm ${isDark
             ? "bg-neutral-900 border-neutral-800"
             : "bg-white border-neutral-200"
-        }`}>
+          }`}>
 
-          
+
           <div className="flex flex-col items-center mb-8">
             <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center mb-4">
               <Utensils className="w-6 h-6 text-white" />
@@ -104,13 +108,12 @@ export function LoginForm() {
             </p>
           </div>
 
-          
+
           <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
 
             <div className="space-y-1.5">
-              <label className={`text-xs font-medium uppercase tracking-wide ${
-                isDark ? "text-neutral-400" : "text-neutral-500"
-              }`}>
+              <label className={`text-xs font-medium uppercase tracking-wide ${isDark ? "text-neutral-400" : "text-neutral-500"
+                }`}>
                 Email
               </label>
               <input
@@ -125,9 +128,8 @@ export function LoginForm() {
             </div>
 
             <div className="space-y-1.5">
-              <label className={`text-xs font-medium uppercase tracking-wide ${
-                isDark ? "text-neutral-400" : "text-neutral-500"
-              }`}>
+              <label className={`text-xs font-medium uppercase tracking-wide ${isDark ? "text-neutral-400" : "text-neutral-500"
+                }`}>
                 Senha
               </label>
 
@@ -140,23 +142,23 @@ export function LoginForm() {
                   className={`${inputClass} pr-10`}
                 />
                 <button
-                type="button"
-                onClick={() => setShowPassword((s) => !s)}
-                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {showPassword ? (
-                  <EyeOff className="size-5" />
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-5" />
 
-                ) : (
-                  <Eye className="size-5" />
-                )}
-              </button>
+                  ) : (
+                    <Eye className="size-5" />
+                  )}
+                </button>
                 {errors.password && (
                   <p className="text-xs text-red-500 mt-1">{errors.password.message}</p>
                 )}
               </div>
-              </div>
+            </div>
 
             <button
               type="submit"
@@ -174,14 +176,14 @@ export function LoginForm() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                  Entrando...
+
                 </span>
               ) : "Entrar"}
             </button>
           </form>
         </div>
 
-        
+
         <p className={`text-center text-xs mt-6 ${isDark ? "text-neutral-600" : "text-neutral-400"}`}>
           Go Eats © {new Date().getFullYear()}
         </p>

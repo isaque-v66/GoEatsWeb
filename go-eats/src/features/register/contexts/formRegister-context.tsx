@@ -15,15 +15,15 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
   const [data, setDataState] = useState<TypeForm | null>(null)
 
 
-  useEffect(()=> {
+  useEffect(() => {
     const stored = localStorage.getItem("register-data")
-    if(stored) {
-        setDataState(JSON.parse(stored))
+    if (stored) {
+      setDataState(JSON.parse(stored))
     }
 
   }, [])
 
-  
+
 
   function setData(data: TypeForm) {
     setDataState(data)

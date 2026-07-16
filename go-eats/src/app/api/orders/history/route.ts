@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const today = startOfDay(new Date())
 
     const [orders, scheduledOrders] = await Promise.all([
-      
+
       prisma.order.findMany({
         where: { userId },
         include: {

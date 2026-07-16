@@ -7,13 +7,13 @@ import { useTheme } from "../contexts/theme-context"
 
 
 
-export function ToggleTheme(){
+export function ToggleTheme() {
 
-    const {theme, toggleTheme} = useTheme()
+    const { theme, toggleTheme } = useTheme()
 
 
-    return(
-         <button
+    return (
+        <button
             onClick={toggleTheme}
             className="
                 fixed bottom-6 right-6 z-50
@@ -23,12 +23,12 @@ export function ToggleTheme(){
                 dark:border-neutral-700 dark:bg-neutral-900/90 dark:hover:bg-neutral-800
             "
             aria-label="Alternar tema"
-            >
+        >
             {theme === "dark" ? (
                 <Sun className="h-6 w-6 text-orange-400" />
             ) : (
                 <Moon className="h-6 w-6 text-orange-500" />
             )}
-            </button>
+        </button>
     )
 }

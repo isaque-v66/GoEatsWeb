@@ -23,31 +23,31 @@ export async function GET(req: NextRequest) {
 
         search
           ? {
-              OR: [
-                {
-                  email: {
+            OR: [
+              {
+                email: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
+              {
+                company: {
+                  socialName: {
                     contains: search,
                     mode: "insensitive",
                   },
                 },
-                {
-                  company: {
-                    socialName: {
-                      contains: search,
-                      mode: "insensitive",
-                    },
+              },
+              {
+                company: {
+                  cnpj: {
+                    contains: search,
+                    mode: "insensitive",
                   },
                 },
-                {
-                  company: {
-                    cnpj: {
-                      contains: search,
-                      mode: "insensitive",
-                    },
-                  },
-                },
-              ],
-            }
+              },
+            ],
+          }
           : {},
       ],
     }

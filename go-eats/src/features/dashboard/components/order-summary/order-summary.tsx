@@ -64,12 +64,12 @@ interface OrderSummaryProps {
 
 
   onUpdateDateRange: (
-    orderId: string, 
-    startDate?: string, 
-    endDate?: string, 
+    orderId: string,
+    startDate?: string,
+    endDate?: string,
     subId?: string
-  ) => void 
-  
+  ) => void
+
 
   onOrderSubmitted: () => void
 }
@@ -82,7 +82,7 @@ interface OrderSummaryProps {
 
 
 
-export function OrderSummary({orders, onUpdateQuantity, onRemoveItem, 
+export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem,
   onUpdateScheduleType, onUpdateDefaultFlag, onUpdateSubScheduleType,
   onUpdateSubDefaultFlag, onUpdateDateRange, onOrderSubmitted }: OrderSummaryProps) {
 
@@ -107,7 +107,7 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
 
 
   const handleSubmit = async () => {
-    if (isSubmitting) return 
+    if (isSubmitting) return
 
     if (!user?.id || !user?.companyId) {
       alert("Usuário não autenticado")
@@ -127,7 +127,7 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
 
       if (result.success) {
         setReviewOpen(false)
-        onOrderSubmitted() 
+        onOrderSubmitted()
       }
     } finally {
       setIsSubmittingLocal(false)
@@ -137,14 +137,14 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
 
 
 
-//   const result = await submitOrder({
-//     userId: user.id,
-//     companyId: user.companyId,
-//     orders,
-//   })
+  //   const result = await submitOrder({
+  //     userId: user.id,
+  //     companyId: user.companyId,
+  //     orders,
+  //   })
 
-//   alert(result.message)
-// }
+  //   alert(result.message)
+  // }
 
 
 
@@ -172,7 +172,7 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
 
 
 
-   const handleQuantityChange = (orderId: string, value: string, subId?: string) => {
+  const handleQuantityChange = (orderId: string, value: string, subId?: string) => {
     const numValue = parseInt(value)
     if (!isNaN(numValue) && numValue >= 0) {
       const delta = numValue - getCurrentQuantity(orderId, subId)
@@ -221,26 +221,26 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
 
 
 
-//   function getScheduleLabel(order: Order["items"][number]) {
-//   if (order.specificDate) {
-//     return new Date(order.specificDate)
-//       .toLocaleDateString("pt-BR")
-//   }
+  //   function getScheduleLabel(order: Order["items"][number]) {
+  //   if (order.specificDate) {
+  //     return new Date(order.specificDate)
+  //       .toLocaleDateString("pt-BR")
+  //   }
 
-//   switch (order.scheduleType) {
-//     case "WEEKDAY":
-//       return "Segunda à Sexta"
+  //   switch (order.scheduleType) {
+  //     case "WEEKDAY":
+  //       return "Segunda à Sexta"
 
-//     case "SATURDAY":
-//       return "Sábado"
+  //     case "SATURDAY":
+  //       return "Sábado"
 
-//     case "SUNDAY":
-//       return "Domingo"
+  //     case "SUNDAY":
+  //       return "Domingo"
 
-//     default:
-//       return "-"
-//   }
-// }
+  //     default:
+  //       return "-"
+  //   }
+  // }
 
 
 
@@ -283,135 +283,135 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
             Nenhum item adicionado
           </p>
         ) : (
-           orders.items.map((order, index) => {
-      
-      const sameItemOrders = orders.items.filter(
-        o => o.item === order.item && !o.subcategories?.length
-      )
-      const orderIndex = sameItemOrders.findIndex(o => o.id === order.id)
-      const showIndex = sameItemOrders.length > 1 && !order.subcategories?.length
+          orders.items.map((order, index) => {
 
-      return (
-        <div key={order.id} className="rounded-lg border bg-muted/30 overflow-hidden">
-          {!order.subcategories?.length ? (
-            <div className="p-3 space-y-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="font-medium text-sm truncate">
-                    {order.item}
-                    {showIndex && (
-                      <span className="text-muted-foreground font-normal"> #{orderIndex + 1}</span>
-                    )}
-                  </p>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <span className="text-xs text-muted-foreground">
-                      {order.startDate
-                        ? new Date(order.startDate).toLocaleDateString("pt-BR")
-                        : "Sem data definida"}
-                    </span>
-                    {order.updateDefault && (
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">
-                        Padrão
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
+            const sameItemOrders = orders.items.filter(
+              o => o.item === order.item && !o.subcategories?.length
+            )
+            const orderIndex = sameItemOrders.findIndex(o => o.id === order.id)
+            const showIndex = sameItemOrders.length > 1 && !order.subcategories?.length
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="h-7 w-7 shrink-0"
-                      onClick={() => onUpdateQuantity(order.id, -1)}
-                      type="button"
-                    >
-                      <Minus className="w-3 h-3" />
-                    </Button>
-
-                    {renderQuantityInput(order.id, order.quantity ?? 0)}
-
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="h-7 w-7 shrink-0"
-                      onClick={() => onUpdateQuantity(order.id, 1)}
-                      type="button"
-                    >
-                      <Plus className="w-3 h-3" />
-                    </Button>
-
-                    <div className="flex-1" />
-
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
-                      onClick={() => onRemoveItem(order.id)}
-                      type="button"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                /* Item com subcategorias */
-                <div>
-                  <div className="px-3 pt-3 pb-2">
-                    <p className="font-medium text-sm">{order.item}</p>
-                  </div>
-
-                  <div className="divide-y border-t">
-                    {order.subcategories.map(sub => (
-                      <div
-                        key={sub.id}
-                        className="flex items-center justify-between gap-2 px-3 py-2 bg-background"
-                      >
-                        <span className="text-sm text-muted-foreground truncate min-w-0">
-                          {sub.name}
-                        </span>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-7 w-7"
-                            onClick={() => onUpdateQuantity(order.id, -1, sub.id)}
-                            type="button"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </Button>
-
-                          {renderQuantityInput(order.id, sub.quantity, sub.id)}
-
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-7 w-7"
-                            onClick={() => onUpdateQuantity(order.id, 1, sub.id)}
-                            type="button"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </Button>
-
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                            onClick={() => onRemoveItem(order.id, sub.id)}
-                            type="button"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
+            return (
+              <div key={order.id} className="rounded-lg border bg-muted/30 overflow-hidden">
+                {!order.subcategories?.length ? (
+                  <div className="p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-medium text-sm truncate">
+                          {order.item}
+                          {showIndex && (
+                            <span className="text-muted-foreground font-normal"> #{orderIndex + 1}</span>
+                          )}
+                        </p>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          <span className="text-xs text-muted-foreground">
+                            {order.startDate
+                              ? new Date(order.startDate).toLocaleDateString("pt-BR")
+                              : "Sem data definida"}
+                          </span>
+                          {order.updateDefault && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-normal">
+                              Padrão
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-7 w-7 shrink-0"
+                        onClick={() => onUpdateQuantity(order.id, -1)}
+                        type="button"
+                      >
+                        <Minus className="w-3 h-3" />
+                      </Button>
+
+                      {renderQuantityInput(order.id, order.quantity ?? 0)}
+
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-7 w-7 shrink-0"
+                        onClick={() => onUpdateQuantity(order.id, 1)}
+                        type="button"
+                      >
+                        <Plus className="w-3 h-3" />
+                      </Button>
+
+                      <div className="flex-1" />
+
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors shrink-0"
+                        onClick={() => onRemoveItem(order.id)}
+                        type="button"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                ) : (
+                  /* Item com subcategorias */
+                  <div>
+                    <div className="px-3 pt-3 pb-2">
+                      <p className="font-medium text-sm">{order.item}</p>
+                    </div>
+
+                    <div className="divide-y border-t">
+                      {order.subcategories.map(sub => (
+                        <div
+                          key={sub.id}
+                          className="flex items-center justify-between gap-2 px-3 py-2 bg-background"
+                        >
+                          <span className="text-sm text-muted-foreground truncate min-w-0">
+                            {sub.name}
+                          </span>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-7 w-7"
+                              onClick={() => onUpdateQuantity(order.id, -1, sub.id)}
+                              type="button"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </Button>
+
+                            {renderQuantityInput(order.id, sub.quantity, sub.id)}
+
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              className="h-7 w-7"
+                              onClick={() => onUpdateQuantity(order.id, 1, sub.id)}
+                              type="button"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </Button>
+
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                              onClick={() => onRemoveItem(order.id, sub.id)}
+                              type="button"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )
-           })
+          })
         )}
       </CardContent>
 
@@ -439,7 +439,7 @@ export function OrderSummary({orders, onUpdateQuantity, onRemoveItem,
         onUpdateSubDefaultFlag={onUpdateSubDefaultFlag}
         onUpdateDateRange={onUpdateDateRange}
         submitting={isSubmitting}
-        occupiedDates={occupiedDates} 
+        occupiedDates={occupiedDates}
       />
     </Card>
   )

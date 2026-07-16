@@ -7,7 +7,7 @@ type Params = {
 
 export async function DELETE(req: Request, { params }: Params) {
 
-    
+
   try {
     const { id } = await params
 
@@ -28,7 +28,7 @@ export async function DELETE(req: Request, { params }: Params) {
 
 
 
-    
+
     return NextResponse.json({
       message: "Usuário deletado com sucesso"
     })

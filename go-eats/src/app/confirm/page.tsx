@@ -3,13 +3,10 @@ import { DashboardConfirm } from "../../features/dashboard/components/dashboard-
 
 
 
-export default function ConfirmPage(){
-
-
-
+export default function ConfirmPage() {
     return (
-    <div>
-        <DashboardConfirm />
-    </div>
-)
+        <div>
+            <DashboardConfirm />
+        </div>
+    )
 }

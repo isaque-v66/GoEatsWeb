@@ -359,7 +359,7 @@ export function OrderHistorySheet() {
     <Sheet
       open={ui.open}
       onOpenChange={open => {
-        
+
         if (!open) {
           for (const entry of entries) {
             if (entry.kind === "scheduled") pending.discardAllForOrder(entry.id)

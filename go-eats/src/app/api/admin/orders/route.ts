@@ -189,17 +189,17 @@ export async function GET(req: NextRequest) {
               sources.push({ id: normalOrder.id, kind: "normal" })
 
               if (!normalOrder.reviewedAt) {
-                  anyReviewed = false
-                } else {
-                  const reviewedAt = normalOrder.reviewedAt
+                anyReviewed = false
+              } else {
+                const reviewedAt = normalOrder.reviewedAt
 
-                  if (
-                    latestReviewedAt === null ||
-                    reviewedAt.getTime() > latestReviewedAt.getTime()
-                  ) {
-                    latestReviewedAt = reviewedAt
-                  }
+                if (
+                  latestReviewedAt === null ||
+                  reviewedAt.getTime() > latestReviewedAt.getTime()
+                ) {
+                  latestReviewedAt = reviewedAt
                 }
+              }
 
               meals.push({
                 mealType,

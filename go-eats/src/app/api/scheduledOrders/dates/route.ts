@@ -17,12 +17,12 @@ export async function GET(req: NextRequest) {
     const scheduledOrders = await prisma.scheduledOrder.findMany({
       where: {
         userId,
-        date: { gte: new Date() }, 
+        date: { gte: new Date() },
       },
       select: { date: true },
     })
 
-    
+
     const occupiedDates = Array.from(
       new Set(scheduledOrders.map(o => format(o.date, "yyyy-MM-dd")))
     )

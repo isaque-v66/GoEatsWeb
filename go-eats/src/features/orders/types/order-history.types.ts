@@ -18,7 +18,7 @@ export type HistoryNormalOrder = {
 export type HistoryScheduledOrder = {
   kind: "scheduled"
   id: string
-  date: string 
+  date: string
   applyAsDefault: boolean
   items: HistoryOrderItem[]
 }

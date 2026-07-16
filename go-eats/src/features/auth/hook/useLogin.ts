@@ -2,13 +2,20 @@
 
 import { UseFormSetError } from "react-hook-form"
 import { LoginDataType } from "../components/login-form"
-import { ApiError, loginRequest } from "../services/auth.service"
+import { loginRequest } from "../services/auth.service"
+import { ApiError } from "@/src/shared/errors/ApiError"
 import { useState } from "react"
 
 type LoginOptions = {
   setError: UseFormSetError<LoginDataType>
   onSuccess: (data: any) => void
 }
+
+
+
+
+
+
 
 export function useLogin() {
   const [loading, setLoading] = useState(false)

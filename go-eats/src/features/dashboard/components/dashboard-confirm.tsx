@@ -29,7 +29,7 @@ type ItemKey = keyof typeof ITEM_TO_MEAL
 
 
 export function DashboardConfirm() {
-  const [loading, setLoading] = useState<boolean>(false)  
+  const [loading, setLoading] = useState<boolean>(false)
   const [success, setSuccess] = useState<boolean>(false)
   const { theme } = useTheme()
   const { data, clearData } = useFormData()
@@ -50,73 +50,73 @@ export function DashboardConfirm() {
 
 
 
- async function sendForm(data: TypeForm) {
-  if (loading) return
+  async function sendForm(data: TypeForm) {
+    if (loading) return
 
-  try {
-    setLoading(true)
-    setSuccess(false)
+    try {
+      setLoading(true)
+      setSuccess(false)
 
-    const payload = {
-      user: {
-        email: data.email,
-        password: data.password,
-      },
-      company: {
-        cnpj: data.cnpj,
-        socialName: data.nomeSocial,
-      },
-      items: data.items.map(item => ({
-      name: item.item,
-      mealType: ITEM_TO_MEAL[item.item as ItemKey],
+      const payload = {
+        user: {
+          email: data.email,
+          password: data.password,
+        },
+        company: {
+          cnpj: data.cnpj,
+          socialName: data.nomeSocial,
+        },
+        items: data.items.map(item => ({
+          name: item.item,
+          mealType: ITEM_TO_MEAL[item.item as ItemKey],
 
-      weekdayQuantity: item.subcategories?.length ? null : item.weekQuantity ?? null,
-      saturdayQuantity: item.subcategories?.length ? null : item.saturdayQuantity ?? null,
-      sundayQuantity: item.subcategories?.length ? null : item.sundayQuantity ?? null,
+          weekdayQuantity: item.subcategories?.length ? null : item.weekQuantity ?? null,
+          saturdayQuantity: item.subcategories?.length ? null : item.saturdayQuantity ?? null,
+          sundayQuantity: item.subcategories?.length ? null : item.sundayQuantity ?? null,
 
-      subcategories: item.subcategories?.map(sub => ({
-        name: sub.name,
-        weekdayQuantity: sub.weekQuantity ?? null,
-        saturdayQuantity: sub.saturdayQuantity ?? null,
-        sundayQuantity: sub.sundayQuantity ?? null,
-      })) ?? [],
-    })),
+          subcategories: item.subcategories?.map(sub => ({
+            name: sub.name,
+            weekdayQuantity: sub.weekQuantity ?? null,
+            saturdayQuantity: sub.saturdayQuantity ?? null,
+            sundayQuantity: sub.sundayQuantity ?? null,
+          })) ?? [],
+        })),
+      }
+
+
+
+      const req = await fetch("/api/registerUser", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+
+      const res = await req.json()
+
+
+      if (!req.ok) {
+        throw new Error(res?.message || "Erro ao registrar usuário")
+      }
+
+      setSuccess(true)
+
+    } catch (err) {
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Erro inesperado ao registrar"
+      )
+    } finally {
+      setLoading(false)
     }
-
-    
-
-    const req = await fetch("/api/registerUser", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-
-    const res = await req.json()
-
-    
-    if (!req.ok) {
-      throw new Error(res?.message || "Erro ao registrar usuário")
-    }
-
-    setSuccess(true)
-    
-  } catch (err) {
-    alert(
-      err instanceof Error
-        ? err.message
-        : "Erro inesperado ao registrar"
-    )
-  } finally {
-    setLoading(false)
   }
-}
 
 
 
 
 
-  
-  if(loading) {
+
+  if (loading) {
     return (
       <div>
         <Header />
@@ -150,14 +150,14 @@ export function DashboardConfirm() {
           </CardHeader>
 
           <CardContent className="space-y-8">
-           
+
             {success ? (
-             
+
               <div className="animate-in fade-in-50 slide-in-from-top-5 duration-300">
                 <Card className={`
                   border-2 border-green-500/30
-                  ${isDark 
-                    ? "bg-gradient-to-br from-green-950/20 to-green-900/10" 
+                  ${isDark
+                    ? "bg-gradient-to-br from-green-950/20 to-green-900/10"
                     : "bg-gradient-to-br from-green-50 to-emerald-50"}
                 `}>
                   <CardContent className="pt-6">
@@ -195,7 +195,7 @@ export function DashboardConfirm() {
                 </Card>
               </div>
             ) : (
-              
+
               <>
                 {/* DADOS DO USUÁRIO */}
                 <section>
@@ -227,7 +227,7 @@ export function DashboardConfirm() {
                   </div>
                 </section>
 
-               {/* ITENS */}
+                {/* ITENS */}
                 <section>
                   <h3 className="text-lg font-semibold mb-4">Itens Disponíveis</h3>
                   <div className="space-y-2">
@@ -274,7 +274,7 @@ export function DashboardConfirm() {
                   </div>
                 </section>
 
-                
+
                 <div className="flex flex-col md:flex-row gap-4 pt-4">
                   <Button
                     variant="outline"
@@ -286,8 +286,8 @@ export function DashboardConfirm() {
                     Voltar
                   </Button>
 
-                  <Button 
-                    className="w-full md:w-auto md:flex-1" 
+                  <Button
+                    className="w-full md:w-auto md:flex-1"
                     onClick={() => data && sendForm(data)}
                     disabled={loading}
                   >

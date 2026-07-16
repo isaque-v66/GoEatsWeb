@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     if (!user) {
       return NextResponse.json(
         { success: false, message: "Credenciais inválidas" },
-        { status: 404 }
+        { status: 401 }
       )
     }
 
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       },
     })
 
-    
+
     const response = NextResponse.json(
       {
         success: true,
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
           companyId: user.companyId,
           role: user.role
         },
-        redirectTo: user.role === "ADMIN" ? "/panel": "/dashboard",
+        redirectTo: user.role === "ADMIN" ? "/panel" : "/dashboard",
       },
       { status: 200 }
     )
