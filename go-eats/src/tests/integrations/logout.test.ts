@@ -22,10 +22,10 @@ describe("POST /api/logOutUser", () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    ;(cookies as any).mockResolvedValue({
-      get: getMock,
-      delete: deleteMock,
-    })
+      ; (cookies as any).mockResolvedValue({
+        get: getMock,
+        delete: deleteMock,
+      })
   })
 
   it("deve retornar 204 ao realizar logout com sessão", async () => {

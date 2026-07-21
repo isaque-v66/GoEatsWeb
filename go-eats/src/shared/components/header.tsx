@@ -4,10 +4,9 @@ import { LogOut, Utensils, History } from "lucide-react"
 import { useTheme } from "../contexts/theme-context"
 import { Button } from "@/components/ui/button"
 import { useUser } from "../../features/auth/contexts/user-context"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import toast from "react-hot-toast"
 import { useState } from "react"
-import { useOrderHistory } from "@/src/features/orders/context/ordersHistory.context"
 
 import {
   Dialog,
@@ -20,26 +19,20 @@ import {
 
 export function Header() {
   const router = useRouter()
+  const pathname = usePathname()
   const { theme } = useTheme()
   const { user, loading, setUser } = useUser()
   const [openLogoutDialog, setOpenLogoutDialog] = useState(false)
   const [loadingLogout, setLoadingLogout] = useState(false)
 
-
-  const orderHistory = useOrderHistory()
+ 
+  const showOrdersButton = pathname?.startsWith("/dashboard")
 
   async function logOut() {
     try {
       setLoadingLogout(true)
-
-      const response = await fetch("/api/logOutUser", {
-        method: "POST",
-      })
-
-      if (!response.ok) {
-        throw new Error("Erro ao fazer logout")
-      }
-
+      const response = await fetch("/api/logOutUser", { method: "POST" })
+      if (!response.ok) throw new Error("Erro ao fazer logout")
       setUser(null)
       router.replace("/login")
     } catch (err) {
@@ -54,31 +47,35 @@ export function Header() {
   return (
     <>
       <header
-        className={`border-b backdrop-blur-sm shadow-sm transition-colors duration-300 ${theme === "dark"
+        className={`border-b backdrop-blur-sm shadow-sm transition-colors duration-300 ${
+          theme === "dark"
             ? "border-neutral-800 bg-neutral-900/90"
             : "border-neutral-200 bg-white/90"
-          }`}
+        }`}
       >
         <div className="container mx-auto flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md sm:h-12 sm:w-12 ${theme === "dark"
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-md sm:h-12 sm:w-12 ${
+                theme === "dark"
                   ? "bg-gradient-to-br from-orange-600 to-orange-700"
                   : "bg-gradient-to-br from-orange-500 to-orange-600"
-                }`}
+              }`}
             >
               <Utensils className="h-5 w-5 text-white sm:h-7 sm:w-7" />
             </div>
             <div className="min-w-0">
               <h1
-                className={`truncate text-lg font-bold leading-tight sm:text-2xl ${theme === "dark" ? "text-white" : "text-neutral-900"
-                  }`}
+                className={`truncate text-lg font-bold leading-tight sm:text-2xl ${
+                  theme === "dark" ? "text-white" : "text-neutral-900"
+                }`}
               >
                 Go Eats
               </h1>
               <p
-                className={`truncate text-xs leading-tight sm:text-sm ${theme === "dark" ? "text-neutral-400" : "text-neutral-500"
-                  }`}
+                className={`truncate text-xs leading-tight sm:text-sm ${
+                  theme === "dark" ? "text-neutral-400" : "text-neutral-500"
+                }`}
               >
                 Sistema de pedidos de comida
               </p>
@@ -88,18 +85,19 @@ export function Header() {
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             {!loading && user && (
               <span
-                className={`hidden text-sm font-medium mr-2 sm:inline ${theme === "dark" ? "text-neutral-300" : "text-neutral-700"
-                  }`}
+                className={`hidden text-sm font-medium mr-2 sm:inline ${
+                  theme === "dark" ? "text-neutral-300" : "text-neutral-700"
+                }`}
               >
                 Olá, {user.name}
               </span>
             )}
 
-            {orderHistory && (
+            {showOrdersButton && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={orderHistory.openHistory}
+                onClick={() => router.push("/dashboard/orders")}
                 className={`
                   relative shrink-0 px-2 sm:px-3
                   transition-colors duration-300
@@ -128,31 +126,20 @@ export function Header() {
                 }
               `}
             >
-              {/* Glow */}
               <span
                 className={`
                   absolute inset-0 opacity-0 group-hover:opacity-100
                   transition-opacity duration-500
-                  ${theme === "dark"
-                    ? "bg-orange-500/10"
-                    : "bg-orange-400/15"
-                  }
+                  ${theme === "dark" ? "bg-orange-500/10" : "bg-orange-400/15"}
                 `}
               />
-
-              <LogOut
-                className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:mr-2"
-              />
-
-              <span className="relative z-10 hidden font-medium sm:inline">
-                Sair
-              </span>
+              <LogOut className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 sm:mr-2" />
+              <span className="relative z-10 hidden font-medium sm:inline">Sair</span>
             </Button>
           </div>
         </div>
       </header>
 
-      {/* MODAL DE CONFIRMAÇÃO */}
       <Dialog open={openLogoutDialog} onOpenChange={setOpenLogoutDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -161,20 +148,11 @@ export function Header() {
               Tem certeza que deseja sair da sua conta?
             </DialogDescription>
           </DialogHeader>
-
           <DialogFooter className="flex gap-2 sm:gap-1">
-            <Button
-              variant="outline"
-              onClick={() => setOpenLogoutDialog(false)}
-            >
+            <Button variant="outline" onClick={() => setOpenLogoutDialog(false)}>
               Cancelar
             </Button>
-
-            <Button
-              variant="destructive"
-              onClick={logOut}
-              disabled={loadingLogout}
-            >
+            <Button variant="destructive" onClick={logOut} disabled={loadingLogout}>
               {loadingLogout ? "Saindo..." : "Sair"}
             </Button>
           </DialogFooter>

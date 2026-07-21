@@ -31,7 +31,7 @@ describe("GET /api/dashboard/items", () => {
   })
 
   it("deve retornar itens agrupados corretamente", async () => {
-    ;(prisma.userItemConfig.findMany as any).mockResolvedValue([
+    ; (prisma.userItemConfig.findMany as any).mockResolvedValue([
       {
         item: {
           name: "Arroz",
@@ -85,7 +85,7 @@ describe("GET /api/dashboard/items", () => {
   })
 
   it("deve remover subcategories quando estiver vazio", async () => {
-    ;(prisma.userItemConfig.findMany as any).mockResolvedValue([
+    ; (prisma.userItemConfig.findMany as any).mockResolvedValue([
       {
         item: {
           name: "Macarrão",
@@ -113,7 +113,7 @@ describe("GET /api/dashboard/items", () => {
   })
 
   it("deve retornar 500 em caso de erro", async () => {
-    ;(prisma.userItemConfig.findMany as any).mockRejectedValue(
+    ; (prisma.userItemConfig.findMany as any).mockRejectedValue(
       new Error("Erro no banco")
     )
 

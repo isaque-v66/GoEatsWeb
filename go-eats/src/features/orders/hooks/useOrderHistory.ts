@@ -3,8 +3,16 @@
 import { useCallback, useEffect, useState } from "react"
 import type { HistoryEntry } from "../types/order-history.types"
 
-export function useOrderHistory(userId?: string, enabled = true) {
+type Pagination = {
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+}
+
+export function useOrderHistory(userId?: string, page = 1, pageSize = 15) {
   const [entries, setEntries] = useState<HistoryEntry[]>([])
+  const [pagination, setPagination] = useState<Pagination | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -13,38 +21,38 @@ export function useOrderHistory(userId?: string, enabled = true) {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/orders/history?userId=${userId}`)
+      const params = new URLSearchParams({
+        userId,
+        page: String(page),
+        pageSize: String(pageSize),
+      })
+      const res = await fetch(`/api/orders/history?${params}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.message ?? "Erro ao buscar histórico")
       setEntries(data.entries ?? [])
+      setPagination(data.pagination ?? null)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao buscar histórico")
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, page, pageSize])
 
   useEffect(() => {
-    if (!enabled) return
     fetchHistory()
-  }, [enabled, fetchHistory])
+  }, [fetchHistory])
 
   const updateScheduledItem = useCallback(
     async (scheduledOrderId: string, scheduledOrderItemId: string, quantity: number) => {
       if (!userId) return { success: false, message: "Usuário não autenticado" }
-
       try {
         const res = await fetch(`/api/orders/scheduled/${scheduledOrderId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId,
-            itemUpdates: [{ scheduledOrderItemId, quantity }],
-          }),
+          body: JSON.stringify({ userId, itemUpdates: [{ scheduledOrderItemId, quantity }] }),
         })
         const data = await res.json()
         if (!res.ok) return { success: false, message: data.message ?? "Erro ao atualizar" }
-
         await fetchHistory()
         return { success: true, message: data.message }
       } catch {
@@ -57,7 +65,6 @@ export function useOrderHistory(userId?: string, enabled = true) {
   const moveScheduledOrderDate = useCallback(
     async (scheduledOrderId: string, newDate: string) => {
       if (!userId) return { success: false, message: "Usuário não autenticado" }
-
       try {
         const res = await fetch(`/api/orders/scheduled/${scheduledOrderId}`, {
           method: "PATCH",
@@ -66,7 +73,6 @@ export function useOrderHistory(userId?: string, enabled = true) {
         })
         const data = await res.json()
         if (!res.ok) return { success: false, message: data.message ?? "Erro ao mover data" }
-
         await fetchHistory()
         return { success: true, message: data.message }
       } catch {
@@ -78,6 +84,7 @@ export function useOrderHistory(userId?: string, enabled = true) {
 
   return {
     entries,
+    pagination,
     loading,
     error,
     refetch: fetchHistory,

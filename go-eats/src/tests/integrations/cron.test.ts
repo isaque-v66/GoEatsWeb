@@ -76,7 +76,7 @@ function makeUserWithSub() {
 
 
 
-// ── Testes 
+
 
 describe("cron — disparo de emails automáticos", () => {
   beforeEach(() => {
@@ -108,19 +108,19 @@ describe("cron — disparo de emails automáticos", () => {
     it("envia para sábado E domingo quando cron dispara na sexta-feira", async () => {
       vi.setSystemTime(new Date("2025-06-13T14:30:00"))
 
-       const userWithWeekend = makeUser({
-            itemConfigs: [
-            {
-                id: "config-1",
-                itemId: "item-desjejum",
-                weekdayQuantity: 2,
-                saturdayQuantity: 1,
-                sundayQuantity: 3,  // ← era 0, domingo era pulado corretamente
-                subcategories: [],
-                item: { id: "item-desjejum", name: "Desjejum", mealType: "DESJEJUM" },
-            },
-            ],
-        })
+      const userWithWeekend = makeUser({
+        itemConfigs: [
+          {
+            id: "config-1",
+            itemId: "item-desjejum",
+            weekdayQuantity: 2,
+            saturdayQuantity: 1,
+            sundayQuantity: 3,  
+            subcategories: [],
+            item: { id: "item-desjejum", name: "Desjejum", mealType: "DESJEJUM" },
+          },
+        ],
+      })
 
       vi.mocked(prisma.user.findMany).mockResolvedValue([makeUser()] as any)
       vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
@@ -130,11 +130,11 @@ describe("cron — disparo de emails automáticos", () => {
 
       expect(sendEmail).toHaveBeenCalledOnce()
       const { message } = vi.mocked(sendEmail).mock.calls[0][0] as any
-     
-      
-      
-        expect(message).toContain("1") // saturdayQuantity
-        expect(message).toContain("3") // sundayQuantity
+
+
+
+      expect(message).toContain("1") // saturdayQuantity
+      expect(message).toContain("3") // sundayQuantity
     })
 
     it("usa saturdayQuantity=1 quando target é sábado", async () => {

@@ -46,7 +46,7 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
     resolver: zodResolver(EditUserSchema),
   })
 
- 
+
   useEffect(() => {
     if (selectedUser) {
       reset({
@@ -71,7 +71,7 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
   async function handleUpdate(data: EditUserData) {
     if (!selectedUser) return
 
-    
+
     const payload: { id: string; email?: string; role?: "ADMIN" | "USER" } = {
       id: selectedUser.id,
     }
@@ -107,7 +107,7 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
         {selectedUser && (
           <form onSubmit={handleSubmit(handleUpdate)} className="space-y-4">
 
-       
+
             <div className="rounded-lg border bg-muted/40 px-3 py-2.5">
               <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium">
                 Empresa
@@ -117,7 +117,7 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
               </p>
             </div>
 
-            
+
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Email
@@ -133,7 +133,7 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
               )}
             </div>
 
-       
+
             <div className="space-y-1.5">
               <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Perfil

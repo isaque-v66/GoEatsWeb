@@ -23,10 +23,10 @@ describe("GET /api/me", () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    ;(cookies as any).mockResolvedValue({
-      get: getMock,
-      delete: deleteMock,
-    })
+      ; (cookies as any).mockResolvedValue({
+        get: getMock,
+        delete: deleteMock,
+      })
   })
 
   it("deve retornar 401 se não houver session_id", async () => {
@@ -46,7 +46,7 @@ describe("GET /api/me", () => {
       value: "session-id",
     })
 
-    ;(prisma.session.findUnique as any).mockResolvedValue(null)
+      ; (prisma.session.findUnique as any).mockResolvedValue(null)
 
     const response = await GET()
     const body = await response.json()
@@ -77,9 +77,9 @@ describe("GET /api/me", () => {
       },
     }
 
-    ;(prisma.session.findUnique as any).mockResolvedValue(
-      expiredSession
-    )
+      ; (prisma.session.findUnique as any).mockResolvedValue(
+        expiredSession
+      )
 
     const response = await GET()
     const body = await response.json()
@@ -116,9 +116,9 @@ describe("GET /api/me", () => {
       },
     }
 
-    ;(prisma.session.findUnique as any).mockResolvedValue(
-      validSession
-    )
+      ; (prisma.session.findUnique as any).mockResolvedValue(
+        validSession
+      )
 
     const response = await GET()
     const body = await response.json()

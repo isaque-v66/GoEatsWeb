@@ -7,6 +7,8 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const userId = searchParams.get("userId")
+    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10))
+    const pageSize = Math.max(1, Math.min(50, parseInt(searchParams.get("pageSize") ?? "15", 10)))
 
     if (!userId) {
       return NextResponse.json({ message: "userId não informado" }, { status: 400 })
@@ -14,30 +16,27 @@ export async function GET(req: NextRequest) {
 
     const today = startOfDay(new Date())
 
-    const [orders, scheduledOrders] = await Promise.all([
-
+    const [orders, scheduledOrders, scheduledTotal, normalTotal] = await Promise.all([
       prisma.order.findMany({
         where: { userId },
         include: {
-          items: {
-            include: { item: true, subcategory: true },
-          },
+          items: { include: { item: true, subcategory: true } },
         },
         orderBy: { date: "desc" },
       }),
-      // ScheduledOrder: só os que ainda não passaram da data (editáveis)
+      
       prisma.scheduledOrder.findMany({
         where: { userId, date: { gte: today } },
         include: {
-          items: {
-            include: { item: true, subcategory: true },
-          },
+          items: { include: { item: true, subcategory: true } },
         },
-        orderBy: { date: "desc" },
+        orderBy: { date: "asc" },
       }),
+      prisma.scheduledOrder.count({ where: { userId, date: { gte: today } } }),
+      prisma.order.count({ where: { userId } }),
     ])
 
-    const entries: HistoryEntry[] = [
+    const allEntries: HistoryEntry[] = [
       ...orders.map(order => ({
         kind: "normal" as const,
         id: order.id,
@@ -64,7 +63,14 @@ export async function GET(req: NextRequest) {
       })),
     ].sort((a, b) => (a.date < b.date ? 1 : -1))
 
-    return NextResponse.json({ entries })
+    const total = allEntries.length
+    const totalPages = Math.max(1, Math.ceil(total / pageSize))
+    const paginatedEntries = allEntries.slice((page - 1) * pageSize, page * pageSize)
+
+    return NextResponse.json({
+      entries: paginatedEntries,
+      pagination: { page, pageSize, total, totalPages },
+    })
   } catch (err) {
     console.error(err)
     return NextResponse.json({ message: `Erro: ${err}` }, { status: 500 })

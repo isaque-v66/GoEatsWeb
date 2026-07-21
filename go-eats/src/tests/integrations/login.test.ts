@@ -63,10 +63,10 @@ describe("POST /api/login", () => {
       email: "teste@email.com",
       passwordHash: "hash",
       companyId: "company-1",
-      company: {                        
-      socialName: "Empresa Teste",
-      cnpj: "00.000.000/0001-00",
-    },
+      company: {
+        socialName: "Empresa Teste",
+        cnpj: "00.000.000/0001-00",
+      },
     } as any)
 
     vi.mocked(bcrypt.compare).mockResolvedValue(false as never)
@@ -92,10 +92,10 @@ describe("POST /api/login", () => {
       email: "teste@email.com",
       passwordHash: "hash",
       companyId: "company-1",
-      company: {                        
-      socialName: "Empresa Teste",
-      cnpj: "00.000.000/0001-00",
-    },
+      company: {
+        socialName: "Empresa Teste",
+        cnpj: "00.000.000/0001-00",
+      },
     } as any)
 
     vi.mocked(bcrypt.compare).mockResolvedValue(true as never)

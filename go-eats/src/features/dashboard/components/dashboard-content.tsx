@@ -18,8 +18,6 @@ import { ITEM_VALUES, ItemType } from "../constants/itemValues.constants"
 import { getRemainingTime, isMealAvailable } from "../utils/meal.utils"
 import { useDashboardItems } from "../hooks/useDashboardItems"
 import { ITEM_TO_MEAL_TYPE } from "../constants/itemValues.constants"
-import { OrderHistoryProvider } from "../../orders/context/ordersHistory.context"
-import { OrderHistorySheet } from "../../orders/components/OrderHistorySheet"
 
 export const ITEM_ICONS: Record<ItemType, ReactNode> = {
   Desjejum: <Coffee className="w-5 h-5" />,
@@ -44,20 +42,14 @@ const OrderSchema = z.object({
 
 export type Order = z.infer<typeof OrderSchema>
 
-
-
-
-
-
-
-
-
-function DashboardContentInner() {
+export function DashboardContent() {
   const { theme } = useTheme()
   const [mobileCartOpen, setMobileCartOpen] = useState(false)
 
-  const { orders, addOrder, updateQuantity, removeItem, updateScheduleType,
-    updateDefaultFlag, updateSubScheduleType, updateSubDefaultFlag, updateDateRange, clearOrders } = useOrder()
+  const {
+    orders, addOrder, updateQuantity, removeItem, updateScheduleType,
+    updateDefaultFlag, updateSubScheduleType, updateSubDefaultFlag, updateDateRange, clearOrders,
+  } = useOrder()
   const { user } = useUser()
   const { items: availableItems } = useDashboardItems(user?.id)
 
@@ -70,31 +62,14 @@ function DashboardContentInner() {
     return sum + (order.quantity ?? 0)
   }, 0)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
   return (
     <div className={`min-h-screen ${isDark ? "bg-neutral-950" : "bg-neutral-50"}`}>
       <Header />
-      <OrderHistorySheet />
 
       <div className="container mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-8">
         <div className="grid lg:grid-cols-3 gap-6 items-start">
 
-
           <div className="lg:col-span-2 space-y-6">
-
-
             <div>
               <h2 className={`text-2xl font-semibold tracking-tight ${isDark ? "text-white" : "text-neutral-900"}`}>
                 Faça seu pedido
@@ -103,7 +78,6 @@ function DashboardContentInner() {
                 Selecione a refeição e adicione ao carrinho
               </p>
             </div>
-
 
             <div className="space-y-3">
               {availableItems.map(item => {
@@ -116,25 +90,17 @@ function DashboardContentInner() {
                     key={item.name}
                     className={`
                       overflow-hidden transition-all duration-200
-                      ${isDark
-                        ? "border-neutral-800 bg-neutral-900"
-                        : "border-neutral-200 bg-white shadow-sm"
-                      }
+                      ${isDark ? "border-neutral-800 bg-neutral-900" : "border-neutral-200 bg-white shadow-sm"}
                       ${!available ? "opacity-60" : ""}
                     `}
                   >
                     <div className="flex items-center gap-3 px-4 py-3">
-                      {/* Ícone */}
                       <div className={`
                         w-10 h-10 rounded-lg flex items-center justify-center shrink-0
-                        ${isDark
-                          ? "bg-orange-600/15 text-orange-400"
-                          : "bg-orange-50 text-orange-500"
-                        }
+                        ${isDark ? "bg-orange-600/15 text-orange-400" : "bg-orange-50 text-orange-500"}
                       `}>
                         {ITEM_ICONS[item.name]}
                       </div>
-
 
                       <div className="flex-1 min-w-0">
                         <p className={`font-medium text-sm ${isDark ? "text-white" : "text-neutral-900"}`}>
@@ -144,7 +110,6 @@ function DashboardContentInner() {
                           {availabilityLabel}
                         </p>
                       </div>
-
 
                       {!item.subcategories?.length && (
                         <Button
@@ -165,7 +130,6 @@ function DashboardContentInner() {
                         </Button>
                       )}
                     </div>
-
 
                     {item.subcategories?.length ? (
                       <div className={`
@@ -199,7 +163,6 @@ function DashboardContentInner() {
             </div>
           </div>
 
-
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-6">
               <OrderSummary
@@ -215,11 +178,10 @@ function DashboardContentInner() {
               />
             </div>
           </div>
-
         </div>
       </div>
 
-
+      {/* FAB mobile */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background to-transparent">
         {orders.items.length > 0 ? (
           <Button
@@ -242,21 +204,14 @@ function DashboardContentInner() {
         )}
       </div>
 
-
+      {/* Carrinho mobile */}
       {mobileCartOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
-
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setMobileCartOpen(false)}
-          />
-
-
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMobileCartOpen(false)} />
           <div className={`
             relative rounded-t-2xl max-h-[85vh] flex flex-col overflow-hidden
             ${isDark ? "bg-neutral-900 border-t border-neutral-800" : "bg-white border-t border-neutral-200"}
           `}>
-
             <div className="flex items-center justify-between px-4 pt-4 pb-2 shrink-0">
               <div className="w-10 h-1 rounded-full bg-muted-foreground/30 mx-auto absolute left-1/2 -translate-x-1/2 top-2" />
               <p className={`font-semibold text-sm ${isDark ? "text-white" : "text-neutral-900"}`}>
@@ -269,8 +224,6 @@ function DashboardContentInner() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-
-
             <div className="overflow-y-auto flex-1">
               <OrderSummary
                 orders={orders}
@@ -288,14 +241,5 @@ function DashboardContentInner() {
         </div>
       )}
     </div>
-  )
-}
-
-
-export function DashboardContent() {
-  return (
-    <OrderHistoryProvider>
-      <DashboardContentInner />
-    </OrderHistoryProvider>
   )
 }

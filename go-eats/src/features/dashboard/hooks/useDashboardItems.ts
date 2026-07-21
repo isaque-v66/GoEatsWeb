@@ -26,6 +26,7 @@ export function useDashboardItems(userId?: string) {
 
     let cancelled = false
 
+    
     async function load() {
       if (!userId) return
 
