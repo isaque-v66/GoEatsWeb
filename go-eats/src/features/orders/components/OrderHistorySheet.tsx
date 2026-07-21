@@ -297,10 +297,17 @@ function NormalOrderCard({ entry }: { entry: Extract<HistoryEntry, { kind: "norm
 export function OrderHistorySheet() {
   const ui = useOrderHistoryUi()
   const { user } = useUser()
-  const { entries, loading, updateScheduledItem, moveScheduledOrderDate } = useOrderHistory(
-    user?.id,
-    ui?.open ?? false
-  )
+  const {
+  entries,
+  loading,
+  updateScheduledItem,
+  moveScheduledOrderDate,
+} = useOrderHistory(
+  user?.id,
+  1,
+  15,
+  ui?.open ?? false
+)
   const pending = usePendingOrderChanges()
   const [busyKeys, setBusyKeys] = useState<Set<string>>(new Set())
 

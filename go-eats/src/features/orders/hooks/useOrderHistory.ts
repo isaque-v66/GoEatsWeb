@@ -10,7 +10,7 @@ type Pagination = {
   totalPages: number
 }
 
-export function useOrderHistory(userId?: string, page = 1, pageSize = 15) {
+export function useOrderHistory(userId?: string, page = 1, pageSize = 15, enabled = true) {
   const [entries, setEntries] = useState<HistoryEntry[]>([])
   const [pagination, setPagination] = useState<Pagination | null>(null)
   const [loading, setLoading] = useState(false)
@@ -39,8 +39,9 @@ export function useOrderHistory(userId?: string, page = 1, pageSize = 15) {
   }, [userId, page, pageSize])
 
   useEffect(() => {
+    if (!enabled) return
     fetchHistory()
-  }, [fetchHistory])
+  }, [fetchHistory, enabled])
 
   const updateScheduledItem = useCallback(
     async (scheduledOrderId: string, scheduledOrderItemId: string, quantity: number) => {
