@@ -128,10 +128,15 @@ function ScheduledRow({
   onCancelQuantity: (itemId: string) => void
   onCancelDate: () => void
 }) {
+
+  
   const [calendarOpen, setCalendarOpen] = useState(false)
   const isPast = isBefore(parseISO(entry.date), startOfToday())
   const dateChange = pending.getDateChange(entry.id)
   const dateBusy = busyKeys.has(pending.dateKey(entry.id))
+
+
+
 
   const isDisabledDate = (date: Date) => {
     if (date < startOfToday()) return true
@@ -314,12 +319,12 @@ export default function OrderHistoryPage() {
 
       <div className="container mx-auto px-4 sm:px-6 py-6 space-y-4">
         {/* Cabeçalho */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 justify-between">
           <Button variant="ghost" size="sm" onClick={() => router.back()} className="gap-1.5">
             <ArrowLeft className="w-4 h-4" />
             Voltar
           </Button>
-          <div>
+          <div className="">
             <h1 className="text-xl font-semibold tracking-tight">Meus pedidos</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
               Pedidos enviados e agendados. Pedidos especiais futuros podem ser editados.
@@ -327,7 +332,7 @@ export default function OrderHistoryPage() {
           </div>
         </div>
 
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden p-4">
           {loading && entries.length === 0 ? (
             <div className="flex items-center justify-center py-16 text-muted-foreground">
               <Loader2 className="w-4 h-4 animate-spin mr-2" />

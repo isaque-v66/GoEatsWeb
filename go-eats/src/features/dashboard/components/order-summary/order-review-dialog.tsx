@@ -32,6 +32,9 @@ type Props = {
   occupiedDates: string[]
 }
 
+
+
+
 function formatDateRange(startDate?: string, endDate?: string) {
   if (!startDate) return null
   const start = format(parseISO(startDate), "dd MMM", { locale: ptBR })
@@ -40,11 +43,18 @@ function formatDateRange(startDate?: string, endDate?: string) {
   return `${start} → ${end}`
 }
 
+
+
+
 function countDays(startDate?: string, endDate?: string) {
   if (!startDate) return 0
   if (!endDate || endDate === startDate) return 1
   return eachDayOfInterval({ start: parseISO(startDate), end: parseISO(endDate) }).length
 }
+
+
+
+
 
 function getAllDatesForEntry(startDate?: string, endDate?: string): string[] {
   if (!startDate) return []
@@ -54,6 +64,35 @@ function getAllDatesForEntry(startDate?: string, endDate?: string): string[] {
     end: parseISO(endDate),
   }).map(d => format(d, "yyyy-MM-dd"))
 }
+
+
+//Retorna o conjunto de ids (order ou subcategoria) que ainda não têm
+// nenhuma data selecionada
+function findMissingDates(orders: Order): Set<string> {
+  const missingIds = new Set<string>()
+
+
+  for(const order of orders.items) {
+    if(!order.subcategories?.length) {
+      if(!order.startDate) missingIds.add(order.id)
+
+    } else {
+      for(const sub of order.subcategories){
+        if(!sub.startDate) missingIds.add(sub.id)
+      }
+    }
+  }
+
+  return missingIds
+}
+
+
+
+
+
+
+
+
 
 // Conflitos entre linhas do carrinho (mesmo item/sub na mesma data)
 function findConflicts(orders: Order, occupiedDates: string[]): Set<string> {
@@ -96,14 +135,21 @@ function findConflicts(orders: Order, occupiedDates: string[]): Set<string> {
   return conflictingIds
 }
 
+
+
+
+
+
+
 function DateRangePicker({
-  startDate, endDate, onChange, onClear, hasConflict, occupiedDates, itemName,
+  startDate, endDate, onChange, onClear, hasConflict, isMissing, occupiedDates, itemName,
 }: {
   startDate?: string
   endDate?: string
   onChange: (start?: string, end?: string) => void
   onClear: () => void
   hasConflict?: boolean
+  isMissing?: boolean
   occupiedDates: string[]
   itemName: ItemType
 }) {
@@ -124,6 +170,8 @@ function DateRangePicker({
     () => occupiedDates.map(d => parseISO(d)),
     [occupiedDates]
   )
+
+  
 
   // Função de disabled combinando "antes de hoje" + "datas ocupadas" +
   // "regra de horário de corte do item" (ex: desjejum nunca permite hoje,
@@ -247,6 +295,13 @@ function DateRangePicker({
         </p>
       )}
 
+      {isMissing && !hasConflict && (
+        <p className="text-xs text-amber-600 flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3" />
+          Selecione uma data para este item
+        </p>
+      )}
+
       {days > 1 && !hasConflict && (
         <p className="text-xs text-muted-foreground">
           Serão criados {days} pedidos — um por dia no intervalo
@@ -267,11 +322,21 @@ export function OrderReviewDialog({
   submitting,
   occupiedDates,
 }: Props) {
-  const conflicts = useMemo(
-    () => findConflicts(orders, occupiedDates),
+  const conflicts = useMemo(() => findConflicts(orders, occupiedDates),
     [orders, occupiedDates]
   )
+
+
+  const missingDates = useMemo(
+    () => findMissingDates(orders),
+    [orders]
+  )
+
+
   const hasAnyConflict = conflicts.size > 0
+  const hasMissingDates = missingDates.size > 0
+
+  
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -299,6 +364,7 @@ export function OrderReviewDialog({
                       startDate={order.startDate}
                       endDate={order.endDate}
                       hasConflict={conflicts.has(order.id)}
+                      isMissing={missingDates.has(order.id)}
                       occupiedDates={occupiedDates}
                       itemName={order.item}
                       onChange={(start, end) => onUpdateDateRange(order.id, start, end)}
@@ -374,18 +440,31 @@ export function OrderReviewDialog({
           ))}
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t bg-muted/20 gap-2 flex-col sm:flex-row items-stretch sm:items-center">
-          {hasAnyConflict && (
+       <DialogFooter className="px-6 py-4 border-t bg-muted/20 gap-2 flex-col sm:flex-row items-stretch sm:items-center">
+          {(hasAnyConflict || hasMissingDates) && (
             <p className="text-xs text-destructive flex items-center gap-1.5 mr-auto">
               <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-              Resolva as datas conflitantes (ou já ocupadas) antes de confirmar
+              {hasMissingDates
+                ? "Selecione uma data para todos os itens antes de confirmar"
+                : "Resolva as datas conflitantes (ou já ocupadas) antes de confirmar"}
             </p>
           )}
+
           <div className="flex gap-2 justify-end">
-            <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} disabled={submitting}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              disabled={submitting}
+            >
               Cancelar
             </Button>
-            <Button size="sm" onClick={onSubmit} disabled={submitting || hasAnyConflict}>
+
+            <Button
+              size="sm"
+              onClick={onSubmit}
+              disabled={submitting || hasAnyConflict || hasMissingDates}
+            >
               {submitting ? "Enviando..." : "Confirmar Pedido"}
             </Button>
           </div>
