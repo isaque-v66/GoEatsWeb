@@ -9,6 +9,7 @@ import { FormProvider } from "../features/register/contexts/formRegister-context
 import { UserProvider } from "../features/auth/contexts/user-context"
 import "@/src/lib/cron-logic"
 import { QueryProvider } from "../providers/query-provider"
+import { Toaster } from "react-hot-toast"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
@@ -47,6 +48,29 @@ export default function RootLayout({
         <ThemeProvider>
           <FormProvider>
             <UserProvider>
+              <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                      padding: "16px",
+                    },
+                    success: {
+                      iconTheme: {
+                        primary: "#16a34a",
+                        secondary: "#fff",
+                      },
+                    },
+                    error: {
+                      iconTheme: {
+                        primary: "#dc2626",
+                        secondary: "#fff",
+                      },
+                    },
+                  }}
+                />
               <QueryProvider>
                 {children}
               </QueryProvider>

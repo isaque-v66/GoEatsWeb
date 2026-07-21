@@ -20,7 +20,7 @@ import { QuantityInput } from "./quantity-input"
 import { Button } from "@/components/ui/button"
 import { OrderReviewDialog } from "./order-review-dialog"
 import { useOccupiedDates } from "../../hooks/useOccupiedDates"
-
+import toast from "react-hot-toast"
 
 
 
@@ -106,11 +106,11 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem,
 
 
 
-  const handleSubmit = async () => {
+   const handleSubmit = async () => {
     if (isSubmitting) return
 
     if (!user?.id || !user?.companyId) {
-      alert("Usuário não autenticado")
+      toast.error("Usuário não autenticado")
       return
     }
 
@@ -123,16 +123,18 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem,
         orders,
       })
 
-      alert(result.message)
-
       if (result.success) {
+        toast.success(result.message)
+
         setReviewOpen(false)
         onOrderSubmitted()
+      } else {
+        toast.error(result.message)
       }
     } finally {
       setIsSubmittingLocal(false)
     }
-  }
+}
 
 
 
