@@ -122,7 +122,7 @@ describe("cron — disparo de emails automáticos", () => {
         ],
       })
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue([makeUser()] as any)
+      vi.mocked(prisma.user.findMany).mockResolvedValue([userWithWeekend] as any)
       vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
       vi.mocked(prisma.order.findFirst).mockResolvedValue(null)
 

@@ -53,7 +53,7 @@ describe("POST /api/login", () => {
     const response = await POST(req)
     const body = await response.json()
 
-    expect(response.status).toBe(404)
+    expect(response.status).toBe(401)
     expect(body.message).toBe("Credenciais inválidas")
   })
 
@@ -63,6 +63,7 @@ describe("POST /api/login", () => {
       email: "teste@email.com",
       passwordHash: "hash",
       companyId: "company-1",
+      role: "USER",
       company: {
         socialName: "Empresa Teste",
         cnpj: "00.000.000/0001-00",
@@ -92,6 +93,7 @@ describe("POST /api/login", () => {
       email: "teste@email.com",
       passwordHash: "hash",
       companyId: "company-1",
+      role: "USER",
       company: {
         socialName: "Empresa Teste",
         cnpj: "00.000.000/0001-00",

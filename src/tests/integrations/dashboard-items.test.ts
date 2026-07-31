@@ -39,7 +39,9 @@ describe("GET /api/dashboard/items", () => {
         },
         subcategories: [
           {
-            defaultQuantity: 2,
+            weekdayQuantity: 2,
+            saturdayQuantity: 1,
+            sundayQuantity: 3,
             subcategory: {
               name: "Integral",
             },
@@ -72,7 +74,9 @@ describe("GET /api/dashboard/items", () => {
           subcategories: [
             {
               name: "Integral",
-              defaultQuantity: 2,
+              weekdayQuantity: 2,
+              saturdayQuantity: 1,
+              sundayQuantity: 3,
             },
           ],
         },

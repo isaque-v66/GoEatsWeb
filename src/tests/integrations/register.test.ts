@@ -20,6 +20,11 @@ describe("POST /api/registerUser", () => {
     vi.clearAllMocks()
   })
 
+
+
+
+
+
   const validPayload = {
     user: {
       email: "teste@email.com",
@@ -33,58 +38,74 @@ describe("POST /api/registerUser", () => {
       {
         name: "Arroz",
         mealType: "ALMOCO",
-        defaultQuantity: 1,
+        weekdayQuantity: 1,
+        saturdayQuantity: 1,
+        sundayQuantity: 1,
         subcategories: [
           {
             name: "Integral",
-            defaultQuantity: 1,
+            weekdayQuantity: 1,
+            saturdayQuantity: 1,
+            sundayQuantity: 1,
           },
         ],
       },
     ],
   }
 
+
+
+
+
+
+  
   it("deve registrar usuário com sucesso", async () => {
     vi.mocked(bcrypt.hash).mockResolvedValue("hashed-password" as never)
 
     vi.mocked(prisma.$transaction).mockImplementation(async (callback: any) => {
-      const tx = {
-        user: {
-          findUnique: vi.fn().mockResolvedValue(null),
-          create: vi.fn().mockResolvedValue({
-            id: "user-id",
-            email: "teste@email.com",
-            companyId: "company-id",
-            createdAt: new Date(),
-          }),
-        },
-        company: {
-          upsert: vi.fn().mockResolvedValue({
-            id: "company-id",
-          }),
-        },
-        item: {
-          upsert: vi.fn().mockResolvedValue({
-            id: "item-id",
-          }),
-        },
-        userItemConfig: {
-          create: vi.fn().mockResolvedValue({
-            id: "config-id",
-          }),
-        },
-        subcategory: {
-          upsert: vi.fn().mockResolvedValue({
-            id: "subcategory-id",
-          }),
-        },
-        userSubcategoryConfig: {
-          create: vi.fn().mockResolvedValue({}),
-        },
-      }
+    const tx = {
+      user: {
+        findUnique: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({
+          id: "user-id",
+          email: "teste@email.com",
+          companyId: "company-id",
+          createdAt: new Date(),
+        }),
+      },
 
-      return callback(tx)
-    })
+      company: {
+        findUnique: vi.fn().mockResolvedValue(null),
+        create: vi.fn().mockResolvedValue({
+          id: "company-id",
+        }),
+      },
+
+      item: {
+        upsert: vi.fn().mockResolvedValue({
+          id: "item-id",
+        }),
+      },
+
+      userItemConfig: {
+        create: vi.fn().mockResolvedValue({
+          id: "config-id",
+        }),
+      },
+
+      subcategory: {
+        upsert: vi.fn().mockResolvedValue({
+          id: "subcategory-id",
+        }),
+      },
+
+      userSubcategoryConfig: {
+        create: vi.fn().mockResolvedValue({}),
+      },
+    }
+
+    return callback(tx)
+  })
 
     const req = new Request("http://localhost/api/registerUser", {
       method: "POST",
