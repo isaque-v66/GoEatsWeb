@@ -8,7 +8,7 @@ import { useState } from "react"
 
 type LoginOptions = {
   setError: UseFormSetError<LoginDataType>
-  onSuccess: (data: any) => void
+  onSuccess: (data: Awaited<ReturnType<typeof loginRequest>>) => void
 }
 
 

@@ -1,9 +1,10 @@
 import { handleApiError } from "@/src/shared/errors/ApiError"
+import { Order } from "../types/order.types"
 
 interface SubmitOrderDTO {
   userId: string
   companyId: string
-  orders: any
+  orders: Order
 }
 
 export async function createOrder(
@@ -23,6 +24,12 @@ export async function createOrder(
 
   return res.json()
 }
+
+
+
+
+
+
 
 export async function sendOrder(
   orderId: string

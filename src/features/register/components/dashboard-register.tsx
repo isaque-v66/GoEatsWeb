@@ -41,7 +41,6 @@ export function DashboardRegister() {
   const [showPassword, setShowPassword] = useState<boolean>(false)
   const { data, setData } = useFormData()
   const router = useRouter()
-  const { theme } = useTheme()
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>(data?.items ?? [])
 
   const {
@@ -485,7 +484,7 @@ export function DashboardRegister() {
                                   min={0}
                                   value={sub[field as keyof typeof sub] ?? ""}
                                   onChange={e =>
-                                    setSubcategoryQuantity(item.item, sub.name, field as any, Number(e.target.value))
+                                    setSubcategoryQuantity(item.item, sub.name, field as "weekQuantity" | "saturdayQuantity" | "sundayQuantity", Number(e.target.value))
                                   }
                                   className="h-8 w-20 text-sm text-right"
                                 />
@@ -510,7 +509,7 @@ export function DashboardRegister() {
                 <Card className="shadow-sm border-dashed">
                   <CardContent className="py-8 text-center">
                     <p className="text-sm text-muted-foreground">
-                      Ative "Quantidades padrão" para configurar
+                      Ative &quot;Quantidades padrão&quot; para configurar
                     </p>
                   </CardContent>
                 </Card>
