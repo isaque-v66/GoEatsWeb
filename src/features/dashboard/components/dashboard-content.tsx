@@ -28,6 +28,7 @@ export const ITEM_ICONS: Record<ItemType, ReactNode> = {
   Bebidas: <GlassWater className="w-5 h-5" />,
   "Café da tarde": <Cake className="w-5 h-5" />,
   "Café noturno": <Coffee className="w-5 h-5" />,
+  "Pedidos Especiais": <Cake className="w-5 h-5" />
 }
 
 const OrderSchema = z.object({

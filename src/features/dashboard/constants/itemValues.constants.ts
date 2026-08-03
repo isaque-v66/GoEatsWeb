@@ -8,7 +8,8 @@ export const ITEM_VALUES = [
   "Lanche",
   "Bebidas",
   "Café da tarde",
-  "Café noturno"
+  "Café noturno",
+  "Pedidos Especiais"
 ] as const
 
 export type ItemType = (typeof ITEM_VALUES)[number]
@@ -26,6 +27,7 @@ export enum MealType {
   BEBIDAS = "BEBIDAS",
   CAFE_NOTURNO = "CAFE_NOTURNO",
   FIM_SEMANA = "FIM_SEMANA",
+  PEDIDOS_ESPECIAIS = "PEDIDOS_ESPECIAIS"
 }
 
 
@@ -37,7 +39,8 @@ export const ITEM_TO_MEAL_TYPE: Record<ItemType, MealType> = {
   Lanche: MealType.LANCHE,
   Bebidas: MealType.BEBIDAS,
   "Café da tarde": MealType.CAFE_TARDE,
-  "Café noturno": MealType.CAFE_NOTURNO
+  "Café noturno": MealType.CAFE_NOTURNO,
+  "Pedidos Especiais": MealType.PEDIDOS_ESPECIAIS
 }
 
 

@@ -9,6 +9,7 @@ export const ITEM_VALUES = [
   "Bebidas",
   "Café da tarde",
   "Café noturno",
+  "Pedidos Especiais"
 ] as const
 
 export type ItemType = (typeof ITEM_VALUES)[number]
@@ -27,9 +28,17 @@ export const SUBCATEGORIES_DRINKS = [
   "Achocolatado",
   "Litro de leite",
   "Litro de café",
-  "Litro de chá"
+  "Litro de chá",
+  "Café com leite"
 ] as const
 
+
+
+export const SUBCATEGORIES_ESPECIAL = [
+  "Bolo de aniversário",
+  "Churrasco",
+  "Coffee Break"
+] as const
 
 
 export const MEAL_TYPE_MAP = {
@@ -41,18 +50,22 @@ export const MEAL_TYPE_MAP = {
   "Bebidas": "BEBIDAS",
   "Café da tarde": "CAFE_TARDE",
   "Café noturno": "CAFE_NOTURNO",
+  "Pedidos Especiais": "PEDIDOS_ESPECIAIS"
 } as const
 
 
 
-export const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar", "Bebidas"]
+
+
+export const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar", "Bebidas", "Pedidos Especiais"]
 
 
 
 export type FoodSubcategory = typeof SUBCATEGORIES_VALUES[number]
 export type DrinkSubcategory = typeof SUBCATEGORIES_DRINKS[number]
+export type SpecialSubcategory = typeof SUBCATEGORIES_ESPECIAL[number]
 
-export type Subcategory = FoodSubcategory | DrinkSubcategory
+export type Subcategory = FoodSubcategory | DrinkSubcategory | SpecialSubcategory
 
 export type SelectedSubcategory = {
   name: Subcategory
@@ -72,10 +85,17 @@ export type SelectedItem = {
 }
 
 
+
+
+
+
+
+
 export const SubcategorySchema = z.object({
   name: z.union([
     z.enum(SUBCATEGORIES_VALUES),
     z.enum(SUBCATEGORIES_DRINKS),
+    z.enum(SUBCATEGORIES_ESPECIAL)
   ]),
   weekQuantity: z.number().int().nonnegative().optional(),
   saturdayQuantity: z.number().int().nonnegative().optional(),

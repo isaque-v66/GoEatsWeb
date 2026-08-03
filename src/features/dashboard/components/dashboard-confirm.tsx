@@ -22,6 +22,7 @@ const ITEM_TO_MEAL = {
   "Bebidas": "BEBIDAS",
   "Café da tarde": "CAFE_TARDE",
   "Café noturno": "CAFE_NOTURNO",
+  "Pedidos Especiais": "PEDIDOS_ESPECIAIS"
 } as const
 
 type ItemKey = keyof typeof ITEM_TO_MEAL

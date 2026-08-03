@@ -17,7 +17,7 @@ import { Switch } from "@/components/ui/switch"
 import { useFormData } from "../contexts/formRegister-context"
 import {
   ITEM_VALUES, ITEMS_WITH_SUBCATEGORY, ItemType, MEAL_TYPE_MAP,
-  SelectedItem, SUBCATEGORIES_DRINKS, SUBCATEGORIES_VALUES,
+  SelectedItem, SUBCATEGORIES_DRINKS, SUBCATEGORIES_ESPECIAL, SUBCATEGORIES_VALUES,
   Subcategory, TypeForm, TypeSchemaForm,
 } from "../types/register-types"
 import { Badge } from "@/components/ui/badge"
@@ -373,13 +373,21 @@ export function DashboardRegister() {
                 {ITEM_VALUES.map(item => {
                   const selected = selectedItems.find(i => i.item === item)
                   const isDrink = item === "Bebidas"
-                  const isFoodWithSub = !isDrink && ITEMS_WITH_SUBCATEGORY.includes(item)
+                  
+                  const isEspecial = item === "Pedidos Especiais"
 
-                  const subcategories = isDrink
-                    ? SUBCATEGORIES_DRINKS
-                    : isFoodWithSub
-                      ? SUBCATEGORIES_VALUES
-                      : null
+                  const isFoodWithSub =
+                      !isDrink &&
+                      !isEspecial &&
+                      ITEMS_WITH_SUBCATEGORY.includes(item)
+
+                    const subcategories = isDrink
+                      ? SUBCATEGORIES_DRINKS
+                      : isEspecial
+                        ? SUBCATEGORIES_ESPECIAL
+                        : isFoodWithSub
+                          ? SUBCATEGORIES_VALUES
+                          : null
 
                   return (
                     <div key={item}>
