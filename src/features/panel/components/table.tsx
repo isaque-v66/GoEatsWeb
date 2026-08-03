@@ -23,6 +23,19 @@ export function Table({ users }: TableProps) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UsersTable | null>(null)
 
+
+  const formatCNPJ = (cnpj: string) => {
+  const digits = cnpj.replace(/\D/g, "")
+
+  if (digits.length !== 14) return cnpj
+
+  return digits.replace(
+    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+    "$1.$2.$3/$4-$5"
+  )
+}
+
+
   return (
     <>
 
@@ -82,7 +95,7 @@ export function Table({ users }: TableProps) {
 
 
                   <td className="whitespace-nowrap px-4 py-3 text-sm text-muted-foreground font-mono">
-                    {user.company.cnpj}
+                    {formatCNPJ(user.company.cnpj)}
                   </td>
 
 

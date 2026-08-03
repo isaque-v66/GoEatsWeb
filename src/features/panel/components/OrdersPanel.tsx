@@ -85,6 +85,7 @@ function OrderRow({ row }: { row: UserDayRow }) {
         <div>
           <p className="text-sm font-medium">{row.companyName}</p>
           <p className="text-xs text-muted-foreground">{row.cnpj}</p>
+          
         </div>
       </TableCell>
 
