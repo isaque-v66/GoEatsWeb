@@ -136,7 +136,15 @@ export const TypeSchemaForm = z.object({
   items: z.array(ItemSchema),
 })
 
+export const EditUserSchema = z.object({
+  email: z.email("Email inválido").optional().or(z.literal("")),
+  password: z.string().min(5).max(50).optional().or(z.literal("")),
+  role: z.enum(["ADMIN", "USER"]).optional(),
+  company: z.string().optional().or(z.literal("")),
+  cnpj: z.string().optional().or(z.literal("")),
+})
 
+export type EditUserForm = z.infer<typeof EditUserSchema>
 
 
 

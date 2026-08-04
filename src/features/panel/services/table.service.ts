@@ -1,10 +1,29 @@
 import { ApiError } from "@/src/shared/errors/ApiError"
 
-type UserUpdateType = {
-    id: string
-    email?: string
-    role?: string
+type ItemUpdatePayload = {
+  name: string
+  mealType: string
+  weekdayQuantity?: number
+  saturdayQuantity?: number
+  sundayQuantity?: number
+  subcategories?: {
+    name: string
+    weekdayQuantity?: number
+    saturdayQuantity?: number
+    sundayQuantity?: number
+  }[]
 }
+
+type UserUpdateType = {
+  id: string
+  email?: string
+  password?: string
+  role?: string
+  company?: string
+  cnpj?: string
+  items?: ItemUpdatePayload[]
+}
+
 
 type FetchUsersParams = {
     page?: number
@@ -12,6 +31,9 @@ type FetchUsersParams = {
     search?: string
     status?: "ALL" | "ADMIN" | "USER"
 }
+
+
+
 
 
 
@@ -38,20 +60,24 @@ export async function tableService({ page = 1, pageSize = 10, search = "", statu
     return data
 }
 
+
+
+
+
 export async function updateUserTable(data: UserUpdateType) {
-    const req = await fetch("/api/usersUpdate", {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(data),
-    })
+  const req = await fetch("/api/usersUpdate", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(data),
+  })
 
-    const res = await req.json()
+  const res = await req.json()
 
-    if (!req.ok) {
-        throw new ApiError(res.message || "Erro ao atualizar usuários", res.status)
-    }
+  if (!req.ok) {
+    throw new ApiError(res.message || "Erro ao atualizar usuários", res.status)
+  }
 
-    return res
+  return res
 }
 
 

@@ -65,11 +65,23 @@ export async function GET(req: NextRequest) {
           isActive: true,
           itemConfigs: {
             select: {
+              id: true,
               weekdayQuantity: true,
               saturdayQuantity: true,
               sundayQuantity: true,
               item: {
                 select: { id: true, mealType: true, name: true },
+              },
+              subcategories: {
+                select: {
+                  id: true,
+                  weekdayQuantity: true,
+                  saturdayQuantity: true,
+                  sundayQuantity: true,
+                  subcategory: {
+                    select: { id: true, name: true },
+                  },
+                },
               },
             },
           },
