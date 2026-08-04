@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { UsersTable } from "../types/table-types"
 import { EditUsersDialog } from "./edit-users-dialog"
 import { DeleteUsersDialog } from "./delete-users-dialog"
+import { ViewUserDialog } from "./view-user-dialog"
 
 type TableProps = {
   users: UsersTable[]
@@ -22,6 +23,8 @@ export function Table({ users }: TableProps) {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
   const [selectedUser, setSelectedUser] = useState<UsersTable | null>(null)
+  const [openViewDialog, setOpenViewDialog] = useState(false)
+  const [viewUser, setViewUser] = useState<UsersTable | null>(null)
 
 
   const formatCNPJ = (cnpj: string) => {
@@ -127,7 +130,7 @@ export function Table({ users }: TableProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-44">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => { setViewUser(user); setOpenViewDialog(true) }}>
                           <Eye className="mr-2 h-4 w-4" />
                           Ver detalhes
                         </DropdownMenuItem>
@@ -237,6 +240,12 @@ export function Table({ users }: TableProps) {
           </div>
         ))}
       </div>
+
+      <ViewUserDialog
+        openViewDialog={openViewDialog}
+        setOpenViewDialog={setOpenViewDialog}
+        selectedUser={viewUser}
+      />
 
       <EditUsersDialog
         openEditDialog={openEditDialog}
