@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Plus, Check, EyeOff, Eye } from "lucide-react"
+import { Plus, Check, EyeOff, Eye, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
 import { useTheme } from "@/src/shared/contexts/theme-context"
@@ -22,6 +22,9 @@ import {
 } from "../types/register-types"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle } from "lucide-react"
+
+
+
 
 
 function maskCNPJ(value: string): string {
@@ -47,7 +50,7 @@ export function DashboardRegister() {
     register,
     handleSubmit,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setError,
     watch,
   } = useForm<TypeForm>({
@@ -224,7 +227,7 @@ export function DashboardRegister() {
         </div>
 
         <form onSubmit={handleSubmit(formHandle)}>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(260px,0.8fr)_minmax(280px,0.9fr)_minmax(420px,1.3fr)] gap-6 items-start">
 
 
             <Card className="shadow-sm">
@@ -362,6 +365,8 @@ export function DashboardRegister() {
             </Card>
 
 
+
+            {/*Segunda coluna*/}
             <Card className="shadow-sm">
               <CardHeader className="pb-3 border-b">
                 <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -436,107 +441,275 @@ export function DashboardRegister() {
             </Card>
 
 
-            <div className="space-y-4">
-              {ativo ? (
-                <>
-                  {selectedItems.filter(i => !ITEMS_WITH_SUBCATEGORY.includes(i.item)).map(item => (
-                    <Card key={item.item} className="shadow-sm">
-                      <CardHeader className="pb-3 border-b py-3 px-4">
-                        <CardTitle className="text-sm font-medium">{item.item}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="pt-4 px-4 pb-4 space-y-3">
-                        {[
-                          { label: "Segunda à Sexta", field: "weekQuantity" },
-                          { label: "Sábado", field: "saturdayQuantity" },
-                          { label: "Domingo", field: "sundayQuantity" },
-                        ].map(({ label, field }) => {
-                          const quantityField = field as "weekQuantity" | "saturdayQuantity" | "sundayQuantity"
-                          return (
-                            <div key={field} className="flex items-center justify-between gap-3">
-                              <Label className="text-xs text-muted-foreground whitespace-nowrap">{label}</Label>
-                              <Input
-                                type="number"
-                                min={0}
-                                value={item[quantityField] ?? ""}
-                                onChange={e => setQuantity(item.item, quantityField, Number(e.target.value))}
-                                className="h-8 w-20 text-sm text-right"
-                              />
-                            </div>
-                          )
-                        })}
-                      </CardContent>
-                    </Card>
-                  ))}
 
-                  {selectedItems
-                    .filter(i => ITEMS_WITH_SUBCATEGORY.includes(i.item) || i.item === "Bebidas")
-                    .map(item =>
-                      item.subcategories?.map(sub => (
-                        <Card key={`${item.item}-${sub.name}`} className="shadow-sm">
-                          <CardHeader className="pb-3 border-b py-3 px-4">
-                            <div>
-                              <p className="text-xs text-muted-foreground">{item.item}</p>
-                              <CardTitle className="text-sm font-medium mt-0.5">{sub.name}</CardTitle>
-                            </div>
-                          </CardHeader>
-                          <CardContent className="pt-4 px-4 pb-4 space-y-3">
-                            {[
-                              { label: "Segunda à Sexta", field: "weekQuantity" },
-                              { label: "Sábado", field: "saturdayQuantity" },
-                              { label: "Domingo", field: "sundayQuantity" },
-                            ].map(({ label, field }) => (
-                              <div key={field} className="flex items-center justify-between gap-3">
-                                <Label className="text-xs text-muted-foreground whitespace-nowrap">{label}</Label>
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  value={sub[field as keyof typeof sub] ?? ""}
-                                  onChange={e =>
-                                    setSubcategoryQuantity(item.item, sub.name, field as "weekQuantity" | "saturdayQuantity" | "sundayQuantity", Number(e.target.value))
-                                  }
-                                  className="h-8 w-20 text-sm text-right"
-                                />
-                              </div>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      ))
+            {/*Terceira coluna */}
+            <div className="lg:sticky lg:top-20 min-w-0">
+            {ativo ? (
+              <Card className="shadow-sm overflow-hidden">
+                <CardHeader className="pb-3 border-b">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                        Quantidades
+                      </CardTitle>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Configure a quantidade por dia
+                      </p>
+                    </div>
+
+                    {selectedItems.length > 0 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {selectedItems.length}{" "}
+                        {selectedItems.length === 1 ? "item" : "itens"}
+                      </Badge>
                     )}
+                  </div>
+                </CardHeader>
 
-                  {selectedItems.length === 0 && (
-                    <Card className="shadow-sm border-dashed">
-                      <CardContent className="py-8 text-center">
-                        <p className="text-sm text-muted-foreground">
-                          Selecione itens na coluna ao lado para configurar quantidades
-                        </p>
-                      </CardContent>
-                    </Card>
+                <CardContent className="p-0">
+                  {selectedItems.length === 0 ? (
+                    <div className="py-10 px-6 text-center">
+                      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                        <Plus className="h-4 w-4 text-muted-foreground" />
+                      </div>
+
+                      <p className="text-sm font-medium">
+                        Nenhum item selecionado
+                      </p>
+
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Selecione um item na coluna ao lado para configurar suas quantidades.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="max-h-[calc(100vh-260px)] overflow-y-auto">
+                      {/* Cabeçalho das quantidades */}
+                      <div className="hidden sm:grid grid-cols-[minmax(150px,1fr)_72px_72px_72px] gap-3 items-center px-4 py-2.5 bg-muted/40 border-b text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <span>Item</span>
+                        <span className="text-center">Seg–Sex</span>
+                        <span className="text-center">Sáb</span>
+                        <span className="text-center">Dom</span>
+                      </div>
+
+                      <div className="divide-y">
+                        {/* Itens sem subcategoria */}
+                        {selectedItems
+                          .filter(
+                            i =>
+                              !ITEMS_WITH_SUBCATEGORY.includes(i.item) &&
+                              i.item !== "Bebidas"
+                          )
+                          .map(item => (
+                            <div
+                              key={item.item}
+                              className="px-4 py-3 hover:bg-muted/20 transition-colors"
+                            >
+                              <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,1fr)_72px_72px_72px] gap-2 sm:gap-3 items-center">
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium truncate">
+                                    {item.item}
+                                  </p>
+                                </div>
+
+                                {[
+                                  {
+                                    label: "Seg–Sex",
+                                    mobileLabel: "Segunda à Sexta",
+                                    field: "weekQuantity",
+                                  },
+                                  {
+                                    label: "Sáb",
+                                    mobileLabel: "Sábado",
+                                    field: "saturdayQuantity",
+                                  },
+                                  {
+                                    label: "Dom",
+                                    mobileLabel: "Domingo",
+                                    field: "sundayQuantity",
+                                  },
+                                ].map(({ label, mobileLabel, field }) => {
+                                  const quantityField =
+                                    field as
+                                      | "weekQuantity"
+                                      | "saturdayQuantity"
+                                      | "sundayQuantity"
+
+                                  return (
+                                    <div
+                                      key={field}
+                                      className="flex items-center justify-between sm:block"
+                                    >
+                                      <Label className="text-xs text-muted-foreground sm:hidden">
+                                        {mobileLabel}
+                                      </Label>
+
+                                      <Input
+                                        type="number"
+                                        min={0}
+                                        value={item[quantityField] ?? ""}
+                                        onChange={e =>
+                                          setQuantity(
+                                            item.item,
+                                            quantityField,
+                                            Number(e.target.value)
+                                          )
+                                        }
+                                        aria-label={`${item.item} - ${mobileLabel}`}
+                                        className="h-8 w-20 sm:w-full text-sm text-right"
+                                      />
+
+                                      <span className="hidden sm:block text-[10px] text-muted-foreground text-center mt-1">
+                                        {label}
+                                      </span>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          ))}
+
+                        {/* Itens com subcategorias */}
+                        {selectedItems
+                          .filter(
+                            i =>
+                              ITEMS_WITH_SUBCATEGORY.includes(i.item) ||
+                              i.item === "Bebidas"
+                          )
+                          .map(item => {
+                            if (!item.subcategories?.length) return null
+
+                            return (
+                              <div key={item.item}>
+                                {/* Nome da categoria */}
+                                <div className="px-4 py-2 bg-muted/30 border-b">
+                                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                                    {item.item}
+                                  </p>
+                                </div>
+
+                                {/* Subcategorias */}
+                                {item.subcategories.map(sub => (
+                                  <div
+                                    key={`${item.item}-${sub.name}`}
+                                    className="px-4 py-3 pl-6 hover:bg-muted/20 transition-colors"
+                                  >
+                                    <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,1fr)_72px_72px_72px] gap-2 sm:gap-3 items-center">
+                                      <div className="min-w-0">
+                                        <p className="text-sm font-medium truncate">
+                                          {sub.name}
+                                        </p>
+                                      </div>
+
+                                      {[
+                                        {
+                                          label: "Seg–Sex",
+                                          mobileLabel: "Segunda à Sexta",
+                                          field: "weekQuantity",
+                                        },
+                                        {
+                                          label: "Sáb",
+                                          mobileLabel: "Sábado",
+                                          field: "saturdayQuantity",
+                                        },
+                                        {
+                                          label: "Dom",
+                                          mobileLabel: "Domingo",
+                                          field: "sundayQuantity",
+                                        },
+                                      ].map(({ label, mobileLabel, field }) => {
+                                        const quantityField =
+                                          field as
+                                            | "weekQuantity"
+                                            | "saturdayQuantity"
+                                            | "sundayQuantity"
+
+                                        return (
+                                          <div
+                                            key={field}
+                                            className="flex items-center justify-between sm:block"
+                                          >
+                                            <Label className="text-xs text-muted-foreground sm:hidden">
+                                              {mobileLabel}
+                                            </Label>
+
+                                            <Input
+                                              type="number"
+                                              min={0}
+                                              value={sub[quantityField] ?? ""}
+                                              onChange={e =>
+                                                setSubcategoryQuantity(
+                                                  item.item,
+                                                  sub.name,
+                                                  quantityField,
+                                                  Number(e.target.value)
+                                                )
+                                              }
+                                              aria-label={`${sub.name} - ${mobileLabel}`}
+                                              className="h-8 w-20 sm:w-full text-sm text-right"
+                                            />
+
+                                            <span className="hidden sm:block text-[10px] text-muted-foreground text-center mt-1">
+                                              {label}
+                                            </span>
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )
+                          })}
+                      </div>
+                    </div>
                   )}
-                </>
-              ) : (
-                <Card className="shadow-sm border-dashed">
-                  <CardContent className="py-8 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Ative &quot;Quantidades padrão&quot; para configurar
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="shadow-sm border-dashed">
+                <CardContent className="py-10 px-6 text-center">
+                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                    <Plus className="h-4 w-4 text-muted-foreground" />
+                  </div>
 
-              <div className="space-y-2 pt-2">
-                <Button type="submit" className="w-full h-10 text-sm font-medium">
-                  Cadastrar usuário
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full h-10 text-sm font-medium"
-                  onClick={() => router.replace("/panel")}
-                >
-                  Voltar
-                </Button>
-              </div>
+                  <p className="text-sm font-medium">
+                    Quantidades padrão desativadas
+                  </p>
+
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Ative &quot;Quantidades padrão&quot; para configurar as quantidades.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Ações */}
+            <div className="space-y-2 mt-4">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-10 text-sm font-medium"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Cadastrando...
+                  </>
+                ) : (
+                  "Cadastrar usuário"
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-10 text-sm font-medium"
+                onClick={() => router.replace("/panel")}
+              >
+                Voltar
+              </Button>
             </div>
+          </div>
           </div>
         </form>
       </div>

@@ -64,8 +64,25 @@ export function DashboardContent() {
   }, 0)
 
   return (
-    <div className={`min-h-screen ${isDark ? "bg-neutral-950" : "bg-neutral-50"}`}>
+    <div
+        className={`relative min-h-screen overflow-hidden transition-colors duration-300 ${
+          isDark
+            ? "bg-gradient-to-br from-neutral-950 via-neutral-950 to-orange-950/20"
+            : "bg-gradient-to-br from-orange-50/60 via-white to-neutral-100"
+        }`}
+      >
       <Header />
+      <div
+        className={`pointer-events-none absolute -top-48 -right-48 h-[500px] w-[500px] rounded-full blur-3xl ${
+          isDark ? "bg-orange-600/8" : "bg-orange-300/15"
+        }`}
+      />
+
+      <div
+        className={`pointer-events-none absolute -bottom-48 -left-48 h-[450px] w-[450px] rounded-full blur-3xl ${
+          isDark ? "bg-orange-500/5" : "bg-orange-200/15"
+        }`}
+      />
 
       <div className="container mx-auto px-4 sm:px-6 py-6 pb-28 lg:pb-8">
         <div className="grid lg:grid-cols-3 gap-6 items-start">

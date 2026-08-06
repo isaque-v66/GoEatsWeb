@@ -117,196 +117,385 @@ export function DashboardConfirm() {
 
 
 
-  if (loading) {
-    return (
-      <div>
-        <Header />
-        <div className="flex justify-center px-4 py-10">
-          <Card className="w-full max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                <span>Carregando...</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center text-muted-foreground">
-              Processando Registro
-            </CardContent>
-          </Card>
+ 
+if (loading) {
+  return (
+    <div className="min-h-screen bg-muted/40">
+      <Header />
+
+      <main className="flex min-h-[calc(100vh-64px)] items-center justify-center px-4 py-10">
+        <Card className="w-full max-w-md shadow-sm">
+          <CardContent className="flex flex-col items-center justify-center px-6 py-12 text-center">
+            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-950/40">
+              <Loader2 className="h-7 w-7 animate-spin text-orange-500" />
+            </div>
+
+            <h2 className="text-lg font-semibold">
+              Processando cadastro
+            </h2>
+
+            <p className="mt-2 text-sm text-muted-foreground">
+              Estamos criando o usuário e configurando os itens selecionados.
+            </p>
+
+            <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-full w-2/3 animate-pulse rounded-full bg-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  )
+}
+
+return (
+  <div className="min-h-screen bg-muted/40">
+    <Header />
+
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
+      {/* CABEÇALHO */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-950/40">
+            <CheckCircle className="h-5 w-5 text-orange-500" />
+          </div>
+
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              Confirmar cadastro
+            </h1>
+
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Revise os dados antes de concluir o cadastro.
+            </p>
+          </div>
         </div>
       </div>
-    )
-  }
 
-  return (
-    <div>
-      <Header />
-      <div className="flex justify-center px-4 py-10">
-        <Card className="w-full max-w-3xl shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold flex items-center gap-2">
-              <CheckCircle className="text-green-500" />
-              Confirmação de Dados
-            </CardTitle>
-          </CardHeader>
+      {success ? (
+       
+        <Card className="mx-auto max-w-2xl overflow-hidden shadow-sm">
+          <CardContent className="px-6 py-10 text-center sm:px-10 sm:py-14">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-950/40">
+              <CheckCircle className="h-9 w-9 text-green-600 dark:text-green-400" />
+            </div>
 
-          <CardContent className="space-y-8">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Cadastro realizado!
+            </h2>
 
-            {success ? (
+            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+              O usuário foi cadastrado com sucesso e já pode acessar o sistema
+              utilizando as credenciais informadas.
+            </p>
 
-              <div className="animate-in fade-in-50 slide-in-from-top-5 duration-300">
-                <Card className={`
-                  border-2 border-green-500/30
-                  ${isDark
-                    ? "bg-gradient-to-br from-green-950/20 to-green-900/10"
-                    : "bg-gradient-to-br from-green-50 to-emerald-50"}
-                `}>
-                  <CardContent className="pt-6">
-                    <div className="flex flex-col items-center text-center space-y-4">
+            <div className="mx-auto mt-6 max-w-md rounded-lg border bg-muted/30 px-4 py-3 text-sm">
+              <p className="text-muted-foreground">
+                Usuário cadastrado
+              </p>
 
-                      {/* CARD DE SUCESSO */}
-                      <div className="flex flex-col sm:flex-row gap-3 w-full pt-4">
-                        <Button
-                          variant="outline"
-                          className="w-full sm:flex-1"
-                          onClick={() => {
-                            clearData()
-                            router.replace('/dashboardRegister')
-                          }}
-                        >
-                          <ArrowLeft className="mr-2 h-4 w-4" />
-                          Voltar
-                        </Button>
+              <p className="mt-1 font-medium">
+                {data.email}
+              </p>
+            </div>
 
-                        <Button
-                          className="w-full sm:flex-1 bg-green-600 hover:bg-green-700"
-                          onClick={() => {
-                            clearData()
-                            router.push('/login')
-                          }}
-                        >
-                          <span className="truncate">
-                            Ir para página de Login
-                          </span>
-                          <ArrowRight className="ml-2 h-4 w-4 flex-shrink-0" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Button
+                variant="outline"
+                className="w-full sm:flex-1"
+                onClick={() => {
+                  clearData()
+                  router.replace("/dashboardRegister")
+                }}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Novo cadastro
+              </Button>
+
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 sm:flex-1"
+                onClick={() => {
+                  clearData()
+                  router.push("/login")
+                }}
+              >
+                Ir para o login
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-5">
+          
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            
+            <Card className="shadow-sm">
+              <CardHeader className="border-b px-5 py-4">
+                <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  Usuário
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="grid grid-cols-1 gap-4 px-5 py-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Email
+                  </Label>
+
+                  <p className="mt-1.5 truncate text-sm font-medium">
+                    {data.email}
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    CNPJ
+                  </Label>
+
+                  <p className="mt-1.5 text-sm font-medium">
+                    {data.cnpj}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+      
+            <Card className="shadow-sm">
+              <CardHeader className="border-b px-5 py-4">
+                <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                  Empresa
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="grid grid-cols-1 gap-4 px-5 py-5 sm:grid-cols-2">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Nome da empresa
+                  </Label>
+
+                  <p className="mt-1.5 truncate text-sm font-medium">
+                    {data.company}
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Nome social
+                  </Label>
+
+                  <p className="mt-1.5 truncate text-sm font-medium">
+                    {data.nomeSocial}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          
+          <Card className="overflow-hidden shadow-sm">
+            <CardHeader className="border-b px-5 py-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                    Itens e quantidades
+                  </CardTitle>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Confira os itens selecionados e suas quantidades.
+                  </p>
+                </div>
+
+                <div className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-xs font-medium">
+                  {data.items.length}{" "}
+                  {data.items.length === 1 ? "item" : "itens"}
+                </div>
               </div>
-            ) : (
+            </CardHeader>
 
-              <>
-                {/* DADOS DO USUÁRIO */}
-                <section>
-                  <h3 className="text-lg font-semibold mb-4">Usuário</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Email</Label>
-                      <p className="mt-1 text-sm">{data?.email}</p>
-                    </div>
-                    <div>
-                      <Label>CNPJ</Label>
-                      <p className="mt-1 text-sm">{data?.cnpj}</p>
-                    </div>
+            <CardContent className="p-0">
+              {data.items.length === 0 ? (
+                <div className="px-5 py-10 text-center text-sm text-muted-foreground">
+                  Nenhum item selecionado.
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {/* CABEÇALHO DESKTOP */}
+                  <div className="hidden grid-cols-[minmax(200px,1fr)_100px_80px_80px] items-center gap-4 bg-muted/30 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid">
+                    <span>Item</span>
+                    <span className="text-center">Seg–Sex</span>
+                    <span className="text-center">Sáb</span>
+                    <span className="text-center">Dom</span>
                   </div>
-                </section>
 
-                {/* EMPRESA */}
-                <section>
-                  <h3 className="text-lg font-semibold mb-4">Empresa</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Nome da Empresa</Label>
-                      <p className="mt-1 text-sm">{data?.company}</p>
-                    </div>
-                    <div>
-                      <Label>Nome Social</Label>
-                      <p className="mt-1 text-sm">{data?.nomeSocial}</p>
-                    </div>
-                  </div>
-                </section>
-
-                {/* ITENS */}
-                <section>
-                  <h3 className="text-lg font-semibold mb-4">Itens Disponíveis</h3>
-                  <div className="space-y-2">
-                    {data?.items?.map((item: TypeForm["items"][number], index: number) => (
+                  {data.items.map(
+                    (
+                      item: TypeForm["items"][number],
+                      index: number
+                    ) => (
                       <div
-                        key={index}
-                        className={`
-                          rounded-lg border p-3
-                          ${isDark
-                            ? "border-neutral-700 bg-neutral-800"
-                            : "border-neutral-200 bg-white"}
-                        `}
+                        key={`${item.item}-${index}`}
+                        className="px-5 py-4 transition-colors hover:bg-muted/20"
                       >
-                        <div className="flex justify-between items-center">
-                          <span className="font-medium">{item.item}</span>
-
-                          {!item.subcategories?.length && (
-                            <div className="text-xs text-muted-foreground space-x-2">
-                              {item.weekQuantity != null && <span>Seg-Sex: {item.weekQuantity}</span>}
-                              {item.saturdayQuantity != null && <span>Sáb: {item.saturdayQuantity}</span>}
-                              {item.sundayQuantity != null && <span>Dom: {item.sundayQuantity}</span>}
+                        {/* ITEM SEM SUBCATEGORIA */}
+                        {!item.subcategories?.length ? (
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(200px,1fr)_100px_80px_80px] sm:items-center sm:gap-4">
+                            <div>
+                              <p className="text-sm font-medium">
+                                {item.item}
+                              </p>
                             </div>
-                          )}
-                        </div>
 
-                        {item.subcategories && item.subcategories.length > 0 && (
-                          <div className="mt-2 space-y-1 pl-2 border-l-2 border-orange-200">
-                            {item.subcategories.map((sub, idx: number) => (
-                              <div key={idx} className="flex justify-between items-center text-sm">
-                                <span className={isDark ? "text-neutral-300" : "text-neutral-700"}>
-                                  {sub.name}
-                                </span>
-                                <div className="text-xs text-muted-foreground space-x-2">
-                                  {sub.weekQuantity != null && <span>Seg-Sex: {sub.weekQuantity}</span>}
-                                  {sub.saturdayQuantity != null && <span>Sáb: {sub.saturdayQuantity}</span>}
-                                  {sub.sundayQuantity != null && <span>Dom: {sub.sundayQuantity}</span>}
-                                </div>
+                            <div className="flex items-center justify-between sm:block sm:text-center">
+                              <span className="text-xs text-muted-foreground sm:hidden">
+                                Segunda à sexta
+                              </span>
+
+                              <span className="text-sm font-medium">
+                                {item.weekQuantity ?? "—"}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between sm:block sm:text-center">
+                              <span className="text-xs text-muted-foreground sm:hidden">
+                                Sábado
+                              </span>
+
+                              <span className="text-sm font-medium">
+                                {item.saturdayQuantity ?? "—"}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center justify-between sm:block sm:text-center">
+                              <span className="text-xs text-muted-foreground sm:hidden">
+                                Domingo
+                              </span>
+
+                              <span className="text-sm font-medium">
+                                {item.sundayQuantity ?? "—"}
+                              </span>
+                            </div>
+                          </div>
+                        ) : (
+                          /* ITEM COM SUBCATEGORIAS */
+                          <div>
+                            <div className="mb-3">
+                              <p className="text-sm font-semibold">
+                                {item.item}
+                              </p>
+
+                              <p className="mt-0.5 text-xs text-muted-foreground">
+                                {item.subcategories.length}{" "}
+                                {item.subcategories.length === 1
+                                  ? "opção selecionada"
+                                  : "opções selecionadas"}
+                              </p>
+                            </div>
+
+                            <div className="overflow-hidden rounded-lg border">
+                              <div className="hidden grid-cols-[minmax(160px,1fr)_100px_80px_80px] items-center gap-4 bg-muted/30 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid">
+                                <span>Opção</span>
+                                <span className="text-center">Seg–Sex</span>
+                                <span className="text-center">Sáb</span>
+                                <span className="text-center">Dom</span>
                               </div>
-                            ))}
+
+                              {item.subcategories.map(
+                                (sub, idx: number) => (
+                                  <div
+                                    key={`${sub.name}-${idx}`}
+                                    className="grid grid-cols-1 gap-2 border-t px-4 py-3 first:border-t-0 sm:grid-cols-[minmax(160px,1fr)_100px_80px_80px] sm:items-center sm:gap-4"
+                                  >
+                                    <p className="text-sm">
+                                      {sub.name}
+                                    </p>
+
+                                    <div className="flex items-center justify-between sm:block sm:text-center">
+                                      <span className="text-xs text-muted-foreground sm:hidden">
+                                        Segunda à sexta
+                                      </span>
+
+                                      <span className="text-sm font-medium">
+                                        {sub.weekQuantity ?? "—"}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between sm:block sm:text-center">
+                                      <span className="text-xs text-muted-foreground sm:hidden">
+                                        Sábado
+                                      </span>
+
+                                      <span className="text-sm font-medium">
+                                        {sub.saturdayQuantity ?? "—"}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between sm:block sm:text-center">
+                                      <span className="text-xs text-muted-foreground sm:hidden">
+                                        Domingo
+                                      </span>
+
+                                      <span className="text-sm font-medium">
+                                        {sub.sundayQuantity ?? "—"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                </section>
-
-
-                <div className="flex flex-col md:flex-row gap-4 pt-4">
-                  <Button
-                    variant="outline"
-                    className="w-full md:w-auto md:flex-1"
-                    onClick={() => router.replace('/dashboardRegister')}
-                    disabled={loading}
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Voltar
-                  </Button>
-
-                  <Button
-                    className="w-full md:w-auto md:flex-1"
-                    onClick={() => data && sendForm(data)}
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processando...
-                      </>
-                    ) : (
-                      "Confirmar Cadastro"
-                    )}
-                  </Button>
+                    )
+                  )}
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
+              )}
+            </CardContent>
+          </Card>
+
+        
+          <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 dark:border-orange-900/50 dark:bg-orange-950/20">
+            <p className="text-xs leading-relaxed text-orange-800 dark:text-orange-300">
+              <span className="font-semibold">Revise os dados antes de continuar.</span>{" "}
+              Após confirmar o cadastro, o usuário será criado no sistema.
+            </p>
+          </div>
+
+          
+          <div className="flex flex-col-reverse gap-3 border-t pt-5 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto sm:min-w-32"
+              onClick={() => router.replace("/dashboardRegister")}
+              disabled={loading}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Button>
+
+            <Button
+              type="button"
+              className="w-full bg-orange-500 hover:bg-orange-600 sm:w-auto sm:min-w-44"
+              onClick={() => data && sendForm(data)}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  Confirmar cadastro
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+    </main>
+  </div>
+)
 }

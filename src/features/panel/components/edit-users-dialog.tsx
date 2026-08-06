@@ -35,6 +35,11 @@ type EditUsersDialogProps = {
 
 type QuantityField = "weekQuantity" | "saturdayQuantity" | "sundayQuantity"
 
+
+
+
+
+
 function maskCNPJ(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 14)
   let masked = digits
@@ -103,9 +108,17 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
 
   const cnpjValue = watch("cnpj") ?? ""
 
+
+
+
+
   function handleCnpjChange(e: React.ChangeEvent<HTMLInputElement>) {
     setValue("cnpj", maskCNPJ(e.target.value), { shouldValidate: true, shouldDirty: true })
   }
+
+
+
+
 
   function itemSelect(item: ItemType) {
     setSelectedItems(prev => {
@@ -113,6 +126,10 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
       return exists ? prev.filter(i => i.item !== item) : [...prev, { item }]
     })
   }
+
+
+
+
 
   function toggleSubcategory(item: ItemType, sub: Subcategory) {
     setSelectedItems(prev => prev.map(i => {
@@ -126,6 +143,10 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
     }))
   }
 
+
+
+
+
   function setSubcategoryQuantity(item: ItemType, sub: Subcategory, field: QuantityField, quantity: number) {
     setSelectedItems(prev => prev.map(i => {
       if (i.item !== item) return i
@@ -136,9 +157,18 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
     }))
   }
 
+
+
+
+
   function setQuantity(item: ItemType, field: QuantityField, quantity: number) {
     setSelectedItems(prev => prev.map(i => i.item === item ? { ...i, [field]: quantity } : i))
   }
+
+
+
+
+
 
   const updateUserMutation = useMutation({
     mutationFn: updateUserTable,
@@ -149,6 +179,11 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
     },
     onError: () => toast.error("Erro ao atualizar o usuário"),
   })
+
+
+
+
+
 
   async function handleUpdate(data: EditUserForm) {
     if (!selectedUser) return
@@ -182,6 +217,12 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
       items,
     })
   }
+
+
+
+
+
+
 
   return (
     <Dialog open={openEditDialog} onOpenChange={setOpenEditDialog}>
