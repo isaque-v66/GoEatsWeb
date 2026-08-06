@@ -10,9 +10,13 @@ import { useDebouncedValue } from "@/src/features/panel/hooks/useDebouncedValue"
 import { useUsers } from "@/src/features/panel/hooks/useUsers"
 import { Header } from "@/src/shared/components/header"
 import { useTheme } from "@/src/shared/contexts/theme-context"
-import { ChevronLeft, ChevronRight, Plus, Search, Users, CalendarDays } from "lucide-react"
+import { ChevronLeft, ChevronRight, Plus, Search, Users, CalendarDays, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useRef } from "react"
+
+
+
+
 
 export default function Panel() {
   const { theme } = useTheme()
@@ -22,12 +26,20 @@ export default function Panel() {
   const [page, setPage] = useState(1)
   const [searchInput, setSearchInput] = useState("")
   const [status, setStatus] = useState<"ALL" | "ADMIN" | "USER">("ALL")
+  const [isAddingUser, setIsAddingUser] = useState(false)
+  const addUserLocked = useRef(false)
 
   const search = useDebouncedValue(searchInput, 400)
   const { data, isLoading, isFetching } = useUsers({ page, search, status })
 
   const users = data?.users ?? []
   const pagination = data?.pagination
+
+
+
+
+
+
 
   function handleSearchChange(value: string) {
     setSearchInput(value)
@@ -38,6 +50,18 @@ export default function Panel() {
     setStatus(value)
     setPage(1)
   }
+
+
+  function handleAddUser() {
+  // Impede segundo clique
+  if (addUserLocked.current) return
+
+  addUserLocked.current = true
+  setIsAddingUser(true)
+
+  router.replace("/dashboardRegister")
+}
+
 
   return (
     <div>
@@ -64,14 +88,26 @@ export default function Panel() {
 
             <div className="flex flex-col mt-4 space-y-4">
               <Button
-                className={`self-end ${isDark
+                className={`self-end ${
+                  isDark
                     ? "bg-orange-600 hover:bg-orange-700 text-white"
                     : "bg-orange-500 hover:bg-orange-600 text-white"
-                  }`}
-                onClick={() => router.replace("/dashboardRegister")}
+                }`}
+                onClick={handleAddUser}
+                disabled={isAddingUser}
+                aria-busy={isAddingUser}
               >
-                <Plus className="w-4 h-4 mr-1" />
-                Adicionar usuário
+                {isAddingUser ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    Carregando...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4 mr-1" />
+                    Adicionar usuário
+                  </>
+                )}
               </Button>
 
               <div className="flex flex-col sm:flex-row gap-3">
