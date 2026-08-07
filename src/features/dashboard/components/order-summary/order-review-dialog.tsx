@@ -287,7 +287,7 @@ function DateRangePicker({
                 onSelect={range => {
                   if (!range?.from) return
                   const start = format(range.from, "yyyy-MM-dd")
-                  const end = range.to ? format(range.to, "yyyy-MM-dd") : undefined
+                  const end = range.to ? format(range.to, "yyyy-MM-dd") : start
                   onChange(start, end)
                   if (range.to) setOpen(false)
                 }}

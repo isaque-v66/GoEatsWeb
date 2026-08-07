@@ -26,7 +26,7 @@ export const ITEM_ICONS: Record<ItemType, ReactNode> = {
   Ceia: <Utensils className="w-5 h-5" />,
   Lanche: <Sandwich className="w-5 h-5" />,
   Bebidas: <GlassWater className="w-5 h-5" />,
-  "Café da tarde": <Cake className="w-5 h-5" />,
+  "Café da tarde": <Coffee className="w-5 h-5" />,
   "Café noturno": <Coffee className="w-5 h-5" />,
   "Pedidos Especiais": <Cake className="w-5 h-5" />
 }
@@ -62,6 +62,13 @@ export function DashboardContent() {
     }
     return sum + (order.quantity ?? 0)
   }, 0)
+
+
+
+
+
+
+
 
   return (
     <div
@@ -100,7 +107,7 @@ export function DashboardContent() {
             <div className="space-y-3">
               {availableItems.map(item => {
                 const mealType = ITEM_TO_MEAL_TYPE[item.name]
-                const available = isMealAvailable(mealType)
+                const available = isMealAvailable(mealType) // retorna true sempre pra teste.
                 const availabilityLabel = getRemainingTime(mealType)
 
                 return (

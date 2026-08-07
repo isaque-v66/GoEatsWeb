@@ -163,10 +163,25 @@ export function getAvailabilityLabel(rawMeal: MealTypeInput, now: Date = new Dat
     return "Indisponível — pedidos de fim de semana fecham sexta às 14:30"
   }
 
-  if (group === "A") {
-    const cutoffLabel = "14:30"
-    // Grupo A nunca permite hoje; o card deve sempre apontar para amanhã.
-    return `Peça até ${cutoffLabel} de hoje para amanhã`
+  const tomorrow = addDays(today, 1)
+
+   if (group === "A") {
+    const cutoff = setTime(today, GROUP_CUTOFF_TIME.A.hour, GROUP_CUTOFF_TIME.A.minute)
+
+    // Já passou do corte de hoje: não dá mais pra pedir pra amanhã
+    if (isAfter(now, cutoff)) {
+      if (isDateAvailableForMeal(meal, tomorrow, now)) {
+        // não deveria acontecer pro grupo A (amanhã sempre exige pedido no dia anterior),
+        // mas mantém a checagem por segurança
+        return "Peça até 14:30 de hoje para amanhã"
+      }
+      return "Item indisponível para hoje. Peça para semana que vem"
+    }
+
+    if (isDateAvailableForMeal(meal, tomorrow, now)) {
+      return "Peça até 14:30 de hoje para amanhã"
+    }
+    return "Item indisponível para amanhã. Peça para semana que vem"
   }
 
   // Grupos B e C: hoje pode estar disponível ou não, dependendo do horário
@@ -178,7 +193,12 @@ export function getAvailabilityLabel(rawMeal: MealTypeInput, now: Date = new Dat
     return `Pedido para hoje disponível até às ${cutoffLabel}`
   }
 
-  return `Item indisponível para hoje. Peça para amanhã`
+  
+  if (isDateAvailableForMeal(meal, tomorrow, now)) {
+    return "Item indisponível para hoje. Peça para amanhã"
+  }
+
+  return `Item indisponível para hoje. Peça para semana que vem`
 }
 
 /**

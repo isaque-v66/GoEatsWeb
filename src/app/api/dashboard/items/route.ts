@@ -58,7 +58,7 @@ export async function GET(req: Request) {
 
 
     const items = Array.from(itemsMap.values()).map(item => {
-      if (!item.subcategories?.length) delete item.subcategories
+      if (!item.subcategories?.length) delete item.subcategories  //exclui os null
       return item
     })
 

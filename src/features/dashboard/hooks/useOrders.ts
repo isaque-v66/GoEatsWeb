@@ -35,14 +35,7 @@ export function useOrder() {
   })
 
 
-  const addOrder = ({
-    item,
-    subcategory,
-    quantity = 1,
-    scheduleType,
-    specificDate,
-    updateDefault = false,
-  }: AddOrderPayload) => {
+  const addOrder = ({item, subcategory, quantity = 1, scheduleType, specificDate, updateDefault = false, }: AddOrderPayload) => {
     setOrders(prev => ({
       items: [
         ...prev.items,

@@ -56,8 +56,8 @@ model Item {
 }
 
 model Subcategory {
-  id      String @id @default(uuid())
-  name    String
+  id         String @id @default(uuid())
+  name       String
   mealType   MealType
   configs    UserSubcategoryConfig[]
   orderItems OrderItem[]
