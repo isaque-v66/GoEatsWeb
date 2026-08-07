@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon, X, AlertTriangle } from "lucide-react"
 import { format, eachDayOfInterval, parseISO } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { DateRange } from "react-day-picker"
 import { Order, ScheduleType } from "../../types/order.types"
 import { ITEM_TO_MEAL_TYPE, ItemType } from "../../constants/itemValues.constants"
@@ -33,6 +33,19 @@ type Props = {
 }
 
 
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
+  return isMobile
+}
 
 
 function formatDateRange(startDate?: string, endDate?: string) {
@@ -155,6 +168,7 @@ function DateRangePicker({
 }) {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<"single" | "range">("single")
+  const isMobile = useIsMobile()
 
   const mealType = ITEM_TO_MEAL_TYPE[itemName]
 
@@ -269,11 +283,11 @@ function DateRangePicker({
                 modifiersClassNames={{
                   occupied: "line-through opacity-40 bg-muted",
                 }}
-                numberOfMonths={2}
+                numberOfMonths={isMobile ? 1 : 2}
                 onSelect={range => {
                   if (!range?.from) return
                   const start = format(range.from, "yyyy-MM-dd")
-                  const end = range.to ? format(range.to, "yyyy-MM-dd") : start
+                  const end = range.to ? format(range.to, "yyyy-MM-dd") : undefined
                   onChange(start, end)
                   if (range.to) setOpen(false)
                 }}
