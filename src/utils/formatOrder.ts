@@ -27,7 +27,11 @@ export function formatOrderMessage({ order, isScheduled = false }: FormatOrderPa
     } else {
       text += `- ${item.item.name}\n`
     }
-    text += `  Quantidade: ${item.quantity}\n\n`
+    text += `  Quantidade: ${item.quantity}\n`
+    if (item.customText) {
+      text += `  Obs: ${item.customText}\n`   
+    }
+    text += `\n`
   })
 
   text += "==============================\n"

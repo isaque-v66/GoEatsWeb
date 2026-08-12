@@ -5,12 +5,14 @@ import { MealType } from "@prisma/client"
 type SubcategoryPayload = {
   name: string
   quantity?: number
+  comment?: string
 }
 
 type OrderPayload = {
   item: string
   mealType: MealType
   quantity?: number
+  comment?: string
   subcategories?: SubcategoryPayload[]
 }
 
@@ -99,6 +101,7 @@ export async function POST(req: Request) {
               orderId: createdOrder.id,
               itemId: dbItem.id,
               quantity: item.quantity ?? 0,
+              customText: item.comment?.trim() || null,
             },
           })
         }
@@ -122,6 +125,7 @@ export async function POST(req: Request) {
                 itemId: dbItem.id,
                 subcategoryId: dbSub.id,
                 quantity: sub.quantity ?? 0,
+                customText: sub.comment?.trim() || null,
               },
             })
           }

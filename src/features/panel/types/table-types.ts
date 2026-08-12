@@ -1,8 +1,12 @@
 export type UserSubcategoryConfigTable = {
   id: string
-  weekdayQuantity: number | null
-  saturdayQuantity: number | null
-  sundayQuantity: number | null
+  mondayQuantity: number | null,
+  tuesdayQuantity: number | null,
+  wednesdayQuantity: number | null,
+  thursdayQuantity: number | null,
+  fridayQuantity: number | null,
+  saturdayQuantity: number | null,
+  sundayQuantity: number | null,
   subcategory: {
     id: string
     name: string
@@ -11,9 +15,14 @@ export type UserSubcategoryConfigTable = {
 
 export type UserItemConfigTable = {
   id: string
-  weekdayQuantity: number | null
-  saturdayQuantity: number | null
-  sundayQuantity: number | null
+  mondayQuantity: number | null,
+  tuesdayQuantity: number | null,
+  wednesdayQuantity: number | null,
+  thursdayQuantity: number | null,
+  fridayQuantity: number | null,
+  saturdayQuantity: number | null,
+  sundayQuantity: number | null,
+  comment: string | null
   item: {
     id: string
     mealType: string

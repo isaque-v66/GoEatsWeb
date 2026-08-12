@@ -25,6 +25,8 @@ export type OrderSubcategory = {
   specificDate?: string
 
   updateDefault?: boolean
+
+  comment?: string
 }
 
 
@@ -47,6 +49,8 @@ export type OrderItem = {
   updateDefault?: boolean
 
   subcategories?: OrderSubcategory[]
+
+  comment?: string
 }
 
 

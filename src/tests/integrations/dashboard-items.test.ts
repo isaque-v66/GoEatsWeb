@@ -39,12 +39,16 @@ describe("GET /api/dashboard/items", () => {
         },
         subcategories: [
           {
-            weekdayQuantity: 2,
-            saturdayQuantity: 1,
-            sundayQuantity: 3,
-            subcategory: {
-              name: "Integral",
-            },
+          mondayQuantity: 2,
+          tuesdayQuantity: 2,
+          wednesdayQuantity: 2,
+          thursdayQuantity: 2,
+          fridayQuantity: 2,
+          saturdayQuantity: 1,
+          sundayQuantity: 3,
+          subcategory: {
+            name: "Integral",
+          },
           },
         ],
       },
@@ -74,7 +78,11 @@ describe("GET /api/dashboard/items", () => {
           subcategories: [
             {
               name: "Integral",
-              weekdayQuantity: 2,
+              mondayQuantity: 2,
+              tuesdayQuantity: 2,
+              wednesdayQuantity: 2,
+              thursdayQuantity: 2,
+              fridayQuantity: 2,
               saturdayQuantity: 1,
               sundayQuantity: 3,
             },

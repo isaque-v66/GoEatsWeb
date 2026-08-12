@@ -13,6 +13,28 @@ import { useEffect, useState } from "react"
 
 
 
+
+type DayField =
+  | "mondayQuantity"
+  | "tuesdayQuantity"
+  | "wednesdayQuantity"
+  | "thursdayQuantity"
+  | "fridayQuantity"
+  | "saturdayQuantity"
+  | "sundayQuantity"
+
+const DAY_COLUMNS: { label: string; mobileLabel: string; field: DayField }[] = [
+  { label: "Seg", mobileLabel: "Segunda", field: "mondayQuantity" },
+  { label: "Ter", mobileLabel: "Terça", field: "tuesdayQuantity" },
+  { label: "Qua", mobileLabel: "Quarta", field: "wednesdayQuantity" },
+  { label: "Qui", mobileLabel: "Quinta", field: "thursdayQuantity" },
+  { label: "Sex", mobileLabel: "Sexta", field: "fridayQuantity" },
+  { label: "Sáb", mobileLabel: "Sábado", field: "saturdayQuantity" },
+  { label: "Dom", mobileLabel: "Domingo", field: "sundayQuantity" },
+]
+
+
+
 const ITEM_TO_MEAL = {
   "Desjejum": "DESJEJUM",
   "Almoço": "ALMOCO",
@@ -68,20 +90,30 @@ export function DashboardConfirm() {
           socialName: data.nomeSocial,
         },
         items: data.items.map(item => ({
-          name: item.item,
-          mealType: ITEM_TO_MEAL[item.item as ItemKey],
+        name: item.item,
+        mealType: ITEM_TO_MEAL[item.item as ItemKey],
 
-          weekdayQuantity: item.subcategories?.length ? null : item.weekQuantity ?? null,
-          saturdayQuantity: item.subcategories?.length ? null : item.saturdayQuantity ?? null,
-          sundayQuantity: item.subcategories?.length ? null : item.sundayQuantity ?? null,
+        mondayQuantity: item.subcategories?.length ? null : item.mondayQuantity ?? null,
+        tuesdayQuantity: item.subcategories?.length ? null : item.tuesdayQuantity ?? null,
+        wednesdayQuantity: item.subcategories?.length ? null : item.wednesdayQuantity ?? null,
+        thursdayQuantity: item.subcategories?.length ? null : item.thursdayQuantity ?? null,
+        fridayQuantity: item.subcategories?.length ? null : item.fridayQuantity ?? null,
+        saturdayQuantity: item.subcategories?.length ? null : item.saturdayQuantity ?? null,
+        sundayQuantity: item.subcategories?.length ? null : item.sundayQuantity ?? null,
 
-          subcategories: item.subcategories?.map(sub => ({
-            name: sub.name,
-            weekdayQuantity: sub.weekQuantity ?? null,
-            saturdayQuantity: sub.saturdayQuantity ?? null,
-            sundayQuantity: sub.sundayQuantity ?? null,
-          })) ?? [],
-        })),
+        comment: item.comment ?? null,
+
+        subcategories: item.subcategories?.map(sub => ({
+          name: sub.name,
+          mondayQuantity: sub.mondayQuantity ?? null,
+          tuesdayQuantity: sub.tuesdayQuantity ?? null,
+          wednesdayQuantity: sub.wednesdayQuantity ?? null,
+          thursdayQuantity: sub.thursdayQuantity ?? null,
+          fridayQuantity: sub.fridayQuantity ?? null,
+          saturdayQuantity: sub.saturdayQuantity ?? null,
+          sundayQuantity: sub.sundayQuantity ?? null,
+        })) ?? [],
+      })),
       }
 
 
@@ -321,11 +353,14 @@ return (
               ) : (
                 <div className="divide-y">
                   {/* CABEÇALHO DESKTOP */}
-                  <div className="hidden grid-cols-[minmax(200px,1fr)_100px_80px_80px] items-center gap-4 bg-muted/30 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid">
+                  <div className="hidden grid-cols-[minmax(200px,1fr)_repeat(7,80px)] items-center gap-4 bg-muted/30 px-5 py-2.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid">
                     <span>Item</span>
-                    <span className="text-center">Seg–Sex</span>
-                    <span className="text-center">Sáb</span>
-                    <span className="text-center">Dom</span>
+
+                    {DAY_COLUMNS.map(({ label, field }) => (
+                      <span key={field} className="text-center">
+                        {label}
+                      </span>
+                    ))}
                   </div>
 
                   {data.items.map(
@@ -339,50 +374,47 @@ return (
                       >
                         {/* ITEM SEM SUBCATEGORIA */}
                         {!item.subcategories?.length ? (
-                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(200px,1fr)_100px_80px_80px] sm:items-center sm:gap-4">
-                            <div>
-                              <p className="text-sm font-medium">
-                                {item.item}
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(200px,1fr)_repeat(7,80px)] sm:items-center sm:gap-4">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {item.item}
+                            </p>
+
+                            {item.comment && (
+                              <p className="mt-1 text-xs text-muted-foreground italic">
+                                "{item.comment}"
                               </p>
-                            </div>
-
-                            <div className="flex items-center justify-between sm:block sm:text-center">
-                              <span className="text-xs text-muted-foreground sm:hidden">
-                                Segunda à sexta
-                              </span>
-
-                              <span className="text-sm font-medium">
-                                {item.weekQuantity ?? "—"}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center justify-between sm:block sm:text-center">
-                              <span className="text-xs text-muted-foreground sm:hidden">
-                                Sábado
-                              </span>
-
-                              <span className="text-sm font-medium">
-                                {item.saturdayQuantity ?? "—"}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center justify-between sm:block sm:text-center">
-                              <span className="text-xs text-muted-foreground sm:hidden">
-                                Domingo
-                              </span>
-
-                              <span className="text-sm font-medium">
-                                {item.sundayQuantity ?? "—"}
-                              </span>
-                            </div>
+                            )}
                           </div>
+
+                          {DAY_COLUMNS.map(({ label, mobileLabel, field }) => (
+                            <div
+                              key={field}
+                              className="flex items-center justify-between sm:block sm:text-center"
+                            >
+                              <span className="text-xs text-muted-foreground sm:hidden">
+                                {mobileLabel}
+                              </span>
+
+                              <span className="text-sm font-medium">
+                                {item[field] ?? "—"}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                         ) : (
                           /* ITEM COM SUBCATEGORIAS */
                           <div>
                             <div className="mb-3">
-                              <p className="text-sm font-semibold">
-                                {item.item}
-                              </p>
+                               <p className="text-sm font-semibold">
+                                  {item.item}
+                                </p>
+
+                                {item.comment && (
+                                  <p className="mt-1 text-xs text-muted-foreground italic">
+                                    "{item.comment}"
+                                  </p>
+                                )}
 
                               <p className="mt-0.5 text-xs text-muted-foreground">
                                 {item.subcategories.length}{" "}
@@ -393,52 +425,39 @@ return (
                             </div>
 
                             <div className="overflow-hidden rounded-lg border">
-                              <div className="hidden grid-cols-[minmax(160px,1fr)_100px_80px_80px] items-center gap-4 bg-muted/30 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid">
+                              <div className="hidden grid-cols-[minmax(160px,1fr)_repeat(7,80px)] items-center gap-4 bg-muted/30 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid">
                                 <span>Opção</span>
-                                <span className="text-center">Seg–Sex</span>
-                                <span className="text-center">Sáb</span>
-                                <span className="text-center">Dom</span>
-                              </div>
 
+                                {DAY_COLUMNS.map(({ label, field }) => (
+                                  <span key={field} className="text-center">
+                                    {label}
+                                  </span>
+                                ))}
+                              </div>
                               {item.subcategories.map(
                                 (sub, idx: number) => (
                                   <div
                                     key={`${sub.name}-${idx}`}
-                                    className="grid grid-cols-1 gap-2 border-t px-4 py-3 first:border-t-0 sm:grid-cols-[minmax(160px,1fr)_100px_80px_80px] sm:items-center sm:gap-4"
+                                    className="grid grid-cols-1 gap-2 border-t px-4 py-3 first:border-t-0 sm:grid-cols-[minmax(160px,1fr)_repeat(7,80px)] sm:items-center sm:gap-4"
                                   >
                                     <p className="text-sm">
                                       {sub.name}
                                     </p>
 
-                                    <div className="flex items-center justify-between sm:block sm:text-center">
-                                      <span className="text-xs text-muted-foreground sm:hidden">
-                                        Segunda à sexta
-                                      </span>
+                                    {DAY_COLUMNS.map(({ mobileLabel, field }) => (
+                                      <div
+                                        key={field}
+                                        className="flex items-center justify-between sm:block sm:text-center"
+                                      >
+                                        <span className="text-xs text-muted-foreground sm:hidden">
+                                          {mobileLabel}
+                                        </span>
 
-                                      <span className="text-sm font-medium">
-                                        {sub.weekQuantity ?? "—"}
-                                      </span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between sm:block sm:text-center">
-                                      <span className="text-xs text-muted-foreground sm:hidden">
-                                        Sábado
-                                      </span>
-
-                                      <span className="text-sm font-medium">
-                                        {sub.saturdayQuantity ?? "—"}
-                                      </span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between sm:block sm:text-center">
-                                      <span className="text-xs text-muted-foreground sm:hidden">
-                                        Domingo
-                                      </span>
-
-                                      <span className="text-sm font-medium">
-                                        {sub.sundayQuantity ?? "—"}
-                                      </span>
-                                    </div>
+                                        <span className="text-sm font-medium">
+                                          {sub[field] ?? "—"}
+                                        </span>
+                                      </div>
+                                    ))}
                                   </div>
                                 )
                               )}

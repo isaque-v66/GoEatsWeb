@@ -17,6 +17,7 @@ import { DateRange } from "react-day-picker"
 import { Order, ScheduleType } from "../../types/order.types"
 import { ITEM_TO_MEAL_TYPE, ItemType } from "../../constants/itemValues.constants"
 import { isDateAvailableForMeal, getNextAvailableDate } from "../../utils/mealCutoff.rules"
+import { Textarea } from "@/components/ui/textarea"
 
 type Props = {
   open: boolean
@@ -28,6 +29,7 @@ type Props = {
   onUpdateSubScheduleType: (orderId: string, subId: string, scheduleType: ScheduleType) => void
   onUpdateSubDefaultFlag: (orderId: string, subId: string, value: boolean) => void
   onUpdateDateRange: (orderId: string, startDate?: string, endDate?: string, subId?: string) => void
+  onUpdateComment: (orderId: string, comment: string, subId?: string) => void
   submitting: boolean
   occupiedDates: string[]
 }
@@ -150,6 +152,28 @@ function findConflicts(orders: Order, occupiedDates: string[]): Set<string> {
 
 
 
+function CommentInput({
+  value,
+  onChange,
+}: {
+  value?: string
+  onChange: (comment: string) => void
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        Observação (opcional)
+      </Label>
+      <Textarea
+        value={value ?? ""}
+        onChange={e => onChange(e.target.value)}
+        placeholder="Ex: entregar na portaria, sem açúcar..."
+        className="text-sm min-h-[60px] resize-none"
+        maxLength={500}
+      />
+    </div>
+  )
+}
 
 
 
@@ -333,6 +357,7 @@ export function OrderReviewDialog({
   onUpdateDefaultFlag,
   onUpdateSubDefaultFlag,
   onUpdateDateRange,
+  onUpdateComment,
   submitting,
   occupiedDates,
 }: Props) {
@@ -402,6 +427,11 @@ export function OrderReviewDialog({
                         </div>
                       </label>
                     )}
+
+                    <CommentInput
+                      value={order.comment}
+                      onChange={comment => onUpdateComment(order.id, comment)}
+                    />
                   </div>
                 </>
               ) : (
@@ -445,6 +475,11 @@ export function OrderReviewDialog({
                             </div>
                           </label>
                         )}
+
+                        <CommentInput
+                          value={sub.comment}
+                          onChange={comment => onUpdateComment(order.id, comment, sub.id)}
+                        />
                       </div>
                     ))}
                   </div>

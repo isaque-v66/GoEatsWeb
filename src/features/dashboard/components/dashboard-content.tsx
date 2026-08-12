@@ -49,7 +49,7 @@ export function DashboardContent() {
 
   const {
     orders, addOrder, updateQuantity, removeItem, updateScheduleType,
-    updateDefaultFlag, updateSubScheduleType, updateSubDefaultFlag, updateDateRange, clearOrders,
+    updateDefaultFlag, updateSubScheduleType, updateSubDefaultFlag, updateDateRange, clearOrders, updateComment,
   } = useOrder()
   const { user } = useUser()
   const { items: availableItems } = useDashboardItems(user?.id)
@@ -199,6 +199,7 @@ export function DashboardContent() {
                 onUpdateSubScheduleType={updateSubScheduleType}
                 onUpdateSubDefaultFlag={updateSubDefaultFlag}
                 onUpdateDateRange={updateDateRange}
+                onUpdateComment={updateComment} 
                 onOrderSubmitted={clearOrders}
               />
             </div>
@@ -259,6 +260,7 @@ export function DashboardContent() {
                 onUpdateSubScheduleType={updateSubScheduleType}
                 onUpdateSubDefaultFlag={updateSubDefaultFlag}
                 onUpdateDateRange={updateDateRange}
+                onUpdateComment={updateComment} 
                 onOrderSubmitted={clearOrders}
               />
             </div>

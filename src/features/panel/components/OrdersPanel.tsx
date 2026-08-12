@@ -15,6 +15,7 @@ import { Loader2, CalendarDays, CheckCircle2, Circle, Clock, ChevronLeft, Chevro
 import {
   useAdminOrders, useReviewMutation, UserDayRow, MEAL_LABELS,
 } from "../hooks/useAdminOrders"
+import { OrderDetailDialog } from "./order-detail-dialog"
 
 function formatDate(dateStr: string) {
   return format(parseISO(dateStr), "dd/MM/yyyy", { locale: ptBR })
@@ -44,15 +45,18 @@ function MealBadges({ meals }: { meals: UserDayRow["meals"] }) {
   )
 }
 
-function OrderRow({ row }: { row: UserDayRow }) {
+function OrderRow({ row, onOpenDetail }: { row: UserDayRow; onOpenDetail: (row: UserDayRow) => void }) {
   const reviewMutation = useReviewMutation()
   const isReviewed = !!row.reviewedAt
   const hasRealOrders = row.sources.length > 0
 
   return (
-    <TableRow className={isReviewed ? "opacity-55" : undefined}>
-      {/* Checkbox único para a linha inteira */}
-      <TableCell className="w-10">
+    <TableRow
+      className={`${isReviewed ? "opacity-55" : ""} cursor-pointer hover:bg-muted/30`}
+      onClick={() => onOpenDetail(row)}
+    >
+      {/* Checkbox — precisa parar a propagação pra não abrir o dialog ao marcar */}
+      <TableCell className="w-10" onClick={e => e.stopPropagation()}>
         {!hasRealOrders ? (
           <Clock className="w-4 h-4 text-muted-foreground/50 mx-auto" />
         ) : (
@@ -110,6 +114,16 @@ function OrderRow({ row }: { row: UserDayRow }) {
   )
 }
 
+
+
+
+
+
+
+
+
+
+
 export function OrdersPanel() {
   const today = startOfToday()
   const [currentMonth, setCurrentMonth] = useState(today)
@@ -117,6 +131,7 @@ export function OrdersPanel() {
     format(today, "yyyy-MM-dd")
   )
   const [page, setPage] = useState(1)
+  const [detailRow, setDetailRow] = useState<UserDayRow | null>(null) 
 
   const month = format(currentMonth, "yyyy-MM")
   const { data, isLoading, isFetching } = useAdminOrders(month, selectedDay, page)
@@ -130,15 +145,25 @@ export function OrdersPanel() {
   const totalReviewable = reviewableRows.length
   const projectedCount = rows.filter(r => r.hasProjection).length
 
+
+
+
+
   function handleSelectDay(date?: string) {
     setSelectedDay(date)
     setPage(1)
   }
 
+
+
   function handleMonthChange(date: Date) {
     setCurrentMonth(date)
     setPage(1)
   }
+
+
+
+
 
   return (
     <div className="mt-5 space-y-5">
@@ -248,7 +273,7 @@ export function OrdersPanel() {
                   </TableHeader>
                   <TableBody>
                     {rows.map(row => (
-                      <OrderRow key={`${row.userId}::${row.date}`} row={row} />
+                      <OrderRow key={`${row.userId}::${row.date}`} row={row} onOpenDetail={setDetailRow} />
                     ))}
                   </TableBody>
                 </Table>
@@ -282,6 +307,12 @@ export function OrdersPanel() {
                   </div>
                 </div>
               )}
+
+              <OrderDetailDialog
+                open={!!detailRow}
+                onOpenChange={open => !open && setDetailRow(null)}
+                row={detailRow}
+              />
             </>
           )}
         </div>

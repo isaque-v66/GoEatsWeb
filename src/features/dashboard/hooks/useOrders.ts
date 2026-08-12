@@ -280,6 +280,30 @@ export function useOrder() {
   }
 
 
+  const updateComment = (
+  orderId: string,
+  comment: string,
+  subId?: string
+) => {
+  setOrders(prev => ({
+    items: prev.items.map(order => {
+      if (order.id !== orderId) return order
+
+      if (!subId) {
+        return { ...order, comment }
+      }
+
+      return {
+        ...order,
+        subcategories: order.subcategories?.map(sub =>
+          sub.id === subId ? { ...sub, comment } : sub
+        ),
+      }
+    }),
+  }))
+}
+
+
 
 
   return {
@@ -293,7 +317,8 @@ export function useOrder() {
     updateSubScheduleType,
     updateSubDefaultFlag,
     updateDateRange,
-    clearOrders
+    clearOrders,
+    updateComment
   }
 }
 

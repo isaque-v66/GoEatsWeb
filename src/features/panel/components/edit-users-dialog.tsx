@@ -24,8 +24,32 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   EditUserForm, EditUserSchema,
   ITEM_VALUES, ITEMS_WITH_SUBCATEGORY, ItemType, MEAL_TYPE_MAP,
-  SelectedItem, SUBCATEGORIES_DRINKS, SUBCATEGORIES_ESPECIAL, SUBCATEGORIES_VALUES,
+  SelectedItem, SUBCATEGORIES_DRINKS, SUBCATEGORIES_ESPECIAL, SUBCATEGORIES_LANCHE,
+  SUBCATEGORIES_DESJEJUM, SUBCATEGORIES_VALUES,
   Subcategory } from "../../register/types/register-types"
+import { Textarea } from "@/components/ui/textarea"
+
+
+
+
+type QuantityField =
+  | "mondayQuantity"
+  | "tuesdayQuantity"
+  | "wednesdayQuantity"
+  | "thursdayQuantity"
+  | "fridayQuantity"
+  | "saturdayQuantity"
+  | "sundayQuantity"
+
+const DAY_COLUMNS: { label: string; field: QuantityField }[] = [
+  { label: "Seg", field: "mondayQuantity" },
+  { label: "Ter", field: "tuesdayQuantity" },
+  { label: "Qua", field: "wednesdayQuantity" },
+  { label: "Qui", field: "thursdayQuantity" },
+  { label: "Sex", field: "fridayQuantity" },
+  { label: "Sáb", field: "saturdayQuantity" },
+  { label: "Dom", field: "sundayQuantity" },
+]
 
 type EditUsersDialogProps = {
   openEditDialog: boolean
@@ -33,7 +57,9 @@ type EditUsersDialogProps = {
   selectedUser: UsersTable | null
 }
 
-type QuantityField = "weekQuantity" | "saturdayQuantity" | "sundayQuantity"
+
+
+
 
 
 
@@ -53,13 +79,22 @@ function maskCNPJ(value: string): string {
 function toSelectedItems(itemConfigs: UsersTable["itemConfigs"]): SelectedItem[] {
   return itemConfigs.map(config => ({
     item: config.item.name as ItemType,
-    weekQuantity: config.weekdayQuantity ?? undefined,
+    mondayQuantity: config.mondayQuantity ?? undefined,
+    tuesdayQuantity: config.tuesdayQuantity ?? undefined,
+    wednesdayQuantity: config.wednesdayQuantity ?? undefined,
+    thursdayQuantity: config.thursdayQuantity ?? undefined,
+    fridayQuantity: config.fridayQuantity ?? undefined,
     saturdayQuantity: config.saturdayQuantity ?? undefined,
     sundayQuantity: config.sundayQuantity ?? undefined,
+    comment: config.comment ?? undefined,
     subcategories: config.subcategories.length > 0
       ? config.subcategories.map(sub => ({
           name: sub.subcategory.name as Subcategory,
-          weekQuantity: sub.weekdayQuantity ?? undefined,
+          mondayQuantity: sub.mondayQuantity ?? undefined,
+          tuesdayQuantity: sub.tuesdayQuantity ?? undefined,
+          wednesdayQuantity: sub.wednesdayQuantity ?? undefined,
+          thursdayQuantity: sub.thursdayQuantity ?? undefined,
+          fridayQuantity: sub.fridayQuantity ?? undefined,
           saturdayQuantity: sub.saturdayQuantity ?? undefined,
           sundayQuantity: sub.sundayQuantity ?? undefined,
         }))
@@ -100,8 +135,8 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
     setSelectedItems(items)
 
     const hasQuantities = items.some(i =>
-      i.weekQuantity !== undefined || i.saturdayQuantity !== undefined || i.sundayQuantity !== undefined ||
-      i.subcategories?.some(s => s.weekQuantity !== undefined || s.saturdayQuantity !== undefined || s.sundayQuantity !== undefined)
+      DAY_COLUMNS.some(({ field }) => i[field] !== undefined) ||
+      i.subcategories?.some(s => DAY_COLUMNS.some(({ field }) => s[field] !== undefined))
     )
     setAtivo(hasQuantities)
   }, [selectedUser, reset])
@@ -186,41 +221,70 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
 
 
   async function handleUpdate(data: EditUserForm) {
-    if (!selectedUser) return
+  if (!selectedUser) return
 
-    const items = selectedItems.map(item => {
-      const hasSub = !!item.subcategories?.length
-      return {
-        name: item.item,
-        mealType: MEAL_TYPE_MAP[item.item],
-        weekdayQuantity: hasSub ? undefined : ativo ? item.weekQuantity : undefined,
-        saturdayQuantity: hasSub ? undefined : ativo ? item.saturdayQuantity : undefined,
-        sundayQuantity: hasSub ? undefined : ativo ? item.sundayQuantity : undefined,
-        subcategories: hasSub
-          ? item.subcategories?.map(sub => ({
-              name: sub.name,
-              weekdayQuantity: ativo ? sub.weekQuantity : undefined,
-              saturdayQuantity: ativo ? sub.saturdayQuantity : undefined,
-              sundayQuantity: ativo ? sub.sundayQuantity : undefined,
-            }))
-          : undefined,
-      }
-    })
+  const items = selectedItems.map(item => {
+    const hasSub = !!item.subcategories?.length
 
-    updateUserMutation.mutate({
-      id: selectedUser.id,
-      email: dirtyFields.email && data.email ? data.email : undefined,
-      password: data.password ? data.password : undefined,
-      role: dirtyFields.role && data.role ? data.role : undefined,
-      company: dirtyFields.company && data.company ? data.company : undefined,
-      cnpj: dirtyFields.cnpj && data.cnpj ? data.cnpj.replace(/\D/g, "") : undefined,
-      items,
-    })
-  }
+    const dayQuantities = !hasSub && ativo
+      ? {
+          mondayQuantity: item.mondayQuantity,
+          tuesdayQuantity: item.tuesdayQuantity,
+          wednesdayQuantity: item.wednesdayQuantity,
+          thursdayQuantity: item.thursdayQuantity,
+          fridayQuantity: item.fridayQuantity,
+          saturdayQuantity: item.saturdayQuantity,
+          sundayQuantity: item.sundayQuantity,
+        }
+      : {}
+
+    return {
+      name: item.item,
+      mealType: MEAL_TYPE_MAP[item.item],
+      ...dayQuantities,
+      comment: item.comment?.trim() || undefined,
+      subcategories: hasSub
+        ? item.subcategories?.map(sub => ({
+            name: sub.name,
+            ...(ativo
+              ? {
+                  mondayQuantity: sub.mondayQuantity,
+                  tuesdayQuantity: sub.tuesdayQuantity,
+                  wednesdayQuantity: sub.wednesdayQuantity,
+                  thursdayQuantity: sub.thursdayQuantity,
+                  fridayQuantity: sub.fridayQuantity,
+                  saturdayQuantity: sub.saturdayQuantity,
+                  sundayQuantity: sub.sundayQuantity,
+                }
+              : {}),
+          }))
+        : undefined,
+    }
+  })
+
+  updateUserMutation.mutate({
+    id: selectedUser.id,
+    email: dirtyFields.email && data.email ? data.email : undefined,
+    password: data.password ? data.password : undefined,
+    role: dirtyFields.role && data.role ? data.role : undefined,
+    company: dirtyFields.company && data.company ? data.company : undefined,
+    cnpj: dirtyFields.cnpj && data.cnpj ? data.cnpj.replace(/\D/g, "") : undefined,
+    items,
+  })
+}
 
 
 
 
+function setComment(item: ItemType, comment: string) {
+  setSelectedItems(prev =>
+    prev.map(i =>
+      i.item === item
+        ? { ...i, comment }
+        : i
+    )
+  )
+}
 
 
 
@@ -347,14 +411,27 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
                   const selected = selectedItems.find(i => i.item === item)
                   const isDrink = item === "Bebidas"
                   const isEspecial = item === "Pedidos Especiais"
-                  const isFoodWithSub = !isDrink && !isEspecial && ITEMS_WITH_SUBCATEGORY.includes(item)
+                  const isLanche = item === "Lanche"
+                  const isDesjejum = item === "Desjejum"
+
+                  const isFoodWithSub =
+                    !isDrink &&
+                    !isEspecial &&
+                    !isLanche &&
+                    !isDesjejum &&
+                    ITEMS_WITH_SUBCATEGORY.includes(item)
+
                   const subcategories = isDrink
                     ? SUBCATEGORIES_DRINKS
                     : isEspecial
                       ? SUBCATEGORIES_ESPECIAL
-                      : isFoodWithSub
-                        ? SUBCATEGORIES_VALUES
-                        : null
+                      : isLanche
+                        ? SUBCATEGORIES_LANCHE
+                        : isFoodWithSub
+                          ? SUBCATEGORIES_VALUES
+                          : isDesjejum
+                            ? SUBCATEGORIES_DESJEJUM
+                            : null
 
                   return (
                     <div key={item}>
@@ -372,12 +449,8 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
                       </button>
 
                       {selected && !subcategories && ativo && (
-                        <div className="mt-2 mb-1 pl-3 grid grid-cols-3 gap-2 border-l-2 border-orange-200 ml-2">
-                          {([
-                            { label: "Seg-Sex", field: "weekQuantity" as QuantityField },
-                            { label: "Sáb", field: "saturdayQuantity" as QuantityField },
-                            { label: "Dom", field: "sundayQuantity" as QuantityField },
-                          ]).map(({ label, field }) => (
+                         <div className="mt-2 mb-1 pl-3 grid grid-cols-4 sm:grid-cols-7 gap-2 border-l-2 border-orange-200 ml-2">
+                          {DAY_COLUMNS.map(({ label, field }) => (
                             <div key={field} className="space-y-1">
                               <Label className="text-[10px] text-muted-foreground">{label}</Label>
                               <Input
@@ -415,12 +488,8 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
                                 </label>
 
                                 {selectedSub && ativo && (
-                                  <div className="grid grid-cols-3 gap-2 pl-6">
-                                    {([
-                                      { label: "Seg-Sex", field: "weekQuantity" as QuantityField },
-                                      { label: "Sáb", field: "saturdayQuantity" as QuantityField },
-                                      { label: "Dom", field: "sundayQuantity" as QuantityField },
-                                    ]).map(({ label, field }) => (
+                                  <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 pl-6">
+                                    {DAY_COLUMNS.map(({ label, field }) => (
                                       <div key={field} className="space-y-1">
                                         <Label className="text-[10px] text-muted-foreground">{label}</Label>
                                         <Input
@@ -432,11 +501,30 @@ export function EditUsersDialog({ openEditDialog, setOpenEditDialog, selectedUse
                                         />
                                       </div>
                                     ))}
+
+                                    
                                   </div>
+
+                                  
                                 )}
                               </div>
                             )
                           })}
+                          {selected && (
+                              <div className="mt-2 mb-2 pl-3 ml-2">
+                                <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                                  Observações (opcional)
+                                </Label>
+
+                                <Textarea
+                                  value={selected.comment ?? ""}
+                                  onChange={e => setComment(item, e.target.value)}
+                                  placeholder="Ex: sem cebola, embalagem separada..."
+                                  className="mt-1 text-sm min-h-[60px] resize-none"
+                                  maxLength={500}
+                                />
+                              </div>
+                            )}
                         </div>
                       )}
                     </div>

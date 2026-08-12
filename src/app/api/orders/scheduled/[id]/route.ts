@@ -151,6 +151,7 @@ export async function PATCH(
         itemName: i.item.name,
         subcategoryName: i.subcategory?.name,
         quantity: i.quantity,
+        comment: i.comment ?? undefined, 
       })),
     })
 

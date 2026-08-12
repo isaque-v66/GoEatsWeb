@@ -27,22 +27,35 @@ const MEALS_BY_CRON: Record<CronKey, MealType[]> = {
   "0900": ["JANTAR", "CEIA"],
 }
 
-// Tipo do dia para buscar UserItemConfig
-function getDayType(date: Date): "weekday" | "saturday" | "sunday" {
-  const day = getDay(date)
-  if (day === 0) return "sunday"
-  if (day === 6) return "saturday"
-  return "weekday"
+type DayField =
+  | "mondayQuantity"
+  | "tuesdayQuantity"
+  | "wednesdayQuantity"
+  | "thursdayQuantity"
+  | "fridayQuantity"
+  | "saturdayQuantity"
+  | "sundayQuantity"
+
+const DAY_FIELD_BY_INDEX: DayField[] = [
+  "sundayQuantity",    // getDay() === 0
+  "mondayQuantity",    // 1
+  "tuesdayQuantity",   // 2
+  "wednesdayQuantity", // 3
+  "thursdayQuantity",  // 4
+  "fridayQuantity",    // 5
+  "saturdayQuantity",  // 6
+]
+
+function getDayField(date: Date): DayField {
+  return DAY_FIELD_BY_INDEX[getDay(date)]
 }
 
-// Quantidade padrão conforme o tipo do dia
+// Quantidade padrão conforme o campo do dia
 function getDefaultQuantity(
-  config: { weekdayQuantity?: number | null; saturdayQuantity?: number | null; sundayQuantity?: number | null },
-  dayType: "weekday" | "saturday" | "sunday"
+  config: Partial<Record<DayField, number | null>>,
+  dayField: DayField
 ) {
-  if (dayType === "saturday") return config.saturdayQuantity ?? 0
-  if (dayType === "sunday") return config.sundayQuantity ?? 0
-  return config.weekdayQuantity ?? 0
+  return config[dayField] ?? 0
 }
 
 // Cálculo de qual data-alvo conforme o dia atual e horário de corte
@@ -51,7 +64,7 @@ function getTargetDates(cronKey: CronKey): Date[] {
   const now = new Date()
   const todayDay = getDay(now)
 
-  if (cronKey === "1430" && todayDay === 5) {
+  if (todayDay === 5) {
     return [addDays(now, 1), addDays(now, 2)]
   }
 
@@ -91,7 +104,7 @@ export async function runCron(cronKey: CronKey) {
     const digestItems: DigestItem[] = []
 
     for (const targetDate of targetDates) {
-      const dayType = getDayType(targetDate)
+      const dayField = getDayField(targetDate)
 
       for (const config of relevantConfigs) {
         const scheduled = await prisma.scheduledOrder.findFirst({
@@ -122,6 +135,7 @@ export async function runCron(cronKey: CronKey) {
               subcategoryName: si.subcategory?.name,
               quantity: si.quantity,
               source: "special",
+              comment: si.comment ?? undefined,
             })
           }
           continue
@@ -129,7 +143,7 @@ export async function runCron(cronKey: CronKey) {
 
         if (config.subcategories?.length) {
           for (const subConfig of config.subcategories) {
-            const qty = getDefaultQuantity(subConfig, dayType)
+            const qty = getDefaultQuantity(subConfig, dayField)
             if (qty <= 0) continue
 
             digestItems.push({
@@ -139,10 +153,11 @@ export async function runCron(cronKey: CronKey) {
               subcategoryName: subConfig.subcategory.name,
               quantity: qty,
               source: "default",
+              comment: subConfig.comment ?? config.comment ?? undefined,
             })
           }
         } else {
-          const qty = getDefaultQuantity(config, dayType)
+          const qty = getDefaultQuantity(config, dayField)
 
           if (qty > 0) {
             digestItems.push({
@@ -151,6 +166,7 @@ export async function runCron(cronKey: CronKey) {
               itemName: config.item.name,
               quantity: qty,
               source: "default",
+              comment: config.comment ?? undefined,
             })
             continue
           }
@@ -182,6 +198,7 @@ export async function runCron(cronKey: CronKey) {
                 subcategoryName: pi.subcategory?.name,
                 quantity: pi.quantity,
                 source: "fallback",
+                comment: pi.customText ?? undefined,
               })
             }
           }
@@ -195,7 +212,6 @@ export async function runCron(cronKey: CronKey) {
       companyName: user.company.socialName,
       cronKey,
       items: digestItems,
-
     })
 
     await sendEmail({

@@ -20,7 +20,9 @@ export const SUBCATEGORIES_VALUES = [
   "Granel",
   "MTX8",
   "MTX9",
-  "Divisional"
+  "Divisional",
+  "Complemento de refeição",
+  "Dieta"
 ] as const
 
 
@@ -29,7 +31,9 @@ export const SUBCATEGORIES_DRINKS = [
   "Litro de leite",
   "Litro de café",
   "Litro de chá",
-  "Café com leite"
+  "Café com leite",
+  "Água mineral",
+  "Refrigerante"
 ] as const
 
 
@@ -39,6 +43,20 @@ export const SUBCATEGORIES_ESPECIAL = [
   "Churrasco",
   "Coffee Break"
 ] as const
+
+
+export const SUBCATEGORIES_LANCHE = [
+  "Lanche comum",
+  "Lanche especial",
+] as const
+
+
+export const SUBCATEGORIES_DESJEJUM = [
+  "Comum",
+  "Especial",
+  "ADM"
+] as const
+
 
 
 export const MEAL_TYPE_MAP = {
@@ -57,19 +75,25 @@ export const MEAL_TYPE_MAP = {
 
 
 
-export const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Almoço", "Ceia", "Jantar", "Bebidas", "Pedidos Especiais"]
+export const ITEMS_WITH_SUBCATEGORY: ItemType[] = ["Desjejum", "Almoço", "Ceia", "Jantar", "Lanche", "Bebidas", "Pedidos Especiais"]
 
 
 
 export type FoodSubcategory = typeof SUBCATEGORIES_VALUES[number]
 export type DrinkSubcategory = typeof SUBCATEGORIES_DRINKS[number]
 export type SpecialSubcategory = typeof SUBCATEGORIES_ESPECIAL[number]
+export type LancheSubcategory = typeof SUBCATEGORIES_LANCHE[number]
+export type DesjejumSubcategory = typeof SUBCATEGORIES_DESJEJUM[number]
 
-export type Subcategory = FoodSubcategory | DrinkSubcategory | SpecialSubcategory
+export type Subcategory = FoodSubcategory | DrinkSubcategory | SpecialSubcategory | LancheSubcategory | DesjejumSubcategory
 
 export type SelectedSubcategory = {
   name: Subcategory
-  weekQuantity?: number
+  mondayQuantity?: number
+  tuesdayQuantity?: number
+  wednesdayQuantity?: number
+  thursdayQuantity?: number
+  fridayQuantity?: number
   saturdayQuantity?: number
   sundayQuantity?: number
 }
@@ -79,9 +103,14 @@ export type SelectedSubcategory = {
 export type SelectedItem = {
   item: ItemType
   subcategories?: SelectedSubcategory[]
-  weekQuantity?: number
+  mondayQuantity?: number
+  tuesdayQuantity?: number
+  wednesdayQuantity?: number
+  thursdayQuantity?: number
+  fridayQuantity?: number
   saturdayQuantity?: number
   sundayQuantity?: number
+  comment?: string
 }
 
 
@@ -95,9 +124,15 @@ export const SubcategorySchema = z.object({
   name: z.union([
     z.enum(SUBCATEGORIES_VALUES),
     z.enum(SUBCATEGORIES_DRINKS),
-    z.enum(SUBCATEGORIES_ESPECIAL)
+    z.enum(SUBCATEGORIES_ESPECIAL),
+    z.enum(SUBCATEGORIES_LANCHE),
+    z.enum(SUBCATEGORIES_DESJEJUM)
   ]),
-  weekQuantity: z.number().int().nonnegative().optional(),
+  mondayQuantity: z.number().int().nonnegative().optional(),
+  tuesdayQuantity: z.number().int().nonnegative().optional(),
+  wednesdayQuantity: z.number().int().nonnegative().optional(),
+  thursdayQuantity: z.number().int().nonnegative().optional(),
+  fridayQuantity: z.number().int().nonnegative().optional(),
   saturdayQuantity: z.number().int().nonnegative().optional(),
   sundayQuantity: z.number().int().nonnegative().optional(),
 })
@@ -105,15 +140,24 @@ export const SubcategorySchema = z.object({
 export const ItemSchema = z.object({
   item: z.enum(ITEM_VALUES),
   subcategories: z.array(SubcategorySchema).optional(),
-  weekQuantity: z.number().int().nonnegative().optional(),
+  mondayQuantity: z.number().int().nonnegative().optional(),
+  tuesdayQuantity: z.number().int().nonnegative().optional(),
+  wednesdayQuantity: z.number().int().nonnegative().optional(),
+  thursdayQuantity: z.number().int().nonnegative().optional(),
+  fridayQuantity: z.number().int().nonnegative().optional(),
   saturdayQuantity: z.number().int().nonnegative().optional(),
   sundayQuantity: z.number().int().nonnegative().optional(),
+  comment: z.string().max(500).optional(), 
 }).refine(
   data =>
     !(
       data.subcategories?.length &&
       (
-        data.weekQuantity !== undefined ||
+        data.mondayQuantity !== undefined ||
+        data.tuesdayQuantity !== undefined ||
+        data.wednesdayQuantity !== undefined ||
+        data.thursdayQuantity !== undefined ||
+        data.fridayQuantity !== undefined ||
         data.saturdayQuantity !== undefined ||
         data.sundayQuantity !== undefined
       )

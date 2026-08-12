@@ -4,19 +4,27 @@ import { eachDayOfInterval, parseISO, getDay, format } from "date-fns"
 import { sendEmail } from "@/src/lib/email"
 import { formatScheduledOrderMessage } from "@/src/utils/formatScheduledOrder"
 
-type ScheduleType = "WEEKDAY" | "SATURDAY" | "SUNDAY"
+type DayField =
+  | "mondayQuantity"
+  | "tuesdayQuantity"
+  | "wednesdayQuantity"
+  | "thursdayQuantity"
+  | "fridayQuantity"
+  | "saturdayQuantity"
+  | "sundayQuantity"
 
-function getScheduleType(date: Date): ScheduleType {
-  const day = getDay(date)
-  if (day === 0) return "SUNDAY"
-  if (day === 6) return "SATURDAY"
-  return "WEEKDAY"
-}
+const DAY_FIELD_BY_INDEX: DayField[] = [
+  "sundayQuantity",    
+  "mondayQuantity",    
+  "tuesdayQuantity",   
+  "wednesdayQuantity", 
+  "thursdayQuantity",  
+  "fridayQuantity",    
+  "saturdayQuantity", 
+]
 
-function quantityField(scheduleType: ScheduleType) {
-  if (scheduleType === "SATURDAY") return "saturdayQuantity"
-  if (scheduleType === "SUNDAY") return "sundayQuantity"
-  return "weekdayQuantity"
+function quantityField(date: Date): DayField {
+  return DAY_FIELD_BY_INDEX[getDay(date)]
 }
 
 function formatPeriodLabel(startDate: string, endDate: string) {
@@ -33,6 +41,7 @@ type EmailBatch = {
   subcategoryId?: string
   subcategoryName?: string
   quantity: number
+  comment?: string
 }
 
 
@@ -43,6 +52,7 @@ type ResolvedDayItem = {
   subcategoryName?: string
   quantity: number
   updateDefault: boolean
+  comment?: string
 }
 
 export async function POST(req: NextRequest) {
@@ -63,109 +73,112 @@ export async function POST(req: NextRequest) {
     const allDateKeys = new Set<string>()
 
     for (const orderItem of orders.items) {
-      const startDate = orderItem.startDate ?? orderItem.specificDate
-      const endDate = orderItem.endDate ?? orderItem.specificDate
+  const startDate = orderItem.startDate ?? orderItem.specificDate
+  const endDate = orderItem.endDate ?? orderItem.specificDate
 
-      if (!startDate) continue
+  const item = await prisma.item.findFirst({
+    where: { name: orderItem.item, mealType: orderItem.mealType },
+  })
 
-      const item = await prisma.item.findFirst({
-        where: { name: orderItem.item, mealType: orderItem.mealType },
+  if (!item) {
+    return NextResponse.json(
+      { message: `Item não encontrado: ${orderItem.item}` },
+      { status: 404 }
+    )
+  }
+
+  type SubPayload = {
+    name: string
+    quantity: number
+    updateDefault?: boolean
+    startDate?: string
+    endDate?: string
+    comment?: string
+  }
+
+  if (!orderItem.subcategories?.length) {
+    if (!startDate) continue
+
+    const days = eachDayOfInterval({
+      start: parseISO(startDate),
+      end: parseISO(endDate ?? startDate),
+    })
+
+    for (const day of days) {
+      const dateKey = format(day, "yyyy-MM-dd")
+      allDateKeys.add(dateKey)
+      if (!dayMap.has(dateKey)) dayMap.set(dateKey, [])
+
+      dayMap.get(dateKey)!.push({
+        itemId: item.id,
+        itemName: item.name,
+        quantity: orderItem.quantity,
+        updateDefault: orderItem.updateDefault ?? false,
+        comment: orderItem.comment,
       })
-
-      if (!item) {
-        return NextResponse.json(
-          { message: `Item não encontrado: ${orderItem.item}` },
-          { status: 404 }
-        )
-      }
-
-      type SubPayload = {
-        name: string
-        quantity: number
-        updateDefault?: boolean
-        startDate?: string
-        endDate?: string
-      }
-
-
-      if (!orderItem.subcategories?.length) {
-        const days = eachDayOfInterval({
-          start: parseISO(startDate),
-          end: parseISO(endDate ?? startDate),
-        })
-
-        for (const day of days) {
-          const dateKey = format(day, "yyyy-MM-dd")
-          allDateKeys.add(dateKey)
-          if (!dayMap.has(dateKey)) dayMap.set(dateKey, [])
-
-          dayMap.get(dateKey)!.push({
-            itemId: item.id,
-            itemName: item.name,
-            quantity: orderItem.quantity,
-            updateDefault: orderItem.updateDefault ?? false,
-          })
-        }
-
-        emailBatches.push({
-          startDate,
-          endDate: endDate ?? startDate,
-          itemId: item.id,
-          itemName: item.name,
-          quantity: orderItem.quantity,
-        })
-        continue
-      }
-
-
-      for (const sub of orderItem.subcategories as SubPayload[]) {
-        const subStart = sub.startDate ?? startDate
-        const subEnd = sub.endDate ?? endDate ?? subStart
-
-        if (!subStart) continue
-
-        const subDays = eachDayOfInterval({
-          start: parseISO(subStart),
-          end: parseISO(subEnd ?? subStart),
-        })
-
-        const subcategory = await prisma.subcategory.findFirst({
-          where: { name: sub.name, mealType: orderItem.mealType },
-        })
-
-        if (!subcategory) {
-          return NextResponse.json(
-            { message: `Subcategoria não encontrada: ${sub.name}` },
-            { status: 404 }
-          )
-        }
-
-        for (const day of subDays) {
-          const dateKey = format(day, "yyyy-MM-dd")
-          allDateKeys.add(dateKey)
-          if (!dayMap.has(dateKey)) dayMap.set(dateKey, [])
-
-          dayMap.get(dateKey)!.push({
-            itemId: item.id,
-            itemName: item.name,
-            subcategoryId: subcategory.id,
-            subcategoryName: subcategory.name,
-            quantity: sub.quantity,
-            updateDefault: sub.updateDefault ?? false,
-          })
-        }
-
-        emailBatches.push({
-          startDate: subStart,
-          endDate: subEnd ?? subStart,
-          itemId: item.id,
-          itemName: item.name,
-          subcategoryId: subcategory.id,
-          subcategoryName: subcategory.name,
-          quantity: sub.quantity,
-        })
-      }
     }
+
+    emailBatches.push({
+      startDate,
+      endDate: endDate ?? startDate,
+      itemId: item.id,
+      itemName: item.name,
+      quantity: orderItem.quantity,
+      comment: orderItem.comment,
+    })
+    continue
+  }
+
+  for (const sub of orderItem.subcategories as SubPayload[]) {
+    const subStart = sub.startDate ?? startDate
+    const subEnd = sub.endDate ?? endDate ?? subStart
+
+    if (!subStart) continue
+
+    const subDays = eachDayOfInterval({
+      start: parseISO(subStart),
+      end: parseISO(subEnd ?? subStart),
+    })
+
+    const subcategory = await prisma.subcategory.findFirst({
+      where: { name: sub.name, mealType: orderItem.mealType },
+    })
+
+    if (!subcategory) {
+      return NextResponse.json(
+        { message: `Subcategoria não encontrada: ${sub.name}` },
+        { status: 404 }
+      )
+    }
+
+    for (const day of subDays) {
+      const dateKey = format(day, "yyyy-MM-dd")
+      allDateKeys.add(dateKey)
+      if (!dayMap.has(dateKey)) dayMap.set(dateKey, [])
+
+      dayMap.get(dateKey)!.push({
+        itemId: item.id,
+        itemName: item.name,
+        subcategoryId: subcategory.id,
+        subcategoryName: subcategory.name,
+        quantity: sub.quantity,
+        updateDefault: sub.updateDefault ?? false,
+        comment: sub.comment, 
+      })
+    }
+
+    emailBatches.push({
+      startDate: subStart,
+      endDate: subEnd ?? subStart,
+      itemId: item.id,
+      itemName: item.name,
+      subcategoryId: subcategory.id,
+      subcategoryName: subcategory.name,
+      quantity: sub.quantity,
+      comment: sub.comment, 
+    })
+  }
+}
 
     if (allDateKeys.size === 0) {
       return NextResponse.json({ message: "Nenhuma data válida informada" }, { status: 400 })
@@ -195,7 +208,7 @@ export async function POST(req: NextRequest) {
 
     for (const [dateKey, dayItems] of dayMap) {
       const date = parseISO(dateKey)
-      const scheduleType = getScheduleType(date)
+      
 
       await prisma.scheduledOrder.create({
         data: {
@@ -209,6 +222,7 @@ export async function POST(req: NextRequest) {
               itemId: i.itemId,
               subcategoryId: i.subcategoryId,
               quantity: i.quantity,
+              comment: i.comment ?? null,
             })),
           },
         },
@@ -216,7 +230,7 @@ export async function POST(req: NextRequest) {
 
       totalCreated++
 
-      const field = quantityField(scheduleType)
+      const field = quantityField(date)
 
       for (const i of dayItems) {
         if (!i.updateDefault) continue
@@ -258,6 +272,7 @@ export async function POST(req: NextRequest) {
           itemName: b.itemName,
           subcategoryName: b.subcategoryName,
           quantity: b.quantity,
+          comment: b.comment,
         })),
       })
 

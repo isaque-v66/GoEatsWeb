@@ -8,6 +8,7 @@ export type DigestItem = {
   subcategoryName?: string
   quantity: number
   source: "default" | "special" | "fallback"
+  comment?: string
 }
 
 type DigestEmailParams = {

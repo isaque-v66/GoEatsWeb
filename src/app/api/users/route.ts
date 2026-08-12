@@ -66,7 +66,11 @@ export async function GET(req: NextRequest) {
           itemConfigs: {
             select: {
               id: true,
-              weekdayQuantity: true,
+              mondayQuantity: true,
+              tuesdayQuantity: true,
+              wednesdayQuantity: true,
+              thursdayQuantity: true,
+              fridayQuantity: true,
               saturdayQuantity: true,
               sundayQuantity: true,
               item: {
@@ -75,7 +79,11 @@ export async function GET(req: NextRequest) {
               subcategories: {
                 select: {
                   id: true,
-                  weekdayQuantity: true,
+                  mondayQuantity: true,
+                  tuesdayQuantity: true,
+                  wednesdayQuantity: true,
+                  thursdayQuantity: true,
+                  fridayQuantity: true,
                   saturdayQuantity: true,
                   sundayQuantity: true,
                   subcategory: {

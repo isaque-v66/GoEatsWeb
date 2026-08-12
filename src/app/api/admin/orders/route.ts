@@ -5,6 +5,37 @@ import {
   startOfDay, endOfDay, parseISO, getDay, subDays,
 } from "date-fns"
 
+
+
+
+type DayField =
+  | "mondayQuantity"
+  | "tuesdayQuantity"
+  | "wednesdayQuantity"
+  | "thursdayQuantity"
+  | "fridayQuantity"
+  | "saturdayQuantity"
+  | "sundayQuantity"
+
+const DAY_FIELD_BY_INDEX: DayField[] = [
+  "sundayQuantity",
+  "mondayQuantity",
+  "tuesdayQuantity",
+  "wednesdayQuantity",
+  "thursdayQuantity",
+  "fridayQuantity",
+  "saturdayQuantity",
+]
+
+
+function getDayField(date: Date): DayField {
+  return DAY_FIELD_BY_INDEX[getDay(date)]
+}
+
+
+
+
+
 async function requireAdmin(req: NextRequest) {
   const sessionId = req.cookies.get("session_id")?.value
   if (!sessionId) return null
@@ -17,6 +48,11 @@ async function requireAdmin(req: NextRequest) {
   return session.user
 }
 
+
+
+
+
+
 function getDayType(date: Date): "weekday" | "saturday" | "sunday" {
   const d = getDay(date)
   if (d === 6) return "saturday"
@@ -24,14 +60,19 @@ function getDayType(date: Date): "weekday" | "saturday" | "sunday" {
   return "weekday"
 }
 
+
+
+
+
 function getDefaultQty(
-  config: { weekdayQuantity?: number | null; saturdayQuantity?: number | null; sundayQuantity?: number | null },
-  dayType: "weekday" | "saturday" | "sunday"
+  config: Partial<Record<DayField, number | null>>,
+  dayField: DayField
 ): number {
-  if (dayType === "saturday") return config.saturdayQuantity ?? 0
-  if (dayType === "sunday") return config.sundayQuantity ?? 0
-  return config.weekdayQuantity ?? 0
+  return config[dayField] ?? 0
 }
+
+
+
 
 // Um "pedido real" individual que compõe a linha (para o checkbox saber o que marcar)
 type SourceRef = {
@@ -42,7 +83,13 @@ type SourceRef = {
 // Uma refeição dentro da linha do dia
 type MealEntry = {
   mealType: string
-  items: { itemName: string; subcategoryName: string | null; quantity: number }[]
+  items: { 
+    itemName: string; 
+    subcategoryName: string | null; 
+    quantity: number 
+    comment?: string | null  
+    source: "normal" | "scheduled" | "projection" | "fallback"
+  }[]
 }
 
 // Linha final: 1 usuário + 1 dia, com todas as refeições agrupadas
@@ -134,7 +181,7 @@ export async function GET(req: NextRequest) {
 
     for (const targetDate of daysToProject) {
       const dateKey = format(targetDate, "yyyy-MM-dd")
-      const dayType = getDayType(targetDate)
+      const dayField = getDayField(targetDate)
 
       for (const user of users) {
         if (!user.itemConfigs.length) continue
@@ -170,6 +217,8 @@ export async function GET(req: NextRequest) {
               itemName: i.item.name,
               subcategoryName: i.subcategory?.name ?? null,
               quantity: i.quantity,
+              comment: i.comment ?? null,
+              source: "scheduled",
             })),
           })
         } else {
@@ -207,6 +256,8 @@ export async function GET(req: NextRequest) {
                   itemName: i.item.name,
                   subcategoryName: i.subcategory?.name ?? null,
                   quantity: i.quantity,
+                  comment: i.customText ?? null,
+                  source: "normal",
                 })),
               })
               continue
@@ -217,18 +268,26 @@ export async function GET(req: NextRequest) {
             for (const config of configs) {
               if (config.subcategories?.length) {
                 for (const subConfig of config.subcategories) {
-                  const qty = getDefaultQty(subConfig, dayType)
+                  const qty = getDefaultQty(subConfig, dayField)
                   if (qty <= 0) continue
                   projectedItems.push({
                     itemName: config.item.name,
                     subcategoryName: subConfig.subcategory.name,
                     quantity: qty,
+                    comment: subConfig.comment ?? config.comment ?? null,
+                    source: "projection",
                   })
                 }
               } else {
-                const qty = getDefaultQty(config, dayType)
+                const qty = getDefaultQty(config, dayField) 
                 if (qty > 0) {
-                  projectedItems.push({ itemName: config.item.name, subcategoryName: null, quantity: qty })
+                  projectedItems.push({ 
+                    itemName: config.item.name, 
+                    subcategoryName: null, 
+                    quantity: qty,
+                    comment: config.comment ?? null,
+                    source: "projection", 
+                  })
                 } else {
                   const fbOrder = fallbackIdx.get(`${user.id}::${mealType}`)
                   if (fbOrder) {
@@ -238,6 +297,8 @@ export async function GET(req: NextRequest) {
                         itemName: config.item.name,
                         subcategoryName: fbItem.subcategory?.name ?? null,
                         quantity: fbItem.quantity,
+                        comment: fbItem.customText ?? null,
+                        source: "fallback",
                       })
                     }
                   }

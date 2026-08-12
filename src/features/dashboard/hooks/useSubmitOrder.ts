@@ -5,11 +5,21 @@ import { createOrder, sendOrder } from "../services/order.service"
 import { ITEM_TO_MEAL_TYPE, ItemType } from "../constants/itemValues.constants"
 import { Order } from "../types/order.types"
 import { AppError } from "@/src/shared/errors/AppError"
+import { isSameDay, parseISO } from "date-fns"
 
 interface SubmitOrderParams {
   userId: string
   companyId: string
   orders: Order
+}
+
+type OrderItemType = Order["items"][number]
+type OrderSubcategoryType = NonNullable<OrderItemType["subcategories"]>[number]
+
+
+function isTodayDate(dateStr?: string): boolean {
+  if (!dateStr) return true
+  return isSameDay(parseISO(dateStr), new Date())
 }
 
 export function useSubmitOrder() {
@@ -19,13 +29,45 @@ export function useSubmitOrder() {
     try {
       setLoading(true)
 
-      // Separa itens com e sem data especial
-      const normalItems = orders.items.filter(item => !item.startDate && !item.specificDate)
-      const scheduledItems = orders.items.filter(item => !!item.startDate || !!item.specificDate)
+      const normalItems: OrderItemType[] = []
+      const scheduledItems: OrderItemType[] = []
+
+      for (const item of orders.items) {
+        // Item sem subcategoria: a data está no próprio item
+        if (!item.subcategories?.length) {
+          const date = item.startDate ?? item.specificDate
+          if (isTodayDate(date)) {
+            normalItems.push(item)
+          } else {
+            scheduledItems.push(item)
+          }
+          continue
+        }
+
+        // Item com subcategorias: cada subcategoria pode ter sua própria data
+        const todaySubs: OrderSubcategoryType[] = []
+        const futureSubs: OrderSubcategoryType[] = []
+
+        for (const sub of item.subcategories) {
+          const date = sub.startDate ?? sub.specificDate ?? item.startDate ?? item.specificDate
+          if (isTodayDate(date)) {
+            todaySubs.push(sub)
+          } else {
+            futureSubs.push(sub)
+          }
+        }
+
+        if (todaySubs.length > 0) {
+          normalItems.push({ ...item, subcategories: todaySubs })
+        }
+        if (futureSubs.length > 0) {
+          scheduledItems.push({ ...item, subcategories: futureSubs })
+        }
+      }
 
       const results: string[] = []
 
-      // Pedidos normais 
+      // Pedidos normais (hoje)
       if (normalItems.length > 0) {
         const normalOrders = {
           ...orders,
@@ -40,7 +82,7 @@ export function useSubmitOrder() {
         results.push("Pedido normal enviado")
       }
 
-      // Pedidosespeciais (com data)
+      // Pedidos agendados (dias futuros)
       if (scheduledItems.length > 0) {
         const scheduledOrders = {
           ...orders,

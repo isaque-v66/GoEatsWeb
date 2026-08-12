@@ -5,7 +5,11 @@ import { MealType } from "@prisma/client"
 
 type SubcategoryPayload = {
   name: string
-  weekdayQuantity?: number | null
+  mondayQuantity?: number | null
+  tuesdayQuantity?: number | null
+  wednesdayQuantity?: number | null
+  thursdayQuantity?: number | null
+  fridayQuantity?: number | null
   saturdayQuantity?: number | null
   sundayQuantity?: number | null
 }
@@ -13,9 +17,14 @@ type SubcategoryPayload = {
 type ItemPayload = {
   name: string
   mealType: MealType
-  weekdayQuantity?: number | null
+  mondayQuantity?: number | null
+  tuesdayQuantity?: number | null
+  wednesdayQuantity?: number | null
+  thursdayQuantity?: number | null
+  fridayQuantity?: number | null
   saturdayQuantity?: number | null
   sundayQuantity?: number | null
+  comment?: string | null
   subcategories?: SubcategoryPayload[]
 }
 
@@ -100,9 +109,14 @@ export async function PUT(req: Request) {
               data: {
                 userId: id,
                 itemId: dbItem.id,
-                weekdayQuantity: item.weekdayQuantity ?? null,
+                mondayQuantity: item.mondayQuantity ?? null,
+                tuesdayQuantity: item.tuesdayQuantity ?? null,
+                wednesdayQuantity: item.wednesdayQuantity ?? null,
+                thursdayQuantity: item.thursdayQuantity ?? null,
+                fridayQuantity: item.fridayQuantity ?? null,
                 saturdayQuantity: item.saturdayQuantity ?? null,
                 sundayQuantity: item.sundayQuantity ?? null,
+                comment: item.comment ?? null,   
               },
             })
 
@@ -119,7 +133,11 @@ export async function PUT(req: Request) {
                     data: {
                       userItemId: userItemConfig.id,
                       subcategoryId: dbSubcategory.id,
-                      weekdayQuantity: sub.weekdayQuantity ?? null,
+                      mondayQuantity: sub.mondayQuantity ?? null,
+                      tuesdayQuantity: sub.tuesdayQuantity ?? null,
+                      wednesdayQuantity: sub.wednesdayQuantity ?? null,
+                      thursdayQuantity: sub.thursdayQuantity ?? null,
+                      fridayQuantity: sub.fridayQuantity ?? null,
                       saturdayQuantity: sub.saturdayQuantity ?? null,
                       sundayQuantity: sub.sundayQuantity ?? null,
                     },

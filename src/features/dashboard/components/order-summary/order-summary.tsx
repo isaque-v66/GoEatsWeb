@@ -70,6 +70,7 @@ interface OrderSummaryProps {
     subId?: string
   ) => void
 
+  onUpdateComment: (orderId: string, comment: string, subId?: string) => void 
 
   onOrderSubmitted: () => void
 }
@@ -84,7 +85,7 @@ interface OrderSummaryProps {
 
 export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem,
   onUpdateScheduleType, onUpdateDefaultFlag, onUpdateSubScheduleType,
-  onUpdateSubDefaultFlag, onUpdateDateRange, onOrderSubmitted }: OrderSummaryProps) {
+  onUpdateSubDefaultFlag, onUpdateDateRange, onOrderSubmitted, onUpdateComment }: OrderSummaryProps) {
 
 
   const { user } = useUser()
@@ -93,7 +94,7 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem,
   const [reviewOpen, setReviewOpen] = useState(false)
   const [isSubmittingLocal, setIsSubmittingLocal] = useState(false)
   const isSubmitting = loading || isSubmittingLocal
-  const { occupiedDates } = useOccupiedDates(user?.id, reviewOpen)
+  const { occupiedDates } = useOccupiedDates(user?.id, reviewOpen) // Busca quais datas já estão ocupadas para aquele usuário
 
 
   const totalItems = orders.items.reduce((sum, order) => {
@@ -137,16 +138,6 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem,
 }
 
 
-
-
-  //   const result = await submitOrder({
-  //     userId: user.id,
-  //     companyId: user.companyId,
-  //     orders,
-  //   })
-
-  //   alert(result.message)
-  // }
 
 
 
@@ -442,6 +433,7 @@ export function OrderSummary({ orders, onUpdateQuantity, onRemoveItem,
         onUpdateDateRange={onUpdateDateRange}
         submitting={isSubmitting}
         occupiedDates={occupiedDates}
+        onUpdateComment={onUpdateComment} 
       />
     </Card>
   )

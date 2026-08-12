@@ -6,6 +6,8 @@ export type AdminOrderItem = {
   itemName: string
   subcategoryName: string | null
   quantity: number
+  comment?: string | null
+  source: "normal" | "scheduled" | "projection" | "fallback"
 }
 
 export type MealEntry = {

@@ -71,9 +71,17 @@ model UserItemConfig {
   user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   itemId    String
   item      Item   @relation(fields: [itemId], references: [id])
-  weekdayQuantity Int?
-  saturdayQuantity Int?
-  sundayQuantity Int?
+
+  mondayQuantity    Int?
+  tuesdayQuantity   Int?
+  wednesdayQuantity Int?
+  thursdayQuantity  Int?
+  fridayQuantity    Int?
+  saturdayQuantity  Int?
+  sundayQuantity    Int?
+
+  comment           String?
+
   subcategories UserSubcategoryConfig[]
   @@unique([userId, itemId])
   @@index([userId])
@@ -86,9 +94,17 @@ model UserSubcategoryConfig {
   userItem      UserItemConfig @relation(fields: [userItemId], references: [id], onDelete: Cascade)
   subcategoryId String
   subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
-  weekdayQuantity Int?
-  saturdayQuantity Int?
-  sundayQuantity Int?
+
+  mondayQuantity    Int?
+  tuesdayQuantity   Int?
+  wednesdayQuantity Int?
+  thursdayQuantity  Int?
+  fridayQuantity    Int?
+  saturdayQuantity  Int?
+  sundayQuantity    Int?
+
+  comment         String?
+
   @@unique([userItemId, subcategoryId])
   @@index([userItemId])
   @@index([subcategoryId])
@@ -156,6 +172,7 @@ model ScheduledOrderItem {
   subcategoryId       String?
   subcategory         Subcategory? @relation(fields: [subcategoryId], references: [id])
   quantity            Int
+  comment             String?
   @@index([scheduledOrderId])
 }
 

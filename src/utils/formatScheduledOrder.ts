@@ -2,6 +2,7 @@ type ScheduledItem = {
   itemName: string
   subcategoryName?: string
   quantity: number
+  comment?: string 
 }
 
 type ScheduledOrderEmail = {
@@ -30,7 +31,11 @@ export function formatScheduledOrderMessage({
     } else {
       text += `- ${item.itemName}\n`
     }
-    text += `  Quantidade: ${item.quantity}\n\n`
+    text += `  Quantidade: ${item.quantity}\n`
+      if (item.comment) {
+      text += `  Obs: ${item.comment}\n`   
+    }
+  text += `\n`
   }
 
   text += "==============================\n"

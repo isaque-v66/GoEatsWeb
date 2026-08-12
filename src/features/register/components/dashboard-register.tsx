@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Plus, Check, EyeOff, Eye, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { useForm } from "react-hook-form"
-import { useTheme } from "@/src/shared/contexts/theme-context"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Label } from "@/components/ui/label"
 import clsx from "clsx"
@@ -17,13 +16,33 @@ import { Switch } from "@/components/ui/switch"
 import { useFormData } from "../contexts/formRegister-context"
 import {
   ITEM_VALUES, ITEMS_WITH_SUBCATEGORY, ItemType, MEAL_TYPE_MAP,
-  SelectedItem, SUBCATEGORIES_DRINKS, SUBCATEGORIES_ESPECIAL, SUBCATEGORIES_VALUES,
+  SelectedItem, SUBCATEGORIES_DRINKS, SUBCATEGORIES_ESPECIAL, SUBCATEGORIES_LANCHE, SUBCATEGORIES_DESJEJUM ,SUBCATEGORIES_VALUES,
   Subcategory, TypeForm, TypeSchemaForm,
 } from "../types/register-types"
 import { Badge } from "@/components/ui/badge"
 import { AlertCircle } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
 
 
+
+type DayField =
+  | "mondayQuantity"
+  | "tuesdayQuantity"
+  | "wednesdayQuantity"
+  | "thursdayQuantity"
+  | "fridayQuantity"
+  | "saturdayQuantity"
+  | "sundayQuantity"
+
+const DAY_COLUMNS: { label: string; mobileLabel: string; field: DayField }[] = [
+  { label: "Seg", mobileLabel: "Segunda", field: "mondayQuantity" },
+  { label: "Ter", mobileLabel: "Terça", field: "tuesdayQuantity" },
+  { label: "Qua", mobileLabel: "Quarta", field: "wednesdayQuantity" },
+  { label: "Qui", mobileLabel: "Quinta", field: "thursdayQuantity" },
+  { label: "Sex", mobileLabel: "Sexta", field: "fridayQuantity" },
+  { label: "Sáb", mobileLabel: "Sábado", field: "saturdayQuantity" },
+  { label: "Dom", mobileLabel: "Domingo", field: "sundayQuantity" },
+]
 
 
 
@@ -85,6 +104,9 @@ export function DashboardRegister() {
     setValue("cnpj", masked, { shouldValidate: true })
   }
 
+
+
+
   function itemSelect(item: ItemType) {
     setSelectedItems(prev => {
       const exists = prev.find(i => i.item === item)
@@ -100,6 +122,10 @@ export function DashboardRegister() {
       return updated
     })
   }
+
+
+
+
 
   function toggleSubcategory(item: ItemType, sub: Subcategory) {
     setSelectedItems(prev => {
@@ -122,12 +148,10 @@ export function DashboardRegister() {
     })
   }
 
-  function setSubcategoryQuantity(
-    item: ItemType,
-    sub: Subcategory,
-    field: "weekQuantity" | "saturdayQuantity" | "sundayQuantity",
-    quantity: number
-  ) {
+
+
+
+  function setSubcategoryQuantity(item: ItemType,sub: Subcategory, field: DayField, quantity: number) {
     setSelectedItems(prev => {
       const updated = prev.map(i => {
         if (i.item !== item) return i
@@ -144,17 +168,36 @@ export function DashboardRegister() {
     })
   }
 
-  function setQuantity(
-    item: ItemType,
-    field: "weekQuantity" | "saturdayQuantity" | "sundayQuantity",
-    quantity: number
-  ) {
+
+
+
+
+
+  function setQuantity(item: ItemType, field: DayField, quantity: number) {
     setSelectedItems(prev => {
       const updated = prev.map(i => (i.item === item ? { ...i, [field]: quantity } : i))
       setValue("items", updated)
       return updated
     })
   }
+
+
+
+
+
+
+  function setComment(item: ItemType, comment: string) {
+  setSelectedItems(prev => {
+    const updated = prev.map(i => (i.item === item ? { ...i, comment } : i))
+    setValue("items", updated)
+    return updated
+  })
+ }
+
+
+
+
+
 
   async function formHandle(form: TypeForm) {
     const cnpjLimpo = form.cnpj.replace(/\D/g, "")
@@ -165,19 +208,38 @@ export function DashboardRegister() {
       items: form.items.map(item => {
         const hasSub = item.subcategories && item.subcategories.length > 0
 
-        return {
+        const dayQuantities = !hasSub && ativo
+      ? {
+          mondayQuantity: item.mondayQuantity,
+          tuesdayQuantity: item.tuesdayQuantity,
+          wednesdayQuantity: item.wednesdayQuantity,
+          thursdayQuantity: item.thursdayQuantity,
+          fridayQuantity: item.fridayQuantity,
+          saturdayQuantity: item.saturdayQuantity,
+          sundayQuantity: item.sundayQuantity,
+        }
+      : {}
+
+       return {
           item: item.item,
           mealType: MEAL_TYPE_MAP[item.item],
-          weekQuantity: hasSub ? undefined : ativo ? item.weekQuantity : undefined,
-          saturdayQuantity: hasSub ? undefined : ativo ? item.saturdayQuantity : undefined,
-          sundayQuantity: hasSub ? undefined : ativo ? item.sundayQuantity : undefined,
+          ...dayQuantities,
+          comment: item.comment?.trim() || undefined,
           subcategories: hasSub
             ? item.subcategories?.map(sub => ({
-              name: sub.name,
-              weekQuantity: ativo ? sub.weekQuantity : undefined,
-              saturdayQuantity: ativo ? sub.saturdayQuantity : undefined,
-              sundayQuantity: ativo ? sub.sundayQuantity : undefined,
-            }))
+                name: sub.name,
+                ...(ativo
+                  ? {
+                      mondayQuantity: sub.mondayQuantity,
+                      tuesdayQuantity: sub.tuesdayQuantity,
+                      wednesdayQuantity: sub.wednesdayQuantity,
+                      thursdayQuantity: sub.thursdayQuantity,
+                      fridayQuantity: sub.fridayQuantity,
+                      saturdayQuantity: sub.saturdayQuantity,
+                      sundayQuantity: sub.sundayQuantity,
+                    }
+                  : {}),
+              }))
             : undefined,
         }
       }),
@@ -378,20 +440,30 @@ export function DashboardRegister() {
                 {ITEM_VALUES.map(item => {
                   const selected = selectedItems.find(i => i.item === item)
                   const isDrink = item === "Bebidas"
-                  
+
                   const isEspecial = item === "Pedidos Especiais"
 
-                  const isFoodWithSub =
-                      !isDrink &&
-                      !isEspecial &&
-                      ITEMS_WITH_SUBCATEGORY.includes(item)
+                  const isLanche = item === "Lanche"
 
-                    const subcategories = isDrink
-                      ? SUBCATEGORIES_DRINKS
-                      : isEspecial
-                        ? SUBCATEGORIES_ESPECIAL
+                  const isDesjejum = item === "Desjejum"
+
+                  const isFoodWithSub =
+                    !isDrink &&
+                    !isEspecial &&
+                    !isLanche &&
+                    !isDesjejum &&
+                    ITEMS_WITH_SUBCATEGORY.includes(item)
+
+                  const subcategories = isDrink
+                    ? SUBCATEGORIES_DRINKS
+                    : isEspecial
+                      ? SUBCATEGORIES_ESPECIAL
+                      : isLanche
+                        ? SUBCATEGORIES_LANCHE
                         : isFoodWithSub
                           ? SUBCATEGORIES_VALUES
+                           : isDesjejum
+                            ? SUBCATEGORIES_DESJEJUM
                           : null
 
                   return (
@@ -434,6 +506,22 @@ export function DashboardRegister() {
                           })}
                         </div>
                       )}
+
+                      {selected && (
+                      <div className="mt-2 mb-2 pl-3 ml-2">
+                        <Label className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                          Observações (opcional)
+                        </Label>
+                        <Textarea
+                          value={selected.comment ?? ""}
+                          onChange={e => setComment(item, e.target.value)}
+                          placeholder="Ex: sem cebola, embalagem separada..."
+                          className="mt-1 text-sm min-h-[60px] resize-none"
+                          maxLength={500}
+                        />
+                      </div>
+                    )}
+
                     </div>
                   )
                 })}
@@ -482,13 +570,13 @@ export function DashboardRegister() {
                       </p>
                     </div>
                   ) : (
-                    <div className="max-h-[calc(100vh-260px)] overflow-y-auto">
+                    <div className="max-h-[calc(100vh-260px)] overflow-auto">
                       {/* Cabeçalho das quantidades */}
-                      <div className="hidden sm:grid grid-cols-[minmax(150px,1fr)_72px_72px_72px] gap-3 items-center px-4 py-2.5 bg-muted/40 border-b text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      <div className="hidden sm:grid min-w-[620px] grid-cols-[minmax(140px,1fr)_repeat(7,60px)] gap-2 items-center px-4 py-2.5 bg-muted/40 border-b text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                         <span>Item</span>
-                        <span className="text-center">Seg–Sex</span>
-                        <span className="text-center">Sáb</span>
-                        <span className="text-center">Dom</span>
+                        {DAY_COLUMNS.map(col => (
+                          <span key={col.field} className="text-center">{col.label}</span>
+                        ))}
                       </div>
 
                       <div className="divide-y">
@@ -504,67 +592,43 @@ export function DashboardRegister() {
                               key={item.item}
                               className="px-4 py-3 hover:bg-muted/20 transition-colors"
                             >
-                              <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,1fr)_72px_72px_72px] gap-2 sm:gap-3 items-center">
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium truncate">
-                                    {item.item}
-                                  </p>
-                                </div>
-
-                                {[
-                                  {
-                                    label: "Seg–Sex",
-                                    mobileLabel: "Segunda à Sexta",
-                                    field: "weekQuantity",
-                                  },
-                                  {
-                                    label: "Sáb",
-                                    mobileLabel: "Sábado",
-                                    field: "saturdayQuantity",
-                                  },
-                                  {
-                                    label: "Dom",
-                                    mobileLabel: "Domingo",
-                                    field: "sundayQuantity",
-                                  },
-                                ].map(({ label, mobileLabel, field }) => {
-                                  const quantityField =
-                                    field as
-                                      | "weekQuantity"
-                                      | "saturdayQuantity"
-                                      | "sundayQuantity"
-
-                                  return (
-                                    <div
-                                      key={field}
-                                      className="flex items-center justify-between sm:block"
-                                    >
-                                      <Label className="text-xs text-muted-foreground sm:hidden">
-                                        {mobileLabel}
-                                      </Label>
-
-                                      <Input
-                                        type="number"
-                                        min={0}
-                                        value={item[quantityField] ?? ""}
-                                        onChange={e =>
-                                          setQuantity(
-                                            item.item,
-                                            quantityField,
-                                            Number(e.target.value)
-                                          )
-                                        }
-                                        aria-label={`${item.item} - ${mobileLabel}`}
-                                        className="h-8 w-20 sm:w-full text-sm text-right"
-                                      />
-
-                                      <span className="hidden sm:block text-[10px] text-muted-foreground text-center mt-1">
-                                        {label}
-                                      </span>
-                                    </div>
-                                  )
-                                })}
+                              <div className="grid grid-cols-1 sm:min-w-[620px] sm:grid-cols-[minmax(140px,1fr)_repeat(7,60px)] gap-2 sm:gap-2 items-center">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium truncate">
+                                  {item.item}
+                                </p>
                               </div>
+
+                                {DAY_COLUMNS.map(({ label, mobileLabel, field }) => (
+                                <div
+                                  key={field}
+                                  className="flex items-center justify-between sm:block"
+                                >
+                                  <Label className="text-xs text-muted-foreground sm:hidden">
+                                    {mobileLabel}
+                                  </Label>
+
+                                  <Input
+                                    type="number"
+                                    min={0}
+                                    value={item[field] ?? ""}
+                                    onChange={e =>
+                                      setQuantity(
+                                        item.item,
+                                        field,
+                                        Number(e.target.value)
+                                      )
+                                    }
+                                    aria-label={`${item.item} - ${mobileLabel}`}
+                                    className="h-9 w-16 sm:w-full text-sm text-right"
+                                  />
+
+                                  <span className="hidden sm:block text-[10px] text-muted-foreground text-center mt-1">
+                                    {label}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
                             </div>
                           ))}
 
@@ -593,68 +657,44 @@ export function DashboardRegister() {
                                     key={`${item.item}-${sub.name}`}
                                     className="px-4 py-3 pl-6 hover:bg-muted/20 transition-colors"
                                   >
-                                    <div className="grid grid-cols-1 sm:grid-cols-[minmax(150px,1fr)_72px_72px_72px] gap-2 sm:gap-3 items-center">
-                                      <div className="min-w-0">
-                                        <p className="text-sm font-medium truncate">
-                                          {sub.name}
-                                        </p>
-                                      </div>
-
-                                      {[
-                                        {
-                                          label: "Seg–Sex",
-                                          mobileLabel: "Segunda à Sexta",
-                                          field: "weekQuantity",
-                                        },
-                                        {
-                                          label: "Sáb",
-                                          mobileLabel: "Sábado",
-                                          field: "saturdayQuantity",
-                                        },
-                                        {
-                                          label: "Dom",
-                                          mobileLabel: "Domingo",
-                                          field: "sundayQuantity",
-                                        },
-                                      ].map(({ label, mobileLabel, field }) => {
-                                        const quantityField =
-                                          field as
-                                            | "weekQuantity"
-                                            | "saturdayQuantity"
-                                            | "sundayQuantity"
-
-                                        return (
-                                          <div
-                                            key={field}
-                                            className="flex items-center justify-between sm:block"
-                                          >
-                                            <Label className="text-xs text-muted-foreground sm:hidden">
-                                              {mobileLabel}
-                                            </Label>
-
-                                            <Input
-                                              type="number"
-                                              min={0}
-                                              value={sub[quantityField] ?? ""}
-                                              onChange={e =>
-                                                setSubcategoryQuantity(
-                                                  item.item,
-                                                  sub.name,
-                                                  quantityField,
-                                                  Number(e.target.value)
-                                                )
-                                              }
-                                              aria-label={`${sub.name} - ${mobileLabel}`}
-                                              className="h-8 w-20 sm:w-full text-sm text-right"
-                                            />
-
-                                            <span className="hidden sm:block text-[10px] text-muted-foreground text-center mt-1">
-                                              {label}
-                                            </span>
-                                          </div>
-                                        )
-                                      })}
+                                   <div className="grid grid-cols-1 sm:min-w-[620px] sm:grid-cols-[minmax(140px,1fr)_repeat(7,60px)] gap-2 sm:gap-2 items-center">
+                                    <div className="min-w-0">
+                                      <p className="text-sm font-medium truncate">
+                                        {sub.name}
+                                      </p>
                                     </div>
+
+                                    {DAY_COLUMNS.map(({ label, mobileLabel, field }) => (
+                                      <div
+                                        key={field}
+                                        className="flex items-center justify-between sm:block"
+                                      >
+                                        <Label className="text-xs text-muted-foreground sm:hidden">
+                                          {mobileLabel}
+                                        </Label>
+
+                                        <Input
+                                          type="number"
+                                          min={0}
+                                          value={sub[field] ?? ""}
+                                          onChange={e =>
+                                            setSubcategoryQuantity(
+                                              item.item,
+                                              sub.name,
+                                              field,
+                                              Number(e.target.value)
+                                            )
+                                          }
+                                          aria-label={`${sub.name} - ${mobileLabel}`}
+                                          className="h-9 w-16 sm:w-full text-sm text-right"
+                                        />
+
+                                        <span className="hidden sm:block text-[10px] text-muted-foreground text-center mt-1">
+                                          {label}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
                                   </div>
                                 ))}
                               </div>

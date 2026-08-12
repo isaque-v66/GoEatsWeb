@@ -29,7 +29,11 @@ export async function GET(req: Request) {
       mealType: string
       subcategories?: {
         name: string
-        weekdayQuantity: number | null
+        mondayQuantity: number | null
+        tuesdayQuantity: number | null
+        wednesdayQuantity: number | null
+        thursdayQuantity: number | null
+        fridayQuantity: number | null
         saturdayQuantity: number | null
         sundayQuantity: number | null
       }[]
@@ -49,7 +53,11 @@ export async function GET(req: Request) {
       for (const sc of config.subcategories) {
         itemsMap.get(key)!.subcategories!.push({
           name: sc.subcategory.name,
-          weekdayQuantity: sc.weekdayQuantity,
+          mondayQuantity: sc.mondayQuantity,
+          tuesdayQuantity: sc.tuesdayQuantity,
+          wednesdayQuantity: sc.wednesdayQuantity,
+          thursdayQuantity: sc.thursdayQuantity,
+          fridayQuantity: sc.fridayQuantity,
           saturdayQuantity: sc.saturdayQuantity,
           sundayQuantity: sc.sundayQuantity,
         })
