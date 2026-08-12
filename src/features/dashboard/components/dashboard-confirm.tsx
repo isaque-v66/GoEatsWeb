@@ -382,7 +382,7 @@ return (
 
                             {item.comment && (
                               <p className="mt-1 text-xs text-muted-foreground italic">
-                                "{item.comment}"
+                                {item.comment}
                               </p>
                             )}
                           </div>
@@ -412,7 +412,7 @@ return (
 
                                 {item.comment && (
                                   <p className="mt-1 text-xs text-muted-foreground italic">
-                                    "{item.comment}"
+                                    {item.comment}
                                   </p>
                                 )}
 
