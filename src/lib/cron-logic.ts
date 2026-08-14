@@ -1,12 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { sendEmail } from "./email"
 import { formatDailyDigestEmail, DigestItem } from "../utils/formatDailyDigest"
-import { getDay, addDays, startOfDay, endOfDay } from "date-fns"
-
-// Horários de corte por refeição
-// 14:30 -> Desjejum + Bebidas (do DIA SEGUINTE)
-// 08:00 -> Almoço (do DIA SEGUINTE)
-// 09:00 -> Jantar + Ceia (do DIA SEGUINTE)
+import { getDay, addDays, startOfDay, endOfDay, format } from "date-fns"
 
 type MealType =
   | "DESJEJUM"
@@ -20,7 +15,6 @@ type MealType =
 
 export type CronKey = "1430" | "0800" | "0900"
 
-// Quais refeições cada cron cobre
 const MEALS_BY_CRON: Record<CronKey, MealType[]> = {
   "1430": ["DESJEJUM", "BEBIDAS", "CAFE_TARDE", "CAFE_NOTURNO"],
   "0800": ["ALMOCO", "LANCHE"],
@@ -37,20 +31,19 @@ type DayField =
   | "sundayQuantity"
 
 const DAY_FIELD_BY_INDEX: DayField[] = [
-  "sundayQuantity",    // getDay() === 0
-  "mondayQuantity",    // 1
-  "tuesdayQuantity",   // 2
-  "wednesdayQuantity", // 3
-  "thursdayQuantity",  // 4
-  "fridayQuantity",    // 5
-  "saturdayQuantity",  // 6
+  "sundayQuantity",
+  "mondayQuantity",
+  "tuesdayQuantity",
+  "wednesdayQuantity",
+  "thursdayQuantity",
+  "fridayQuantity",
+  "saturdayQuantity",
 ]
 
 function getDayField(date: Date): DayField {
   return DAY_FIELD_BY_INDEX[getDay(date)]
 }
 
-// Quantidade padrão conforme o campo do dia
 function getDefaultQuantity(
   config: Partial<Record<DayField, number | null>>,
   dayField: DayField
@@ -58,8 +51,8 @@ function getDefaultQuantity(
   return config[dayField] ?? 0
 }
 
-// Cálculo de qual data-alvo conforme o dia atual e horário de corte
-// Sexta + 14:30 -> alvo = próximo sábado E domingo
+// Sexta-feira -> agenda de sábado E domingo sai junto, já que não há
+// execução de cron no fim de semana
 function getTargetDates(cronKey: CronKey): Date[] {
   const now = new Date()
   const todayDay = getDay(now)
@@ -76,71 +69,85 @@ export async function runCron(cronKey: CronKey) {
 
   const meals = MEALS_BY_CRON[cronKey]
   const targetDates = getTargetDates(cronKey)
+  const rangeStart = startOfDay(targetDates[0])
+  const rangeEnd = endOfDay(targetDates[targetDates.length - 1])
+  const yesterdayStart = startOfDay(addDays(targetDates[0], -1))
+  const yesterdayEnd = endOfDay(addDays(targetDates[0], -1))
 
-  const users = await prisma.user.findMany({
-    where: { isActive: true },
-    include: {
-      company: true,
-      itemConfigs: {
-        include: {
-          item: true,
-          subcategories: {
-            include: { subcategory: true },
+  // ── Busca tudo em lote, de uma vez, em paralelo ──
+  const [users, scheduledOrders, yesterdayOrders] = await Promise.all([
+    prisma.user.findMany({
+      where: { isActive: true },
+      include: {
+        company: true,
+        itemConfigs: {
+          where: { item: { mealType: { in: meals } } },
+          include: {
+            item: true,
+            subcategories: { include: { subcategory: true } },
           },
         },
       },
-    },
-  })
+    }),
+    prisma.scheduledOrder.findMany({
+      where: { date: { gte: rangeStart, lte: rangeEnd } },
+      include: { items: { include: { item: true, subcategory: true } } },
+    }),
+    prisma.order.findMany({
+      where: {
+        date: { gte: yesterdayStart, lte: yesterdayEnd },
+        mealType: { in: meals },
+      },
+      include: { items: { include: { item: true, subcategory: true } } },
+    }),
+  ])
 
-  let emailsSent = 0
+  // Índices em memória — O(1) lookup em vez de query por combinação
+  const scheduledIdx = new Map<string, typeof scheduledOrders[number]>()
+  for (const so of scheduledOrders) {
+    scheduledIdx.set(`${so.userId}::${format(so.date, "yyyy-MM-dd")}`, so)
+  }
+
+  const yesterdayIdx = new Map<string, typeof yesterdayOrders[number]>()
+  for (const o of yesterdayOrders) {
+    yesterdayIdx.set(`${o.userId}::${o.mealType}`, o)
+  }
+
+
+  const pendingEmails: { companyName: string; subject: string; message: string }[] = []
+
+  
 
   for (const user of users) {
-    const relevantConfigs = user.itemConfigs.filter(config =>
-      meals.includes(config.item.mealType as MealType)
-    )
-
-    if (!relevantConfigs.length) continue
+    if (!user.itemConfigs.length) continue
 
     const digestItems: DigestItem[] = []
 
     for (const targetDate of targetDates) {
+      const dateKey = format(targetDate, "yyyy-MM-dd")
       const dayField = getDayField(targetDate)
 
-      for (const config of relevantConfigs) {
-        const scheduled = await prisma.scheduledOrder.findFirst({
-          where: {
-            userId: user.id,
-            date: {
-              gte: startOfDay(targetDate),
-              lte: endOfDay(targetDate),
-            },
-            items: {
-              some: { itemId: config.itemId },
-            },
-          },
-          include: {
-            items: {
-              where: { itemId: config.itemId },
-              include: { item: true, subcategory: true },
-            },
-          },
-        })
+      const scheduled = scheduledIdx.get(`${user.id}::${dateKey}`)
 
-        if (scheduled?.items.length) {
-          for (const si of scheduled.items) {
-            digestItems.push({
-              date: targetDate,
-              mealType: config.item.mealType,
-              itemName: si.item.name,
-              subcategoryName: si.subcategory?.name,
-              quantity: si.quantity,
-              source: "special",
-              comment: si.comment ?? undefined,
-            })
-          }
-          continue
+      if (scheduled?.items.length) {
+        // Um ScheduledOrder cobre TODOS os itens do dia — usa direto,
+        // sem precisar filtrar por config individualmente
+        for (const si of scheduled.items) {
+          if (!meals.includes(si.item.mealType as MealType)) continue
+          digestItems.push({
+            date: targetDate,
+            mealType: si.item.mealType,
+            itemName: si.item.name,
+            subcategoryName: si.subcategory?.name,
+            quantity: si.quantity,
+            source: "special",
+            comment: si.comment ?? undefined,
+          })
         }
+        continue
+      }
 
+      for (const config of user.itemConfigs) {
         if (config.subcategories?.length) {
           for (const subConfig of config.subcategories) {
             const qty = getDefaultQuantity(subConfig, dayField)
@@ -156,51 +163,40 @@ export async function runCron(cronKey: CronKey) {
               comment: subConfig.comment ?? config.comment ?? undefined,
             })
           }
-        } else {
-          const qty = getDefaultQuantity(config, dayField)
+          continue
+        }
 
-          if (qty > 0) {
+        const qty = getDefaultQuantity(config, dayField)
+
+        if (qty > 0) {
+          digestItems.push({
+            date: targetDate,
+            mealType: config.item.mealType,
+            itemName: config.item.name,
+            quantity: qty,
+            source: "default",
+            comment: config.comment ?? undefined,
+          })
+          continue
+        }
+
+        // Fallback: repete o pedido de ontem, só faz sentido para "amanhã"
+        // (não faz sentido pro domingo repetir "sábado - 1 dia" = sexta
+        // com dados diferentes, mas mantemos o comportamento original:
+        // fallback sempre olha o dia anterior a targetDates[0])
+        const fbOrder = yesterdayIdx.get(`${user.id}::${config.item.mealType}`)
+        if (fbOrder) {
+          const fbItem = fbOrder.items.find(i => i.itemId === config.itemId)
+          if (fbItem) {
             digestItems.push({
               date: targetDate,
               mealType: config.item.mealType,
-              itemName: config.item.name,
-              quantity: qty,
-              source: "default",
-              comment: config.comment ?? undefined,
+              itemName: fbItem.item.name,
+              subcategoryName: fbItem.subcategory?.name,
+              quantity: fbItem.quantity,
+              source: "fallback",
+              comment: fbItem.customText ?? undefined,
             })
-            continue
-          }
-
-          const yesterday = addDays(targetDate, -1)
-          const prevOrder = await prisma.order.findFirst({
-            where: {
-              userId: user.id,
-              mealType: config.item.mealType,
-              date: {
-                gte: startOfDay(yesterday),
-                lte: endOfDay(yesterday),
-              },
-            },
-            include: {
-              items: {
-                where: { itemId: config.itemId },
-                include: { item: true, subcategory: true },
-              },
-            },
-          })
-
-          if (prevOrder?.items.length) {
-            for (const pi of prevOrder.items) {
-              digestItems.push({
-                date: targetDate,
-                mealType: config.item.mealType,
-                itemName: pi.item.name,
-                subcategoryName: pi.subcategory?.name,
-                quantity: pi.quantity,
-                source: "fallback",
-                comment: pi.customText ?? undefined,
-              })
-            }
           }
         }
       }
@@ -214,15 +210,35 @@ export async function runCron(cronKey: CronKey) {
       items: digestItems,
     })
 
-    await sendEmail({
+
+    pendingEmails.push({
+      companyName: user.company.socialName,
       subject: `Pedidos ${cronKey === "1430" ? "Desjejum/Bebidas" : cronKey === "0800" ? "Almoço" : "Jantar"} - ${user.company.socialName}`,
       message,
     })
 
-    emailsSent++
-    console.log(`[cron:${cronKey}] Email enviado para ${user.company.socialName}`)
+    const BATCH_SIZE = 4
+  let emailsSent = 0
+
+  for (let i = 0; i < pendingEmails.length; i += BATCH_SIZE) {
+    const batch = pendingEmails.slice(i, i + BATCH_SIZE)
+
+    const results = await Promise.allSettled(
+      batch.map(email => sendEmail({ subject: email.subject, message: email.message }))
+    )
+
+    results.forEach((result, idx) => {
+      if (result.status === "fulfilled") {
+        emailsSent++
+        console.log(`[cron:${cronKey}] Email enviado para ${batch[idx].companyName}`)
+      } else {
+        console.error(`[cron:${cronKey}] Falha ao enviar para ${batch[idx].companyName}:`, result.reason)
+      }
+    })
   }
 
   console.log(`[cron:${cronKey}] Finalizado. ${emailsSent} email(s) enviado(s).`)
   return { emailsSent }
+ 
+ }
 }
