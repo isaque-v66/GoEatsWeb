@@ -216,6 +216,7 @@ export async function runCron(cronKey: CronKey) {
       subject: `Pedidos ${cronKey === "1430" ? "Desjejum/Bebidas" : cronKey === "0800" ? "Almoço" : "Jantar"} - ${user.company.socialName}`,
       message,
     })
+  }
 
     const BATCH_SIZE = 4
   let emailsSent = 0
@@ -240,5 +241,4 @@ export async function runCron(cronKey: CronKey) {
   console.log(`[cron:${cronKey}] Finalizado. ${emailsSent} email(s) enviado(s).`)
   return { emailsSent }
  
- }
 }
