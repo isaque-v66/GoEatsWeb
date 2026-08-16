@@ -72,6 +72,13 @@ export async function PUT(req: Request) {
       }
     }
 
+    
+    const dedupedItems = items
+      ? items.filter((item, index, arr) =>
+          arr.findIndex(i => i.name === item.name && i.mealType === item.mealType) === index
+        )
+      : undefined
+
     const updatedUser = await prisma.$transaction(async (tx) => {
       const userData: { email?: string; passwordHash?: string; role?: "ADMIN" | "USER" } = {}
       if (email) userData.email = email
@@ -93,60 +100,57 @@ export async function PUT(req: Request) {
         })
       }
 
-      if (items) {
+      if (dedupedItems) {
         // substitui toda a configuração de itens do usuário (o cascade cuida das subcategorias)
         await tx.userItemConfig.deleteMany({ where: { userId: id } })
 
-        await Promise.all(
-          items.map(async (item) => {
-            const dbItem = await tx.item.upsert({
-              where: { name_mealType: { name: item.name, mealType: item.mealType } },
-              update: {},
-              create: { name: item.name, mealType: item.mealType },
-            })
-
-            const userItemConfig = await tx.userItemConfig.create({
-              data: {
-                userId: id,
-                itemId: dbItem.id,
-                mondayQuantity: item.mondayQuantity ?? null,
-                tuesdayQuantity: item.tuesdayQuantity ?? null,
-                wednesdayQuantity: item.wednesdayQuantity ?? null,
-                thursdayQuantity: item.thursdayQuantity ?? null,
-                fridayQuantity: item.fridayQuantity ?? null,
-                saturdayQuantity: item.saturdayQuantity ?? null,
-                sundayQuantity: item.sundayQuantity ?? null,
-                comment: item.comment ?? null,   
-              },
-            })
-
-            if (item.subcategories?.length) {
-              await Promise.all(
-                item.subcategories.map(async (sub) => {
-                  const dbSubcategory = await tx.subcategory.upsert({
-                    where: { name_mealType: { name: sub.name, mealType: item.mealType } },
-                    update: {},
-                    create: { name: sub.name, mealType: item.mealType },
-                  })
-
-                  await tx.userSubcategoryConfig.create({
-                    data: {
-                      userItemId: userItemConfig.id,
-                      subcategoryId: dbSubcategory.id,
-                      mondayQuantity: sub.mondayQuantity ?? null,
-                      tuesdayQuantity: sub.tuesdayQuantity ?? null,
-                      wednesdayQuantity: sub.wednesdayQuantity ?? null,
-                      thursdayQuantity: sub.thursdayQuantity ?? null,
-                      fridayQuantity: sub.fridayQuantity ?? null,
-                      saturdayQuantity: sub.saturdayQuantity ?? null,
-                      sundayQuantity: sub.sundayQuantity ?? null,
-                    },
-                  })
-                })
-              )
-            }
+        
+        for (const item of dedupedItems) {
+          const dbItem = await tx.item.upsert({
+            where: { name_mealType: { name: item.name, mealType: item.mealType } },
+            update: {},
+            create: { name: item.name, mealType: item.mealType },
           })
-        )
+
+          const userItemConfig = await tx.userItemConfig.create({
+            data: {
+              userId: id,
+              itemId: dbItem.id,
+              mondayQuantity: item.mondayQuantity ?? null,
+              tuesdayQuantity: item.tuesdayQuantity ?? null,
+              wednesdayQuantity: item.wednesdayQuantity ?? null,
+              thursdayQuantity: item.thursdayQuantity ?? null,
+              fridayQuantity: item.fridayQuantity ?? null,
+              saturdayQuantity: item.saturdayQuantity ?? null,
+              sundayQuantity: item.sundayQuantity ?? null,
+              comment: item.comment ?? null,
+            },
+          })
+
+          if (item.subcategories?.length) {
+            for (const sub of item.subcategories) {
+              const dbSubcategory = await tx.subcategory.upsert({
+                where: { name_mealType: { name: sub.name, mealType: item.mealType } },
+                update: {},
+                create: { name: sub.name, mealType: item.mealType },
+              })
+
+              await tx.userSubcategoryConfig.create({
+                data: {
+                  userItemId: userItemConfig.id,
+                  subcategoryId: dbSubcategory.id,
+                  mondayQuantity: sub.mondayQuantity ?? null,
+                  tuesdayQuantity: sub.tuesdayQuantity ?? null,
+                  wednesdayQuantity: sub.wednesdayQuantity ?? null,
+                  thursdayQuantity: sub.thursdayQuantity ?? null,
+                  fridayQuantity: sub.fridayQuantity ?? null,
+                  saturdayQuantity: sub.saturdayQuantity ?? null,
+                  sundayQuantity: sub.sundayQuantity ?? null,
+                },
+              })
+            }
+          }
+        }
       }
 
       return tx.user.findUnique({
@@ -158,7 +162,7 @@ export async function PUT(req: Request) {
           },
         },
       })
-    }, { timeout: 15000 })
+    }, { timeout: 20000 })
 
     return NextResponse.json(updatedUser)
   } catch (err) {
