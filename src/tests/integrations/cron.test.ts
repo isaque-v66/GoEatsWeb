@@ -8,27 +8,26 @@ import {
 } from "vitest"
 
 vi.mock("@/src/lib/email", () => ({
-  sendEmail: vi.fn().mockResolvedValue(undefined),
+  sendEmailBatch: vi.fn(),
 }))
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findMany: vi.fn() },
-    scheduledOrder: { findFirst: vi.fn() },
-    order: { findFirst: vi.fn() },
+    scheduledOrder: { findMany: vi.fn() },
+    order: { findMany: vi.fn() },
   },
 }))
 
 import { runCron } from "@/src/lib/cron-logic"
-import { sendEmail } from "@/src/lib/email"
+import { sendEmailBatch } from "@/src/lib/email"
 import { prisma } from "@/lib/prisma"
 
-// Helpers
+// ── Helpers ──
 
 function makeUser(overrides = {}) {
   return {
     id: "user-1",
-
     isActive: true,
 
     company: {
@@ -46,10 +45,10 @@ function makeUser(overrides = {}) {
         wednesdayQuantity: 2,
         thursdayQuantity: 2,
         fridayQuantity: 2,
-
         saturdayQuantity: 1,
         sundayQuantity: 0,
 
+        comment: null,
         subcategories: [],
 
         item: {
@@ -67,7 +66,6 @@ function makeUser(overrides = {}) {
 function makeUserWithSub() {
   return {
     id: "user-2",
-
     isActive: true,
 
     company: {
@@ -88,6 +86,8 @@ function makeUserWithSub() {
         saturdayQuantity: null,
         sundayQuantity: null,
 
+        comment: null,
+
         item: {
           id: "item-bebidas",
           name: "Bebidas",
@@ -104,9 +104,10 @@ function makeUserWithSub() {
             wednesdayQuantity: 3,
             thursdayQuantity: 3,
             fridayQuantity: 3,
-
             saturdayQuantity: 2,
             sundayQuantity: 1,
+
+            comment: null,
 
             subcategory: {
               id: "sub-agua",
@@ -120,10 +121,23 @@ function makeUserWithSub() {
   }
 }
 
+function mockSendEmailBatchEcho() {
+  vi.mocked(sendEmailBatch).mockImplementation(async (emails: any[]) => ({
+    sent: emails.map(e => ({ ...e, resendId: "test-id" })),
+    failed: [],
+  }))
+}
+
 describe("cron — disparo de emails automáticos", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useFakeTimers()
+
+    vi.mocked(prisma.user.findMany).mockResolvedValue([] as any)
+    vi.mocked(prisma.scheduledOrder.findMany).mockResolvedValue([] as any)
+    vi.mocked(prisma.order.findMany).mockResolvedValue([] as any)
+
+    mockSendEmailBatchEcho()
   })
 
   afterEach(() => {
@@ -132,255 +146,176 @@ describe("cron — disparo de emails automáticos", () => {
 
   describe("cron 14:30 — Desjejum/Bebidas", () => {
     it("envia email com quantidade padrão do dia seguinte", async () => {
-      // Segunda-feira
-      // O cron 14:30 deve gerar pedido para terça-feira.
-      // Portanto, deve usar tuesdayQuantity.
+      // Segunda-feira -> deve gerar pedido para terça-feira (tuesdayQuantity)
       vi.setSystemTime(new Date("2025-06-09T14:30:00"))
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [makeUser()] as any
-      )
-
-      vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.order.findFirst).mockResolvedValue(null)
+      vi.mocked(prisma.user.findMany).mockResolvedValue([makeUser()] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).toHaveBeenCalledOnce()
+      expect(sendEmailBatch).toHaveBeenCalledOnce()
 
-      const { subject, message } =
-        vi.mocked(sendEmail).mock.calls[0][0] as any
-
-      expect(subject).toContain("Empresa Teste")
-      expect(message).toContain("Desjejum")
-      expect(message).toContain("2")
+      const emails = vi.mocked(sendEmailBatch).mock.calls[0][0]
+      expect(emails).toHaveLength(1)
+      expect(emails[0].companyName).toBe("Empresa Teste")
+      expect(emails[0].subject).toContain("Empresa Teste")
+      expect(emails[0].message).toContain("Desjejum")
+      expect(emails[0].message).toContain("2")
     })
 
     it("envia para sábado E domingo quando cron dispara na sexta-feira", async () => {
-      // Sexta-feira
-      // O cron deve gerar pedidos para sábado e domingo.
-      vi.setSystemTime(new Date("2025-06-13T14:30:00"))
+      vi.setSystemTime(new Date("2025-06-13T14:30:00")) // sexta-feira
 
       const userWithWeekend = makeUser({
         itemConfigs: [
           {
             id: "config-1",
             itemId: "item-desjejum",
-
             mondayQuantity: 2,
             tuesdayQuantity: 2,
             wednesdayQuantity: 2,
             thursdayQuantity: 2,
             fridayQuantity: 2,
-
             saturdayQuantity: 1,
             sundayQuantity: 3,
-
+            comment: null,
             subcategories: [],
-
-            item: {
-              id: "item-desjejum",
-              name: "Desjejum",
-              mealType: "DESJEJUM",
-            },
+            item: { id: "item-desjejum", name: "Desjejum", mealType: "DESJEJUM" },
           },
         ],
       })
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [userWithWeekend] as any
-      )
-
-      vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.order.findFirst).mockResolvedValue(null)
+      vi.mocked(prisma.user.findMany).mockResolvedValue([userWithWeekend] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).toHaveBeenCalledOnce()
-
-      const { message } =
-        vi.mocked(sendEmail).mock.calls[0][0] as any
-
-      expect(message).toContain("1")
-      expect(message).toContain("3")
+      expect(sendEmailBatch).toHaveBeenCalledOnce()
+      const emails = vi.mocked(sendEmailBatch).mock.calls[0][0]
+      expect(emails[0].message).toContain("1")
+      expect(emails[0].message).toContain("3")
     })
 
     it("usa saturdayQuantity=1 quando target é sábado", async () => {
-      // Sexta-feira -> primeiro target é sábado.
-      vi.setSystemTime(new Date("2025-06-13T14:30:00"))
+      vi.setSystemTime(new Date("2025-06-13T14:30:00")) // sexta -> sábado é o primeiro target
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [makeUser()] as any
-      )
-
-      vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.order.findFirst).mockResolvedValue(null)
+      vi.mocked(prisma.user.findMany).mockResolvedValue([makeUser()] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).toHaveBeenCalledOnce()
-
-      const { message } =
-        vi.mocked(sendEmail).mock.calls[0][0] as any
-
-      expect(message).toContain("1")
+      expect(sendEmailBatch).toHaveBeenCalledOnce()
+      const emails = vi.mocked(sendEmailBatch).mock.calls[0][0]
+      expect(emails[0].message).toContain("1")
     })
 
     it("pula domingo quando sundayQuantity = 0 e não há fallback", async () => {
-      // Sexta-feira -> targets: sábado e domingo.
-      // O domingo possui quantidade 0, então não deve aparecer
-      // como um pedido de quantidade zero.
-      vi.setSystemTime(new Date("2025-06-13T14:30:00"))
+      vi.setSystemTime(new Date("2025-06-13T14:30:00")) // sexta -> sábado + domingo
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [makeUser()] as any
-      )
-
-      vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.order.findFirst).mockResolvedValue(null)
+      vi.mocked(prisma.user.findMany).mockResolvedValue([makeUser()] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).toHaveBeenCalledOnce()
-
-      const { message } =
-        vi.mocked(sendEmail).mock.calls[0][0] as any
-
-      expect(message).not.toMatch(
-        /domingo.*Desjejum.*0/i
-      )
+      expect(sendEmailBatch).toHaveBeenCalledOnce()
+      const emails = vi.mocked(sendEmailBatch).mock.calls[0][0]
+      expect(emails[0].message).not.toMatch(/domingo.*Desjejum.*0/i)
     })
   })
 
   describe("pedido especial (ScheduledOrder)", () => {
     it("usa quantidade do ScheduledOrder quando existe para o dia alvo, sobrescrevendo o padrão", async () => {
-      vi.setSystemTime(new Date("2025-06-09T14:30:00"))
+      vi.setSystemTime(new Date("2025-06-09T14:30:00")) // segunda -> terça
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [makeUser()] as any
-      )
+      vi.mocked(prisma.user.findMany).mockResolvedValue([makeUser()] as any)
 
-      vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue({
-        id: "sched-1",
-
-        items: [
-          {
-            itemId: "item-desjejum",
-            quantity: 99,
-
-            item: {
-              name: "Desjejum",
-              mealType: "DESJEJUM",
+      vi.mocked(prisma.scheduledOrder.findMany).mockResolvedValue([
+        {
+          id: "sched-1",
+          userId: "user-1",
+          date: new Date("2025-06-10T00:00:00"),
+          items: [
+            {
+              itemId: "item-desjejum",
+              quantity: 99,
+              comment: null,
+              item: { name: "Desjejum", mealType: "DESJEJUM" },
+              subcategory: null,
             },
-
-            subcategory: null,
-          },
-        ],
-      } as any)
+          ],
+        },
+      ] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).toHaveBeenCalledOnce()
+      expect(sendEmailBatch).toHaveBeenCalledOnce()
+      const emails = vi.mocked(sendEmailBatch).mock.calls[0][0]
 
-      const { message } =
-        vi.mocked(sendEmail).mock.calls[0][0] as any
-
-      // A quantidade do ScheduledOrder deve aparecer.
-      expect(message).toContain("99")
-
-      // O valor padrão de terça-feira é 2,
-      // mas deve ser sobrescrito pelo pedido especial.
-      expect(message).not.toMatch(/Desjejum: 2\b/)
+      expect(emails[0].message).toContain("99")
+      expect(emails[0].message).not.toMatch(/Desjejum: 2\b/)
     })
   })
 
   describe("fallback — pedido do dia anterior", () => {
     it("usa pedido anterior quando padrão é 0 e não há ScheduledOrder", async () => {
-      vi.setSystemTime(new Date("2025-06-09T14:30:00"))
+      vi.setSystemTime(new Date("2025-06-09T14:30:00")) // segunda -> terça; ontem = segunda
 
       const userZero = makeUser({
         itemConfigs: [
           {
             id: "config-zero",
             itemId: "item-desjejum",
-
             mondayQuantity: 0,
             tuesdayQuantity: 0,
             wednesdayQuantity: 0,
             thursdayQuantity: 0,
             fridayQuantity: 0,
-
             saturdayQuantity: 0,
             sundayQuantity: 0,
-
+            comment: null,
             subcategories: [],
-
-            item: {
-              id: "item-desjejum",
-              name: "Desjejum",
-              mealType: "DESJEJUM",
-            },
+            item: { id: "item-desjejum", name: "Desjejum", mealType: "DESJEJUM" },
           },
         ],
       })
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [userZero] as any
-      )
+      vi.mocked(prisma.user.findMany).mockResolvedValue([userZero] as any)
 
-      vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
-
-      vi.mocked(prisma.order.findFirst).mockResolvedValue({
-        id: "order-prev",
-
-        items: [
-          {
-            itemId: "item-desjejum",
-            quantity: 5,
-
-            item: {
-              name: "Desjejum",
-              mealType: "DESJEJUM",
+      vi.mocked(prisma.order.findMany).mockResolvedValue([
+        {
+          id: "order-prev",
+          userId: "user-1",
+          mealType: "DESJEJUM",
+          date: new Date("2025-06-09T00:00:00"),
+          items: [
+            {
+              itemId: "item-desjejum",
+              quantity: 5,
+              customText: null,
+              item: { name: "Desjejum", mealType: "DESJEJUM" },
+              subcategory: null,
             },
-
-            subcategory: null,
-          },
-        ],
-      } as any)
+          ],
+        },
+      ] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).toHaveBeenCalledOnce()
-
-      const { message } =
-        vi.mocked(sendEmail).mock.calls[0][0] as any
-
-      expect(message).toContain("5")
+      expect(sendEmailBatch).toHaveBeenCalledOnce()
+      const emails = vi.mocked(sendEmailBatch).mock.calls[0][0]
+      expect(emails[0].message).toContain("5")
     })
   })
 
   describe("itens com subcategorias", () => {
     it("envia subcategorias com quantidade padrão correta", async () => {
-      // Segunda-feira -> terça-feira.
-      // A subcategoria deve usar tuesdayQuantity = 3.
-      vi.setSystemTime(new Date("2025-06-09T14:30:00"))
+      vi.setSystemTime(new Date("2025-06-09T14:30:00")) // segunda -> terça
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [makeUserWithSub()] as any
-      )
-
-      vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.order.findFirst).mockResolvedValue(null)
+      vi.mocked(prisma.user.findMany).mockResolvedValue([makeUserWithSub()] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).toHaveBeenCalledOnce()
-
-      const { message } =
-        vi.mocked(sendEmail).mock.calls[0][0] as any
-
-      expect(message).toContain("Água")
-      expect(message).toContain("3")
+      expect(sendEmailBatch).toHaveBeenCalledOnce()
+      const emails = vi.mocked(sendEmailBatch).mock.calls[0][0]
+      expect(emails[0].message).toContain("Água")
+      expect(emails[0].message).toContain("3")
     })
   })
 
@@ -388,98 +323,69 @@ describe("cron — disparo de emails automáticos", () => {
     it("não envia email quando usuário não tem itemConfigs relevantes para o cron", async () => {
       vi.setSystemTime(new Date("2025-06-09T14:30:00"))
 
-      const userAlmocoOnly = makeUser({
-        itemConfigs: [
-          {
-            id: "config-almoco",
-            itemId: "item-almoco",
+      // Simula o que o Prisma já retornaria filtrado: para o cron 1430
+      // (Desjejum/Bebidas/...), um usuário só com Almoço não teria
+      // nenhum itemConfig retornado pela query real.
+      const userAlmocoOnly = makeUser({ itemConfigs: [] })
 
-            mondayQuantity: 3,
-            tuesdayQuantity: 3,
-            wednesdayQuantity: 3,
-            thursdayQuantity: 3,
-            fridayQuantity: 3,
-
-            saturdayQuantity: 0,
-            sundayQuantity: 0,
-
-            subcategories: [],
-
-            item: {
-              id: "item-almoco",
-              name: "Almoço",
-              mealType: "ALMOCO",
-            },
-          },
-        ],
-      })
-
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [userAlmocoOnly] as any
-      )
+      vi.mocked(prisma.user.findMany).mockResolvedValue([userAlmocoOnly] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).not.toHaveBeenCalled()
+      expect(sendEmailBatch).not.toHaveBeenCalled()
     })
 
     it("não envia email quando não há usuários ativos", async () => {
       vi.setSystemTime(new Date("2025-06-09T14:30:00"))
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue([])
+      vi.mocked(prisma.user.findMany).mockResolvedValue([] as any)
 
       await runCron("1430")
 
-      expect(sendEmail).not.toHaveBeenCalled()
+      expect(sendEmailBatch).not.toHaveBeenCalled()
     })
 
     it("cron 08:00 cobre somente Almoço e Lanche", async () => {
-      // Segunda-feira -> terça-feira.
-      // O cron 08:00 deve considerar Almoço e Lanche.
-      vi.setSystemTime(new Date("2025-06-09T08:00:00"))
+      vi.setSystemTime(new Date("2025-06-09T08:00:00")) // segunda -> terça
 
       const userAlmoco = makeUser({
         itemConfigs: [
           {
             id: "config-almoco",
             itemId: "item-almoco",
-
             mondayQuantity: 4,
             tuesdayQuantity: 4,
             wednesdayQuantity: 4,
             thursdayQuantity: 4,
             fridayQuantity: 4,
-
             saturdayQuantity: 0,
             sundayQuantity: 0,
-
+            comment: null,
             subcategories: [],
-
-            item: {
-              id: "item-almoco",
-              name: "Almoço",
-              mealType: "ALMOCO",
-            },
+            item: { id: "item-almoco", name: "Almoço", mealType: "ALMOCO" },
           },
         ],
       })
 
-      vi.mocked(prisma.user.findMany).mockResolvedValue(
-        [userAlmoco] as any
-      )
-
-      vi.mocked(prisma.scheduledOrder.findFirst).mockResolvedValue(null)
-      vi.mocked(prisma.order.findFirst).mockResolvedValue(null)
+      vi.mocked(prisma.user.findMany).mockResolvedValue([userAlmoco] as any)
 
       await runCron("0800")
 
-      expect(sendEmail).toHaveBeenCalledOnce()
+      expect(sendEmailBatch).toHaveBeenCalledOnce()
+      const emails = vi.mocked(sendEmailBatch).mock.calls[0][0]
+      expect(emails[0].message).toContain("Almoço")
+      expect(emails[0].message).toContain("4")
+    })
 
-      const { message } =
-        vi.mocked(sendEmail).mock.calls[0][0] as any
+    it("não chama sendEmailBatch quando não há nenhum e-mail pendente", async () => {
+      vi.setSystemTime(new Date("2025-06-09T14:30:00"))
 
-      expect(message).toContain("Almoço")
-      expect(message).toContain("4")
+      vi.mocked(prisma.user.findMany).mockResolvedValue([makeUser({ itemConfigs: [] })] as any)
+
+      const result = await runCron("1430")
+
+      expect(sendEmailBatch).not.toHaveBeenCalled()
+      expect(result.emailsSent).toBe(0)
     })
   })
 })

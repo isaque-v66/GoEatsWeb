@@ -191,3 +191,28 @@ model ScheduledOrder {
   @@index([userId])
   @@index([date])
 }
+
+
+
+enum EmailLogStatus {
+  PENDING
+  SENT
+  FAILED
+  EXHAUSTED
+}
+
+model EmailLog {
+  id          String         @id @default(uuid())
+  subject     String
+  message     String
+  companyName String?
+  status      EmailLogStatus @default(PENDING)
+  attempts    Int            @default(0)
+  lastError   String?
+  resendId    String?
+  nextRetryAt DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([status, nextRetryAt])
+}
